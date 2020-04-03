@@ -160,18 +160,112 @@ always @(*) begin
 			end
 		end
 		
-		// 8 neighboring positions, remaining cases
-		if (cpiece[2:0] == EMPTY) begin
-			// continues to propogate (except KING)
+		// RU and LU is available for pawn, if can take current piece
+		if (irui[2:0] != EMPTY) begin
+			if ((cpiece[2:0] == EMPTY) && (irui[2:0] != PAWN)) begin
+				// PSEUDOCODE: send to move list (StML)
+				
+				if ((irui[2:0] == BISHOP) && (irui[2:0] == QUEEN))
+					// if bishop or queen, propogate diag
+					oruo_c = irui;
+			end
+			if (cpiece[3] == BLACK) begin
+				// PSEUDOCODE: send to move list (StML)
+			end
 		end
-		if (cpiece[3] == BLACK) begin
-			// takes the current piece, stops propogate
-			// integrate this into upper clause?
+		
+		if (ilui[2:0] != EMPTY) begin
+			if ((cpiece[2:0] == EMPTY) && (ilui[2:0] != PAWN)) begin
+				// PSEUDOCODE: send to move list (StML)
+				
+				if ((ilui[2:0] == BISHOP) && (ilui[2:0] == QUEEN))
+					// if bishop or queen, propogate diag
+					oruo_c = ilui;
+			end
+			if (cpiece[3] == BLACK) begin
+				// PSEUDOCODE: send to move list (StML)
+			end
 		end
 		
+		// U is available for pawn if empty
+		if (iui[2:0] != EMPTY) begin
+			if (cpiece[2:0] == EMPTY) begin
+				// PSEUDOCODE: send to move list (StML)
+				
+				if ((iui[2:0] == BISHOP) && (iui[2:0] == QUEEN))
+					// if bishop or queen, propogate diag
+					oruo_c = irui;
+			end
+			if ((cpiece[3] == BLACK) && (iui[2:0] != PAWN)) begin
+				// PSEUDOCODE: send to move list (StML)
+			end
+		end
 		
+		// 5 remaining neighboring positions
+		if (irdi[2:0] != EMPTY) begin
+			if (cpiece[2:0] == EMPTY) begin
+				// PSEUDOCODE: send to move list (StML)
+				
+				if ((irdi[2:0] == BISHOP) && (irdi[2:0] == QUEEN))
+					// if bishop or queen, propogate diag
+					ordo_c = irdi;
+			end
+			if (cpiece[3] == BLACK) begin
+				// PSEUDOCODE: send to move list (StML)
+			end
+		end
 		
-		// NOTE: PAWN, KNIGHT, KING, EMPTY, NOTUSED case does not propagate the piece
+		if (ildi[2:0] != EMPTY) begin
+			if (cpiece[2:0] == EMPTY) begin
+				// PSEUDOCODE: send to move list (StML)
+				
+				if ((ildi[2:0] == BISHOP) && (ildi[2:0] == QUEEN))
+					// if bishop or queen, propogate diag
+					oldo_c = ildi;
+			end
+			if (cpiece[3] == BLACK) begin
+				// PSEUDOCODE: send to move list (StML)
+			end
+		end
+		
+		if (idi[2:0] != EMPTY) begin
+			if (cpiece[2:0] == EMPTY) begin
+				// PSEUDOCODE: send to move list (StML)
+				
+				if ((idi[2:0] == BISHOP) && (idi[2:0] == QUEEN))
+					// if bishop or queen, propogate diag
+					odo_c = idi;
+			end
+			if (cpiece[3] == BLACK) begin
+				// PSEUDOCODE: send to move list (StML)
+			end
+		end
+		
+		if (iri[2:0] != EMPTY) begin
+			if (cpiece[2:0] == EMPTY) begin
+				// PSEUDOCODE: send to move list (StML)
+				
+				if ((iri[2:0] == BISHOP) && (iri[2:0] == QUEEN))
+					// if bishop or queen, propogate diag
+					oro_c = iri;
+			end
+			if (cpiece[3] == BLACK) begin
+				// PSEUDOCODE: send to move list (StML)
+			end
+		end
+		
+		if (ili[2:0] != EMPTY) begin
+			if (cpiece[2:0] == EMPTY) begin
+				// PSEUDOCODE: send to move list (StML)
+				
+				if ((ili[2:0] == BISHOP) && (ili[2:0] == QUEEN))
+					// if bishop or queen, propogate diag
+					olo_c = ili;
+			end
+			if (cpiece[3] == BLACK) begin
+				// PSEUDOCODE: send to move list (StML)
+			end
+		end
 	end
 	
 	// if position is actually a wall, simply not wire the output
