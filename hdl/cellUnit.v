@@ -28,7 +28,7 @@ parameter QUEEN = 3'o5;
 parameter KING = 3'o6;
 parameter NOTUSED = 3'o7;
 parameter PVOID = 9'h0; // it's just {3'o0, 3'o0, EMPTY} - denotes an empty space at xpos = 0, ypos = 0
-parameter ROW2 = 3'o2; // value for ypos to be at row 2 (for pawn advance two blocks forward
+parameter ROW3 = 3'o3; // value for ypos to be at row 3 (for pawn advance two blocks forward
 
 // outgoing output variables combinational
 reg [3:0] orrdo_c, orruo_c, orddo_c, ordo_c, oro_c, oruo_c, oruuo_c, odo_c, 
