@@ -2,13 +2,16 @@ module cellUnit (irrdi, irrui, irddi, irdi, iri, irui, iruui, idi, iui,
 ilddi, ildi, ili, ilui, iluui, illdi, illui,
 orrdo, orruo, orddo, ordo, oro, oruo, oruuo, odo, ouo, 
 olddo, oldo, olo, oluo, oluuo, olldo, olluo,
-clk, xpos, ypos, cpiece, newboard);
+clk, xpos, ypos, cpiece, newboard, done);
 // TODO: add output to column unit FIFO
+// TODO: for every time send to move list, assert done_c = 1'b0;
 
 input clk; // clock input
 input newboard; // if is new board, put self at the outgoing positions
 input [2:0] xpos, ypos; // specifies the position of the unit on the board
 input [3:0] cpiece; // current piece occupied at this spot
+
+output reg done; // done signal
 
 // inputs and outputs to neighbor cells
 input [8:0] irrdi, irrui, irddi, irdi, iri, irui, iruui, idi, iui, 
@@ -29,6 +32,12 @@ parameter KING = 3'o6;
 parameter NOTUSED = 3'o7;
 parameter PVOID = 9'h0; // it's just {3'o0, 3'o0, EMPTY} - denotes an empty space at xpos = 0, ypos = 0
 parameter ROW3 = 3'o3; // value for ypos to be at row 3 (for pawn advance two blocks forward
+
+// done signal
+reg done_c;
+always @(posedge clk) begin
+	done <= done_c;
+end
 
 // outgoing output variables combinational
 reg [3:0] orrdo_c, orruo_c, orddo_c, ordo_c, oro_c, oruo_c, oruuo_c, odo_c, 
@@ -54,6 +63,9 @@ end
 
 // output logic
 always @(*) begin
+	// default done
+	done_c = 1'b1;
+
 	// default empty
 	olluo_c = PVOID; olldo_c = PVOID;
 	oluuo_c = PVOID; oluo_c = PVOID; olo_c = PVOID; oldo_c = PVOID; olddo_c = PVOID;
@@ -62,6 +74,9 @@ always @(*) begin
 	orruo_c = PVOID; orrdo_c = PVOID;
 	
 	if (newboard == 1'b1) begin
+		// of course not done
+		done_c = 1'b0;
+		
 		// propogate current piece if it's ours (white)
 		// since known only propogate white pieces, not sending white prefix
 		// pad origin position before piece type

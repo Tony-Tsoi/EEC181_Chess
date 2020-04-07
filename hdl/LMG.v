@@ -1,7 +1,10 @@
-module LMG (clk, newboard
+module LMG (clk, newboard,
+done
 );
 
 input clk, newboard;
+
+output done = &{done_cols};
 
 // parameter declarations
 parameter PVOID = 9'h0; // it's just {3'o0, 3'o0, EMPTY} - denotes an empty space at xpos = 0, ypos = 0
@@ -12,6 +15,9 @@ parameter PVOID6 = 54'h0;
 parameter COLA = 3'o0; parameter COLB = 3'o1; parameter COLC = 3'o2; parameter COLD = 3'o3;
 parameter COLE = 3'o4; parameter COLF = 3'o5; parameter COLG = 3'o6; parameter COLH = 3'o7;
 
+// done signals from columns
+wire [7:0] done_cols;
+
 // Column A
 wire [53:0] cilddi_a, coruuo_a;
 wire [62:0] cidi_a, cildi_a, cilldi_a, couo_a, coruo_a, corruo_a;
@@ -19,7 +25,7 @@ wire [71:0] cili_a, coro_a;
 wire [71:9] ciui_a, cilui_a, cillui_a, codo_a, cordo_a, corrdo_a;
 wire [71:18] ciluui_a, corddo_a;
 
-columnUnit cola (.clk(clk), .xpos(COLA),
+columnUnit cola (.clk(clk), .xpos(COLA), .done(done_cols[7]),
 	.cirrdi(PVOID7), .cirrui(PVOID7), .cirddi(PVOID6), .cirdi(PVOID7), .ciri(PVOID8),
 	.cirui(PVOID7), .ciruui(PVOID6),
 	.cidi(cidi_a), .ciui(ciui_a), .cilddi(cilddi_a), .cildi(cildi_a), .cili(cili_a), 
@@ -41,7 +47,7 @@ wire [71:0] colo_b, coro_b;
 wire [71:9] coldo_b, codo_b, cordo_b, corrdo_b;
 wire [71:18] colddo_b, corddo_b;
 
-columnUnit colb (.clk(clk), .xpos(COLB),
+columnUnit colb (.clk(clk), .xpos(COLB), .done(done_cols[6]),
 	.cirrdi(PVOID7), .cirrui(PVOID7), 
 	.cirddi(cirddi_b), .cirdi(cirdi_b), .ciri(ciri_b), .cirui(cirui_b), .ciruui(ciruui_b),
 	.cidi(cidi_b), .ciui(ciui_b), .cilddi(cilddi_b), .cildi(cildi_b), .cili(cili_b), 
@@ -64,7 +70,7 @@ wire [71:0] colo_c, coro_c;
 wire [71:9] colldo_c, coldo_c, codo_c, cordo_c, corrdo_c;
 wire [71:18] colddo_c, corddo_c;
 
-columnUnit colc (.clk(clk), .xpos(COLC),
+columnUnit colc (.clk(clk), .xpos(COLC), .done(done_cols[5]),
 	.cirrdi(cirrdi_c), .cirrui(cirrui_c), 
 	.cirddi(cirddi_c), .cirdi(cirdi_c), .ciri(ciri_c), .cirui(cirui_c), .ciruui(ciruui_c),
 	.cidi(cidi_c), .ciui(ciui_c), .cilddi(cilddi_c), .cildi(cildi_c), .cili(cili_c), 
@@ -87,7 +93,7 @@ wire [71:0] colo_d, coro_d;
 wire [71:9] colldo_d, coldo_d, codo_d, cordo_d, corrdo_d;
 wire [71:18] colddo_d, corddo_d;
 
-columnUnit cold (.clk(clk), .xpos(COLD),
+columnUnit cold (.clk(clk), .xpos(COLD), .done(done_cols[4]),
 	.cirrdi(cirrdi_d), .cirrui(cirrui_d), 
 	.cirddi(cirddi_d), .cirdi(cirdi_d), .ciri(ciri_d), .cirui(cirui_d), .ciruui(ciruui_d),
 	.cidi(cidi_d), .ciui(ciui_d), .cilddi(cilddi_d), .cildi(cildi_d), .cili(cili_d), 
@@ -110,7 +116,7 @@ wire [71:0] colo_e, coro_e;
 wire [71:9] colldo_e, coldo_e, codo_e, cordo_e, corrdo_e;
 wire [71:18] colddo_e, corddo_e;
 
-columnUnit cole (.clk(clk), .xpos(COLE),
+columnUnit cole (.clk(clk), .xpos(COLE), .done(done_cols[3]),
 	.cirrdi(cirrdi_e), .cirrui(cirrui_e), 
 	.cirddi(cirddi_e), .cirdi(cirdi_e), .ciri(ciri_e), .cirui(cirui_e), .ciruui(ciruui_e),
 	.cidi(cidi_e), .ciui(ciui_e), .cilddi(cilddi_e), .cildi(cildi_e), .cili(cili_e), 
@@ -133,7 +139,7 @@ wire [71:0] colo_f, coro_f;
 wire [71:9] colldo_f, coldo_f, codo_f, cordo_f, corrdo_f;
 wire [71:18] colddo_f, corddo_f;
 
-columnUnit colf (.clk(clk), .xpos(COLF),
+columnUnit colf (.clk(clk), .xpos(COLF), .done(done_cols[2]),
 	.cirrdi(cirrdi_f), .cirrui(cirrui_f), 
 	.cirddi(cirddi_f), .cirdi(cirdi_f), .ciri(ciri_f), .cirui(cirui_f), .ciruui(ciruui_f),
 	.cidi(cidi_f), .ciui(ciui_f), .cilddi(cilddi_f), .cildi(cildi_f), .cili(cili_f), 
@@ -156,7 +162,7 @@ wire [71:0] colo_g, coro_g;
 wire [71:9] colldo_g, coldo_g, codo_g, cordo_g;
 wire [71:18] colddo_g, corddo_g;
 
-columnUnit colg (.clk(clk), .xpos(COLG),
+columnUnit colg (.clk(clk), .xpos(COLG), .done(done_cols[1]),
 	.cirrdi(cirrdi_g), .cirrui(cirrui_g), 
 	.cirddi(cirddi_g), .cirdi(cirdi_g), .ciri(ciri_g), .cirui(cirui_g), .ciruui(ciruui_g),
 	.cidi(cidi_g), .ciui(ciui_g), .cilddi(cilddi_g), .cildi(cildi_g), .cili(cili_g), 
@@ -179,7 +185,7 @@ wire [71:0] colo_h;
 wire [71:9] colldo_h, coldo_h, codo_h;
 wire [71:18] colddo_h;
 
-columnUnit colh (.clk(clk), .xpos(COLH),
+columnUnit colh (.clk(clk), .xpos(COLH), .done(done_cols[0]),
 	.cirrdi(cirrdi_h), .cirrui(cirrui_h), 
 	.cirddi(cirddi_h), .cirdi(cirdi_h), .ciri(ciri_h), .cirui(cirui_h), .ciruui(ciruui_h),
 	.cidi(cidi_h), .ciui(ciui_h), .cilddi(PVOID6), .cildi(PVOID7), .cili(PVOID8), 
