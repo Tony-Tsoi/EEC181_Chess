@@ -1,4 +1,4 @@
-module columnUnit (clk, bstate, xpos, newboard,
+module columnUnit (clk, bstate, xpos, reset,
 cirrdi, cirrui, cirddi, cirdi, ciri, cirui, ciruui, cidi, ciui, cilddi, cildi, 
 cili, cilui, ciluui, cilldi, cillui,
 colluo, colldo, coluuo, coluo, colo, coldo, colddo, couo, codo, coruuo, coruo, 
@@ -7,8 +7,11 @@ coro, cordo, corddo, corruo, corrdo, done
 // TODO: Add breakdown board state
 // TODO: Add FIFO to collect from sq output, add output
 // TODO: Add output to control and sort by MVVLVA
+// TODO: Route hold signals thru up down dir within column
+// TODO: Route hold signals out to other columns
+// TODO: Route hold signals from outside into this column
 
-input clk, newboard;
+input clk, reset;
 input [2:0] xpos;
 input [255:0] bstate; // board state
 
@@ -24,7 +27,8 @@ output [71:0] colo, coro;
 output [71:9] colldo, coldo, codo, cordo, corrdo;
 output [71:18] colddo, corddo;
 
-output done = &{done_cells};
+output done = &{done_cells}; // TODO: change this logic for getting moves from each square
+							 // should be flagged by state machine
 
 // parameter declarations
 parameter PVOID = 9'h0; // it's just {3'o0, 3'o0, EMPTY} - denotes an empty space at xpos = 0, ypos = 0
@@ -36,7 +40,7 @@ parameter ROW5 = 3'o4; parameter ROW6 = 3'o5; parameter ROW7 = 3'o6; parameter R
 wire [8:1] done_sqs;
 
 // Row 8
-squareUnit sq8 (.clk(clk), .xpos(xpos), .ypos(ROW8), .newboard(newboard), .done(done_sqs[8]),
+squareUnit sq8 (.clk(clk), .xpos(xpos), .ypos(ROW8), .reset(reset), .done(done_sqs[8]),
 	.irrdi(PVOID), .irddi(PVOID), .irdi(PVOID), .idi(PVOID), .ilddi(PVOID), .ildi(PVOID), .illdi(PVOID),
 	.irrui(cirrui[71:63]), .iri(ciri[71:63]), .irui(cirui[71:63]), .iruui(ciruui[71:63]), .iui(ciui[71:63]), 
 	.ili(cili[71:63]), .ilui(cilui[71:63]), .iluui(ciluui[71:63]), .illui(cillui[71:63]),
@@ -45,7 +49,7 @@ squareUnit sq8 (.clk(clk), .xpos(xpos), .ypos(ROW8), .newboard(newboard), .done(
 	.oro(coro[71:63]), .ordo(cordo[71:63]), .orddo(corddo[71:63]), .orrdo(corrdo[71:63]) );
 
 // Row 7
-squareUnit sq7 (.clk(clk), .xpos(xpos), .ypos(ROW7), .newboard(newboard), .done(done_sqs[7]),
+squareUnit sq7 (.clk(clk), .xpos(xpos), .ypos(ROW7), .reset(reset), .done(done_sqs[7]),
 	.irddi(PVOID), .ilddi(PVOID), 
 	.irrdi(cirrdi[62:54]), .irrui(cirrui[62:54]), .irdi(cirdi[62:54]), .iri(ciri[62:54]), .irui(cirui[62:54]), 
 	.iruui(ciruui[62:54]), .idi(cidi[62:54]), .iui(ciui[62:54]), .ildi(cildi[62:54]), .ili(cili[62:54]), 
@@ -56,7 +60,7 @@ squareUnit sq7 (.clk(clk), .xpos(xpos), .ypos(ROW7), .newboard(newboard), .done(
 	.ordo(cordo[62:54]), .orddo(corddo[62:54]), .orruo(corruo[62:54]), .orrdo(corrdo[62:54]) );
 
 // Row 6
-squareUnit sq6 (.clk(clk), .xpos(xpos), .ypos(ROW6), .newboard(newboard), .done(done_sqs[6]),
+squareUnit sq6 (.clk(clk), .xpos(xpos), .ypos(ROW6), .reset(reset), .done(done_sqs[6]),
 	.irrdi(cirrdi[53:45]), .irrui(cirrui[53:45]), .irddi(cirddi[53:45]), .irdi(cirdi[53:45]), .iri(ciri[53:45]), 
 	.irui(cirui[53:45]), .iruui(ciruui[53:45]), .idi(cidi[53:45]), .iui(ciui[53:45]), .ilddi(cilddi[53:45]), 
 	.ildi(cildi[53:45]), .ili(cili[53:45]), .ilui(cilui[53:45]), .iluui(ciluui[53:45]), .illdi(cilldi[53:45]), 
@@ -67,7 +71,7 @@ squareUnit sq6 (.clk(clk), .xpos(xpos), .ypos(ROW6), .newboard(newboard), .done(
 	.orrdo(corrdo[53:45]) );
 
 // Row 5
-squareUnit sq5 (.clk(clk), .xpos(xpos), .ypos(ROW5), .newboard(newboard), .done(done_sqs[5]),
+squareUnit sq5 (.clk(clk), .xpos(xpos), .ypos(ROW5), .reset(reset), .done(done_sqs[5]),
 	.irrdi(cirrdi[44:36]), .irrui(cirrui[44:36]), .irddi(cirddi[44:36]), .irdi(cirdi[44:36]), .iri(ciri[44:36]), 
 	.irui(cirui[44:36]), .iruui(ciruui[44:36]), .idi(cidi[44:36]), .iui(ciui[44:36]), .ilddi(cilddi[44:36]), 
 	.ildi(cildi[44:36]), .ili(cili[44:36]), .ilui(cilui[44:36]), .iluui(ciluui[44:36]), .illdi(cilldi[44:36]), 
@@ -78,7 +82,7 @@ squareUnit sq5 (.clk(clk), .xpos(xpos), .ypos(ROW5), .newboard(newboard), .done(
 	.orrdo(corrdo[44:36]) );
 
 // Row 4
-squareUnit sq4 (.clk(clk), .xpos(xpos), .ypos(ROW4), .newboard(newboard), .done(done_sqs[4]),
+squareUnit sq4 (.clk(clk), .xpos(xpos), .ypos(ROW4), .reset(reset), .done(done_sqs[4]),
 	.irrdi(cirrdi[35:27]), .irrui(cirrui[35:27]), .irddi(cirddi[35:27]), .irdi(cirdi[35:27]), .iri(ciri[35:27]), 
 	.irui(cirui[35:27]), .iruui(ciruui[35:27]), .idi(cidi[35:27]), .iui(ciui[35:27]), .ilddi(cilddi[35:27]), 
 	.ildi(cildi[35:27]), .ili(cili[35:27]), .ilui(cilui[35:27]), .iluui(ciluui[35:27]), .illdi(cilldi[35:27]), 
@@ -89,7 +93,7 @@ squareUnit sq4 (.clk(clk), .xpos(xpos), .ypos(ROW4), .newboard(newboard), .done(
 	.orrdo(corrdo[35:27]) );
 
 // Row 3
-squareUnit sq3 (.clk(clk), .xpos(xpos), .ypos(ROW3), .newboard(newboard), .done(done_sqs[3]),
+squareUnit sq3 (.clk(clk), .xpos(xpos), .ypos(ROW3), .reset(reset), .done(done_sqs[3]),
 	.irrdi(cirrdi[26:18]), .irrui(cirrui[26:18]), .irddi(cirddi[26:18]), .irdi(cirdi[26:18]), .iri(ciri[26:18]), 
 	.irui(cirui[26:18]), .iruui(ciruui[26:18]), .idi(cidi[26:18]), .iui(ciui[26:18]), .ilddi(cilddi[26:18]), 
 	.ildi(cildi[26:18]), .ili(cili[26:18]), .ilui(cilui[26:18]), .iluui(ciluui[26:18]), .illdi(cilldi[26:18]), 
@@ -100,7 +104,7 @@ squareUnit sq3 (.clk(clk), .xpos(xpos), .ypos(ROW3), .newboard(newboard), .done(
 	.orrdo(corrdo[26:18]) );
 
 // Row 2
-squareUnit sq2 (.clk(clk), .xpos(xpos), .ypos(ROW2), .newboard(newboard), .done(done_sqs[2]),
+squareUnit sq2 (.clk(clk), .xpos(xpos), .ypos(ROW2), .reset(reset), .done(done_sqs[2]),
 	.iruui(PVOID), .iluui(PVOID), 
 	.irrdi(cirrdi[17:9]), .irrui(cirrui[17:9]), .irddi(cirddi[17:9]), .irdi(cirdi[17:9]), .iri(ciri[17:9]), 
 	.irui(cirui[17:9]), .idi(cidi[17:9]), .iui(ciui[17:9]), .ilddi(cilddi[17:9]), 
@@ -111,7 +115,7 @@ squareUnit sq2 (.clk(clk), .xpos(xpos), .ypos(ROW2), .newboard(newboard), .done(
 	.oruo(coruo[17:9]), .oro(coro[17:9]), .ordo(cordo[17:9]), .orruo(corruo[17:9]), .orrdo(corrdo[17:9]) );
 
 // Row 1
-squareUnit sq1 (.clk(clk), .xpos(xpos), .ypos(ROW1), .newboard(newboard), .done(done_sqs[1]),
+squareUnit sq1 (.clk(clk), .xpos(xpos), .ypos(ROW1), .reset(reset), .done(done_sqs[1]),
 	.irrui(PVOID), .irui(PVOID), .iruui(PVOID), .iui(PVOID), .ilui(PVOID), .iluui(PVOID), .illui(PVOID),
 	.irrdi(cirrdi[8:0]), .irddi(cirddi[8:0]), .irdi(cirdi[8:0]), .iri(ciri[8:0]), .idi(cidi[8:0]), 
 	.ilddi(cilddi[8:0]), .ildi(cildi[8:0]), .ili(cili[8:0]), .illdi(cilldi[8:0]), 

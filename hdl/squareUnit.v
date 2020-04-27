@@ -2,12 +2,14 @@ module squareUnit (irrdi, irrui, irddi, irdi, iri, irui, iruui, idi, iui,
 ilddi, ildi, ili, ilui, iluui, illdi, illui,
 orrdo, orruo, orddo, ordo, oro, oruo, oruuo, odo, ouo, 
 olddo, oldo, olo, oluo, oluuo, olldo, olluo,
-clk, xpos, ypos, cpiece, newboard, done, fifoOut);
+hlu, hl, hld, hu, hd, hru, hr, hrd,
+clk, xpos, ypos, cpiece, reset, done, fifoOut, hold);
 
 input clk; // clock input
-input newboard; // if is new board, put self at the outgoing positions
+input reset; // if is new board, put self at the outgoing positions
 input [2:0] xpos, ypos; // specifies the position of the unit on the board
 input [3:0] cpiece; // current piece occupied at this spot
+input hold; // to hold the done signal from being flagged mistakenly
 
 output reg done; // done signal
 output [47:0] fifoOut; // output of FIFO
@@ -17,6 +19,9 @@ input [8:0] irrdi, irrui, irddi, irdi, iri, irui, iruui, idi, iui,
 	ilddi, ildi, ili, ilui, iluui, illdi, illui;
 output reg [8:0] orrdo, orruo, orddo, ordo, oro, oruo, oruuo, odo, ouo, 
 	olddo, oldo, olo, oluo, oluuo, olldo, olluo;
+	
+// output hold signal
+output reg hlu, hl, hld, hu, hru, hr, hrd;
 
 // parameter declarations
 parameter WHITE = 1'b0;
@@ -51,6 +56,31 @@ always @(posedge clk) begin
 	done <= done_c;
 end
 
+// delayed reset signal
+reg reset_d;
+always @(posedge clk) begin
+	reset_d <= reset;
+end
+
+// hold signal combinational
+wire hlu_c, hl_c, hld_c, hu_c, hru_c, hr_c, hrd_c;
+assign hlu_c = (oluo_c != PVOID);
+assign hl_c = (olo_c != PVOID);
+assign hld_c = (oldo_c != PVOID);
+assign hu_c = (ouo_c != PVOID);
+assign hru_c = (oruo_c != PVOID);
+assign hr_c = (oro_c != PVOID);
+assign hrd_c = (ordo_c != PVOID);
+always @(posedge clk) begin
+	hlu <= hlu_c;
+	hl <= hl_c;
+	hld <= hld_c;
+	hu <= hu_c;
+	hru <= hru_c;
+	hr <= hr_c;
+	hrd <= hrd_c;
+end
+
 // outgoing output variables combinational
 reg [3:0] orrdo_c, orruo_c, orddo_c, ordo_c, oro_c, oruo_c, oruuo_c, odo_c, 
 	ouo_c, olddo_c, oldo_c, olo_c, oluo_c, oluuo_c, olldo_c, olluo_c;
@@ -75,8 +105,8 @@ end
 
 // output logic
 always @(*) begin
-	// default done
-	done_c = 1'b1;
+	// default not change done
+	done_c = done;
 
 	// default empty
 	olluo_c = PVOID; olldo_c = PVOID;
@@ -85,7 +115,7 @@ always @(*) begin
 	oruuo_c = PVOID; oruo_c = PVOID; oro_c = PVOID; ordo_c = PVOID; orddo_c = PVOID;
 	orruo_c = PVOID; orrdo_c = PVOID;
 	
-	if (newboard == 1'b1) begin
+	if (reset_d == 1'b1) begin
 		// of course not done
 		done_c = 1'b0;
 		
@@ -321,6 +351,10 @@ always @(*) begin
 			end
 		end
 	end
+	
+	// finally set done signal if hold or is just got new board
+	if ((hold == 1'b1) || (reset_d == 1'b1))
+		done_c = 1'b0;
 	
 	// if position is actually a wall, simply not wire the output
 	// no extra logic should be used to clear that out
