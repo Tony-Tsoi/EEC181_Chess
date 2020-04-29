@@ -24,8 +24,91 @@ wire [7:0] done_cols;
 // wiring all the hold signals from all directions that is across columns
 wire [8:1] chdiri_a, chdiri_b, chdiri_c, chdiri_d, chdiri_e, chdiri_f, chdiri_g, chdiri_h;
 
-// only left up holds
-wire chlui_a[8] = |{chluo_b[7], chluo_c[6], chluo_d[5], chluo_e[4], chluo_f[3], chluo_g[2], chluo_h[1]};
+// only to top left or bottom right holds
+wire chlurdi_a[1] = 1'b0;
+
+wire chlurdi_a[2] =             chluo_b[1];
+wire chlurdi_b[1] = chrdo_a[2];
+
+wire chlurdi_a[3] = |{            chluo_b[2], chluo_c[1]};
+wire chlurdi_b[2] = |{chrdo_a[3],             chluo_c[1]};
+wire chlurdi_c[1] = |{chrdo_a[3], chrdo_b[2]            };
+
+wire chlurdi_a[4] = |{            chluo_b[3], chluo_c[2], chluo_d[1]};
+wire chlurdi_b[3] = |{chrdo_a[4],             chluo_c[2], chluo_d[1]};
+wire chlurdi_c[2] = |{chrdo_a[4], chrdo_b[3],             chluo_d[1]};
+wire chlurdi_d[1] = |{chrdo_a[4], chrdo_b[3], chrdo_c[2]            };
+
+wire chlurdi_a[5] = |{            chluo_b[4], chluo_c[3], chluo_d[2], chluo_e[1]};
+wire chlurdi_b[4] = |{chrdo_a[5],             chluo_c[3], chluo_d[2], chluo_e[1]};
+wire chlurdi_c[3] = |{chrdo_a[5], chrdo_b[4],             chluo_d[2], chluo_e[1]};
+wire chlurdi_d[2] = |{chrdo_a[5], chrdo_b[4], chrdo_c[3],             chluo_e[1]};
+wire chlurdi_e[1] = |{chrdo_a[5], chrdo_b[4], chrdo_c[3], chrdo_d[2]            };
+
+wire chlurdi_a[6] = |{            chluo_b[5], chluo_c[4], chluo_d[3], chluo_e[2], chluo_f[1]};
+wire chlurdi_b[5] = |{chrdo_a[6],             chluo_c[4], chluo_d[3], chluo_e[2], chluo_f[1]};
+wire chlurdi_c[4] = |{chrdo_a[6], chrdo_b[5],             chluo_d[3], chluo_e[2], chluo_f[1]};
+wire chlurdi_d[3] = |{chrdo_a[6], chrdo_b[5], chrdo_c[4],             chluo_e[2], chluo_f[1]};
+wire chlurdi_e[2] = |{chrdo_a[6], chrdo_b[5], chrdo_c[4], chrdo_d[3],             chluo_f[1]};
+wire chlurdi_f[1] = |{chrdo_a[6], chrdo_b[5], chrdo_c[4], chrdo_d[3], chrdo_e[2],           };
+
+wire chlurdi_a[7] = |{            chluo_b[6], chluo_c[5], chluo_d[4], chluo_e[3], chluo_f[2], chluo_g[1]};
+wire chlurdi_b[6] = |{chrdo_a[7],             chluo_c[5], chluo_d[4], chluo_e[3], chluo_f[2], chluo_g[1]};
+wire chlurdi_c[5] = |{chrdo_a[7], chrdo_b[6],             chluo_d[4], chluo_e[3], chluo_f[2], chluo_g[1]};
+wire chlurdi_d[4] = |{chrdo_a[7], chrdo_b[6], chrdo_c[5],             chluo_e[3], chluo_f[2], chluo_g[1]};
+wire chlurdi_e[3] = |{chrdo_a[7], chrdo_b[6], chrdo_c[5], chrdo_d[4],             chluo_f[2], chluo_g[1]};
+wire chlurdi_f[2] = |{chrdo_a[7], chrdo_b[6], chrdo_c[5], chrdo_d[4], chrdo_e[3],             chluo_g[1]};
+wire chlurdi_f[2] = |{chrdo_a[7], chrdo_b[6], chrdo_c[5], chrdo_d[4], chrdo_e[3], chrdo_f[2]            };
+
+wire chlurdi_a[8] = |{            chluo_b[7], chluo_c[6], chluo_d[5], chluo_e[4], chluo_f[3], chluo_g[2], chluo_h[1]};
+wire chlurdi_b[7] = |{chrdo_a[8],             chluo_c[6], chluo_d[5], chluo_e[4], chluo_f[3], chluo_g[2], chluo_h[1]};
+wire chlurdi_c[6] = |{chrdo_a[8], chrdo_b[7],             chluo_d[5], chluo_e[4], chluo_f[3], chluo_g[2], chluo_h[1]};
+wire chlurdi_d[5] = |{chrdo_a[8], chrdo_b[7], chrdo_c[6],             chluo_e[4], chluo_f[3], chluo_g[2], chluo_h[1]};
+wire chlurdi_e[4] = |{chrdo_a[8], chrdo_b[7], chrdo_c[6], chrdo_d[5],             chluo_f[3], chluo_g[2], chluo_h[1]};
+wire chlurdi_f[3] = |{chrdo_a[8], chrdo_b[7], chrdo_c[6], chrdo_d[5], chrdo_e[4],             chluo_g[2], chluo_h[1]};
+wire chlurdi_g[2] = |{chrdo_a[8], chrdo_b[7], chrdo_c[6], chrdo_d[5], chrdo_e[4], chrdo_f[3],             chluo_h[1]};
+wire chlurdi_h[1] = |{chrdo_a[8], chrdo_b[7], chrdo_c[6], chrdo_d[5], chrdo_e[4], chrdo_f[3], chrdo_g[2]             };
+
+wire chlurdi_b[8] = |{            chluo_c[7], chluo_d[6], chluo_e[5], chluo_f[4], chluo_g[3], chluo_h[2]};
+wire chlurdi_c[7] = |{chrdo_b[8],             chluo_d[6], chluo_e[5], chluo_f[4], chluo_g[3], chluo_h[2]};
+wire chlurdi_d[6] = |{chrdo_b[8], chrdo_c[7],             chluo_e[5], chluo_f[4], chluo_g[3], chluo_h[2]};
+wire chlurdi_e[5] = |{chrdo_b[8], chrdo_c[7], chrdo_d[6],             chluo_f[4], chluo_g[3], chluo_h[2]};
+wire chlurdi_f[4] = |{chrdo_b[8], chrdo_c[7], chrdo_d[6], chrdo_e[5],             chluo_g[3], chluo_h[2]};
+wire chlurdi_g[3] = |{chrdo_b[8], chrdo_c[7], chrdo_d[6], chrdo_e[5], chrdo_f[4],             chluo_h[2]};
+wire chlurdi_h[2] = |{chrdo_b[8], chrdo_c[7], chrdo_d[6], chrdo_e[5], chrdo_f[4], chrdo_g[3]            };
+
+wire chlurdi_c[8] = |{            chluo_d[7], chluo_e[6], chluo_f[5], chluo_g[4], chluo_h[3]};
+wire chlurdi_d[7] = |{chrdo_c[8],             chluo_e[6], chluo_f[5], chluo_g[4], chluo_h[3]};
+wire chlurdi_e[6] = |{chrdo_c[8], chrdo_d[7],             chluo_f[5], chluo_g[4], chluo_h[3]};
+wire chlurdi_f[5] = |{chrdo_c[8], chrdo_d[7], chrdo_e[6],             chluo_g[4], chluo_h[3]};
+wire chlurdi_g[4] = |{chrdo_c[8], chrdo_d[7], chrdo_e[6], chrdo_f[5],             chluo_h[3]};
+wire chlurdi_h[3] = |{chrdo_c[8], chrdo_d[7], chrdo_e[6], chrdo_f[5], chrdo_g[4]            };
+
+wire chlurdi_d[8] = |{            chluo_e[7], chluo_f[6], chluo_g[5], chluo_h[4]};
+wire chlurdi_e[7] = |{chrdo_d[8],             chluo_f[6], chluo_g[5], chluo_h[4]};
+wire chlurdi_f[6] = |{chrdo_d[8], chrdo_e[7],             chluo_g[5], chluo_h[4]};
+wire chlurdi_g[5] = |{chrdo_d[8], chrdo_e[7], chrdo_f[6],             chluo_h[4]};
+wire chlurdi_h[4] = |{chrdo_d[8], chrdo_e[7], chrdo_f[6], chrdo_g[5]            };
+
+wire chlurdi_e[8] = |{            chluo_f[7], chluo_g[6], chluo_h[5]};
+wire chlurdi_f[7] = |{chrdo_e[8],             chluo_g[6], chluo_h[5]};
+wire chlurdi_g[6] = |{chrdo_e[8], chrdo_f[7],             chluo_h[5]};
+wire chlurdi_h[5] = |{chrdo_e[8], chrdo_f[7], chrdo_g[6]            };
+
+wire chlurdi_f[8] = |{            chluo_g[6], chluo_h[5]};
+wire chlurdi_g[7] = |{chrdo_f[7],             chluo_h[5]};
+wire chlurdi_h[6] = |{chrdo_f[7], chrdo_g[6]            };
+
+wire chlurdi_g[8] = chluo_h[7];
+wire chlurdi_h[7] = chrdo_g[8];
+
+wire chlurdi_h[8] = 1'b0;
+
+// TODO: to top right and bottom left direction holds
+// TODO: left right direction holds
+
+
+
 
 
 // Column A
@@ -244,6 +327,5 @@ columnUnit colh (.clk(clk), .xpos(COLH), .done(done_cols[0]), .bstate(bstate),
 	.couo(couo_h), .codo(codo_h), .coruuo(), .coruo(), .coro(),
 	.cordo(), .corddo(), .corruo(), .corrdo(),
 	.chluo(chluo_h), .chruo(chruo_h), .chlo(chlo_h), .chro(chro_h), .chldo(chldo_h), .chrdo(chrdo_h) );
-
 
 endmodule
