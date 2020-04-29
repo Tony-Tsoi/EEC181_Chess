@@ -1,4 +1,4 @@
-module columnUnit (clk, bstate, xpos, reset, done,
+module columnUnit (clk, bstate, xpos, reset, done, chdiri
 cirrdi, cirrui, cirddi, cirdi, ciri, cirui, ciruui, cidi, ciui, cilddi, cildi, 
 cili, cilui, ciluui, cilldi, cillui,
 colluo, colldo, coluuo, coluo, colo, coldo, colddo, couo, codo, coruuo, coruo, 
@@ -8,7 +8,6 @@ chluo, chruo, chlo, chro, chldo, chrdo
 // TODO: Add breakdown board state
 // TODO: Add FIFO to collect from sq output, add output
 // TODO: Add output to control and sort by MVVLVA
-// TODO: Route hold signals from outside into this column
 
 input clk, reset;
 input [2:0] xpos;
@@ -27,6 +26,9 @@ output [62:0] colluo, coluo, couo, coruo, corruo;
 output [71:0] colo, coro;
 output [71:9] colldo, coldo, codo, cordo, corrdo;
 output [71:18] colddo, corddo;
+
+// input signals to hold the done flags
+input [8:1] chdiri;
 
 // output signals to hold from done flags
 output [8:2] chluo, chruo;
@@ -52,14 +54,14 @@ wire [8:2] chdo;
 
 // hold signal logic for squares
 wire [8:1] holds;
-assign hold[8] = |{chuo[7:1]                                     };
-assign hold[7] = |{chuo[6:1], chdo[7  ]                          };
-assign hold[6] = |{chuo[5:1], chdo[7:6]                          };
-assign hold[5] = |{chuo[4:1], chdo[7:5]                          };
-assign hold[4] = |{chuo[3:1], chdo[7:4]                          };
-assign hold[3] = |{chuo[2:1], chdo[7:3]                          };
-assign hold[2] = |{chuo[  1], chdo[7:2]                          };
-assign hold[1] = |{           chdo[7:1]                          };
+assign hold[8] = |{chuo[7:1]           , chdiri[8]}};
+assign hold[7] = |{chuo[6:1], chdo[7  ], chdiri[7]};
+assign hold[6] = |{chuo[5:1], chdo[7:6], chdiri[6]}};
+assign hold[5] = |{chuo[4:1], chdo[7:5], chdiri[5]}};
+assign hold[4] = |{chuo[3:1], chdo[7:4], chdiri[4]}};
+assign hold[3] = |{chuo[2:1], chdo[7:3], chdiri[3]}};
+assign hold[2] = |{chuo[  1], chdo[7:2], chdiri[2]}};
+assign hold[1] = |{           chdo[7:1], chdiri[1]}};
 
 // Row 8
 squareUnit sq8 (.clk(clk), .xpos(xpos), .ypos(ROW8), .reset(reset), .done(done_sqs[8]), .hold(holds[8]),
