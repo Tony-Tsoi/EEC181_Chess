@@ -1,8 +1,6 @@
 module LMG (clk, reset, bstate,
 done
 );
-// TODO: Add reset signals to all columns
-// TODO: Route hold signals between each columns
 
 input clk, reset;
 input [255:0] bstate;
@@ -22,14 +20,14 @@ parameter COLE = 3'o4; parameter COLF = 3'o5; parameter COLG = 3'o6; parameter C
 wire [7:0] done_cols;
 
 // wiring all the hold signals from all directions that is across columns
-wire [8:1] chdiri_a = chlri_a | chlurdi_a | chruldi_a;
-wire [8:1] chdiri_b = chlri_b | chlurdi_b | chruldi_b;
-wire [8:1] chdiri_c = chlri_c | chlurdi_c | chruldi_c;
-wire [8:1] chdiri_d = chlri_d | chlurdi_d | chruldi_d;
-wire [8:1] chdiri_e = chlri_e | chlurdi_e | chruldi_e;
-wire [8:1] chdiri_f = chlri_f | chlurdi_f | chruldi_f;
-wire [8:1] chdiri_g = chlri_g | chlurdi_g | chruldi_g;
-wire [8:1] chdiri_h = chlri_h | chlurdi_h | chruldi_h;
+wire [8:1] chdiri_a = chlri_a | chlurdi_a | chldrui_a;
+wire [8:1] chdiri_b = chlri_b | chlurdi_b | chldrui_b;
+wire [8:1] chdiri_c = chlri_c | chlurdi_c | chldrui_c;
+wire [8:1] chdiri_d = chlri_d | chlurdi_d | chldrui_d;
+wire [8:1] chdiri_e = chlri_e | chlurdi_e | chldrui_e;
+wire [8:1] chdiri_f = chlri_f | chlurdi_f | chldrui_f;
+wire [8:1] chdiri_g = chlri_g | chlurdi_g | chldrui_g;
+wire [8:1] chdiri_h = chlri_h | chlurdi_h | chldrui_h;
 
 // only to left or right holds
 wire [8:1] chlri_a =          chlo_b | chlo_c | chlo_d | chlo_e | chlo_f | chlo_g | chlo_h;
@@ -121,8 +119,85 @@ wire chlurdi_h[7] =             chrdo_g[8];
 
 wire chlurdi_h[8] = 1'b0;
 
-// TODO: to top right and bottom left direction holds
+// only to top right and bottom left direction holds
+wire chldrui_a[8] = 1'b0;
 
+wire chldrui_a[7] = chldo_b[8];
+wire chldrui_b[8] = chruo_a[7];
+
+wire chldrui_a[6] = |{            chldo_b[7], chldo_c[8]};
+wire chldrui_b[7] = |{chruo_a[6],             chldo_c[8]};
+wire chldrui_c[8] = |{chruo_a[6], chruo_b[7]            };
+
+wire chldrui_a[5] = |{            chldo_b[6], chldo_c[7], chldo_d[8]};
+wire chldrui_b[6] = |{chruo_a[5],             chldo_c[7], chldo_d[8]};
+wire chldrui_c[7] = |{chruo_a[5], chruo_b[6],             chldo_d[8]};
+wire chldrui_d[8] = |{chruo_a[5], chruo_b[6], chruo_c[7]            };
+
+wire chldrui_a[4] = |{            chldo_b[5], chldo_c[6], chldo_d[7], chldo_e[8]};
+wire chldrui_b[5] = |{chruo_a[4],             chldo_c[6], chldo_d[7], chldo_e[8]};
+wire chldrui_c[6] = |{chruo_a[4], chruo_b[5],             chldo_d[7], chldo_e[8]};
+wire chldrui_d[7] = |{chruo_a[4], chruo_b[5], chruo_c[6],             chldo_e[8]};
+wire chldrui_e[8] = |{chruo_a[4], chruo_b[5], chruo_c[6], chruo_d[7]            };
+
+wire chldrui_a[3] = |{            chldo_b[4], chldo_c[5], chldo_d[6], chldo_e[7], chldo_f[8]};
+wire chldrui_b[4] = |{chruo_a[3],             chldo_c[5], chldo_d[6], chldo_e[7], chldo_f[8]};
+wire chldrui_c[5] = |{chruo_a[3], chruo_b[4],             chldo_d[6], chldo_e[7], chldo_f[8]};
+wire chldrui_d[6] = |{chruo_a[3], chruo_b[4], chruo_c[5],             chldo_e[7], chldo_f[8]};
+wire chldrui_e[7] = |{chruo_a[3], chruo_b[4], chruo_c[5], chruo_d[6],             chldo_f[8]};
+wire chldrui_f[8] = |{chruo_a[3], chruo_b[4], chruo_c[5], chruo_d[6], chruo_e[7]            };
+
+wire chldrui_a[2] = |{            chldo_b[3], chldo_c[4], chldo_d[5], chldo_e[6], chldo_f[7], chldo_g[8]};
+wire chldrui_b[3] = |{chruo_a[2],             chldo_c[4], chldo_d[5], chldo_e[6], chldo_f[7], chldo_g[8]};
+wire chldrui_c[4] = |{chruo_a[2], chruo_b[3],             chldo_d[5], chldo_e[6], chldo_f[7], chldo_g[8]};
+wire chldrui_d[5] = |{chruo_a[2], chruo_b[3], chruo_c[4],             chldo_e[6], chldo_f[7], chldo_g[8]};
+wire chldrui_e[6] = |{chruo_a[2], chruo_b[3], chruo_c[4], chruo_d[5],             chldo_f[7], chldo_g[8]};
+wire chldrui_f[7] = |{chruo_a[2], chruo_b[3], chruo_c[4], chruo_d[5], chruo_e[6],             chldo_g[8]};
+wire chldrui_g[8] = |{chruo_a[2], chruo_b[3], chruo_c[4], chruo_d[5], chruo_e[6], chldo_f[7]            };
+
+wire chldrui_a[1] = |{            chldo_b[2], chldo_c[3], chldo_d[4], chldo_e[5], chldo_f[6], chldo_g[7], chldo_h[8]};
+wire chldrui_b[2] = |{chruo_a[1],             chldo_c[3], chldo_d[4], chldo_e[5], chldo_f[6], chldo_g[7], chldo_h[8]};
+wire chldrui_c[3] = |{chruo_a[1], chruo_b[2],             chldo_d[4], chldo_e[5], chldo_f[6], chldo_g[7], chldo_h[8]};
+wire chldrui_d[4] = |{chruo_a[1], chruo_b[2], chruo_c[3],             chldo_e[5], chldo_f[6], chldo_g[7], chldo_h[8]};
+wire chldrui_e[5] = |{chruo_a[1], chruo_b[2], chruo_c[3], chruo_d[4],             chldo_f[6], chldo_g[7], chldo_h[8]};
+wire chldrui_f[6] = |{chruo_a[1], chruo_b[2], chruo_c[3], chruo_d[4], chruo_e[5],             chldo_g[7], chldo_h[8]};
+wire chldrui_g[7] = |{chruo_a[1], chruo_b[2], chruo_c[3], chruo_d[4], chruo_e[5], chruo_f[6],             chldo_h[8]};
+wire chldrui_h[8] = |{chruo_a[1], chruo_b[2], chruo_c[3], chruo_d[4], chruo_e[5], chruo_f[6], chldo_g[7]            };
+
+wire chldrui_b[1] = |{            chldo_c[2], chldo_d[3], chldo_e[4], chldo_f[5], chldo_g[6], chldo_h[7]};
+wire chldrui_c[2] = |{chruo_b[1],             chldo_d[3], chldo_e[4], chldo_f[5], chldo_g[6], chldo_h[7]};
+wire chldrui_d[3] = |{chruo_b[1], chruo_c[2],             chldo_e[4], chldo_f[5], chldo_g[6], chldo_h[7]};
+wire chldrui_e[4] = |{chruo_b[1], chruo_c[2], chruo_d[3],             chldo_f[5], chldo_g[6], chldo_h[7]};
+wire chldrui_f[5] = |{chruo_b[1], chruo_c[2], chruo_d[3], chruo_e[4],             chldo_g[6], chldo_h[7]};
+wire chldrui_g[6] = |{chruo_b[1], chruo_c[2], chruo_d[3], chruo_e[4], chruo_f[5],             chldo_h[7]};
+wire chldrui_h[7] = |{chruo_b[1], chruo_c[2], chruo_d[3], chruo_e[4], chruo_f[5], chruo_g[6]            };
+
+wire chldrui_c[1] = |{            chldo_d[2], chldo_e[3], chldo_f[4], chldo_g[5], chldo_h[6]};
+wire chldrui_d[2] = |{chruo_c[1],             chldo_e[3], chldo_f[4], chldo_g[5], chldo_h[6]};
+wire chldrui_e[3] = |{chruo_c[1], chruo_d[2],             chldo_f[4], chldo_g[5], chldo_h[6]};
+wire chldrui_f[4] = |{chruo_c[1], chruo_d[2], chruo_e[3],             chldo_g[5], chldo_h[6]};
+wire chldrui_g[5] = |{chruo_c[1], chruo_d[2], chruo_e[3], chruo_f[4],             chldo_h[6]};
+wire chldrui_h[6] = |{chruo_c[1], chruo_d[2], chruo_e[3], chruo_f[4], chldo_g[5]            };
+
+wire chldrui_d[1] = |{            chldo_e[2], chldo_f[3], chldo_g[4], chldo_h[5]};
+wire chldrui_e[2] = |{chruo_d[1],             chldo_f[3], chldo_g[4], chldo_h[5]};
+wire chldrui_f[3] = |{chruo_d[1], chruo_e[2],             chldo_g[4], chldo_h[5]};
+wire chldrui_g[4] = |{chruo_d[1], chruo_e[2], chruo_f[3],             chldo_h[5]};
+wire chldrui_h[5] = |{chruo_d[1], chruo_e[2], chruo_f[3], chruo_g[4]            };
+
+wire chldrui_e[1] = |{            chldo_f[2], chldo_g[3], chldo_h[4]};
+wire chldrui_f[2] = |{chruo_e[1],             chldo_g[3], chldo_h[4]};
+wire chldrui_g[3] = |{chruo_e[1], chruo_f[2],             chldo_h[4]};
+wire chldrui_h[4] = |{chruo_e[1], chruo_f[2], chruo_g[3]            };
+
+wire chldrui_f[1] = |{            chldo_g[2], chldo_h[3]};
+wire chldrui_g[2] = |{chruo_f[1],             chldo_h[3]};
+wire chldrui_h[3] = |{chruo_f[1], chldo_g[2]            };
+
+wire chldrui_g[1] = chldo_h[2];
+wire chldrui_h[2] = chruo_g[1];
+
+wire chldrui_h[1] = 1'b0;
 
 // Column A
 wire [53:0] cilddi_a, coruuo_a;
@@ -135,7 +210,7 @@ wire [8:2] chluo_a, chruo_a;
 wire [8:1] chlo_a, chro_a;
 wire [7:1] chldo_a, chrdo_a;
 
-columnUnit cola (.clk(clk), .xpos(COLA), .done(done_cols[7]), .bstate(bstate),
+columnUnit cola (.clk(clk), .xpos(COLA), .done(done_cols[7]), .bstate(bstate), .reset(reset),
 	.cirrdi(PVOID7), .cirrui(PVOID7), .cirddi(PVOID6), .cirdi(PVOID7), .ciri(PVOID8),
 	.cirui(PVOID7), .ciruui(PVOID6),
 	.cidi(cidi_a), .ciui(ciui_a), .cilddi(cilddi_a), .cildi(cildi_a), .cili(cili_a), 
@@ -162,7 +237,7 @@ wire [8:2] chluo_b, chruo_b;
 wire [8:1] chlo_b, chro_b;
 wire [7:1] chldo_b, chrdo_b;
 
-columnUnit colb (.clk(clk), .xpos(COLB), .done(done_cols[6]), .bstate(bstate),
+columnUnit colb (.clk(clk), .xpos(COLB), .done(done_cols[6]), .bstate(bstate), .reset(reset),
 	.cirrdi(PVOID7), .cirrui(PVOID7), 
 	.cirddi(cirddi_b), .cirdi(cirdi_b), .ciri(ciri_b), .cirui(cirui_b), .ciruui(ciruui_b),
 	.cidi(cidi_b), .ciui(ciui_b), .cilddi(cilddi_b), .cildi(cildi_b), .cili(cili_b), 
@@ -190,7 +265,7 @@ wire [8:2] chluo_c, chruo_c;
 wire [8:1] chlo_c, chro_c;
 wire [7:1] chldo_c, chrdo_c;
 
-columnUnit colc (.clk(clk), .xpos(COLC), .done(done_cols[5]), .bstate(bstate),
+columnUnit colc (.clk(clk), .xpos(COLC), .done(done_cols[5]), .bstate(bstate), .reset(reset),
 	.cirrdi(cirrdi_c), .cirrui(cirrui_c), 
 	.cirddi(cirddi_c), .cirdi(cirdi_c), .ciri(ciri_c), .cirui(cirui_c), .ciruui(ciruui_c),
 	.cidi(cidi_c), .ciui(ciui_c), .cilddi(cilddi_c), .cildi(cildi_c), .cili(cili_c), 
@@ -218,7 +293,7 @@ wire [8:2] chluo_d, chruo_d;
 wire [8:1] chlo_d, chro_d;
 wire [7:1] chldo_d, chrdo_d;
 
-columnUnit cold (.clk(clk), .xpos(COLD), .done(done_cols[4]), .bstate(bstate),
+columnUnit cold (.clk(clk), .xpos(COLD), .done(done_cols[4]), .bstate(bstate), .reset(reset),
 	.cirrdi(cirrdi_d), .cirrui(cirrui_d), 
 	.cirddi(cirddi_d), .cirdi(cirdi_d), .ciri(ciri_d), .cirui(cirui_d), .ciruui(ciruui_d),
 	.cidi(cidi_d), .ciui(ciui_d), .cilddi(cilddi_d), .cildi(cildi_d), .cili(cili_d), 
@@ -246,7 +321,7 @@ wire [8:2] chluo_e, chruo_e;
 wire [8:1] chlo_e, chro_e;
 wire [7:1] chldo_e, chrdo_e;
 
-columnUnit cole (.clk(clk), .xpos(COLE), .done(done_cols[3]), .bstate(bstate),
+columnUnit cole (.clk(clk), .xpos(COLE), .done(done_cols[3]), .bstate(bstate), .reset(reset),
 	.cirrdi(cirrdi_e), .cirrui(cirrui_e), 
 	.cirddi(cirddi_e), .cirdi(cirdi_e), .ciri(ciri_e), .cirui(cirui_e), .ciruui(ciruui_e),
 	.cidi(cidi_e), .ciui(ciui_e), .cilddi(cilddi_e), .cildi(cildi_e), .cili(cili_e), 
@@ -274,7 +349,7 @@ wire [8:2] chluo_f, chruo_f;
 wire [8:1] chlo_f, chro_f;
 wire [7:1] chldo_f, chrdo_f;
 
-columnUnit colf (.clk(clk), .xpos(COLF), .done(done_cols[2]), .bstate(bstate),
+columnUnit colf (.clk(clk), .xpos(COLF), .done(done_cols[2]), .bstate(bstate), .reset(reset),
 	.cirrdi(cirrdi_f), .cirrui(cirrui_f), 
 	.cirddi(cirddi_f), .cirdi(cirdi_f), .ciri(ciri_f), .cirui(cirui_f), .ciruui(ciruui_f),
 	.cidi(cidi_f), .ciui(ciui_f), .cilddi(cilddi_f), .cildi(cildi_f), .cili(cili_f), 
@@ -302,7 +377,7 @@ wire [8:2] chluo_g, chruo_g;
 wire [8:1] chlo_g, chro_g;
 wire [7:1] chldo_g, chrdo_g;
 
-columnUnit colg (.clk(clk), .xpos(COLG), .done(done_cols[1]), .bstate(bstate),
+columnUnit colg (.clk(clk), .xpos(COLG), .done(done_cols[1]), .bstate(bstate), .reset(reset),
 	.cirrdi(cirrdi_g), .cirrui(cirrui_g), 
 	.cirddi(cirddi_g), .cirdi(cirdi_g), .ciri(ciri_g), .cirui(cirui_g), .ciruui(ciruui_g),
 	.cidi(cidi_g), .ciui(ciui_g), .cilddi(cilddi_g), .cildi(cildi_g), .cili(cili_g), 
@@ -330,7 +405,7 @@ wire [8:2] chluo_h, chruo_h;
 wire [8:1] chlo_h, chro_h;
 wire [7:1] chldo_h, chrdo_h;
 
-columnUnit colh (.clk(clk), .xpos(COLH), .done(done_cols[0]), .bstate(bstate),
+columnUnit colh (.clk(clk), .xpos(COLH), .done(done_cols[0]), .bstate(bstate), .reset(reset),
 	.cirrdi(cirrdi_h), .cirrui(cirrui_h), 
 	.cirddi(cirddi_h), .cirdi(cirdi_h), .ciri(ciri_h), .cirui(cirui_h), .ciruui(ciruui_h),
 	.cidi(cidi_h), .ciui(ciui_h), .cilddi(PVOID6), .cildi(PVOID7), .cili(PVOID8), 
