@@ -22,7 +22,24 @@ parameter COLE = 3'o4; parameter COLF = 3'o5; parameter COLG = 3'o6; parameter C
 wire [7:0] done_cols;
 
 // wiring all the hold signals from all directions that is across columns
-wire [8:1] chdiri_a, chdiri_b, chdiri_c, chdiri_d, chdiri_e, chdiri_f, chdiri_g, chdiri_h;
+wire [8:1] chdiri_a = chlri_a | chlurdi_a | chruldi_a;
+wire [8:1] chdiri_b = chlri_b | chlurdi_b | chruldi_b;
+wire [8:1] chdiri_c = chlri_c | chlurdi_c | chruldi_c;
+wire [8:1] chdiri_d = chlri_d | chlurdi_d | chruldi_d;
+wire [8:1] chdiri_e = chlri_e | chlurdi_e | chruldi_e;
+wire [8:1] chdiri_f = chlri_f | chlurdi_f | chruldi_f;
+wire [8:1] chdiri_g = chlri_g | chlurdi_g | chruldi_g;
+wire [8:1] chdiri_h = chlri_h | chlurdi_h | chruldi_h;
+
+// only to left or right holds
+wire [8:1] chlri_a =          chlo_b | chlo_c | chlo_d | chlo_e | chlo_f | chlo_g | chlo_h;
+wire [8:1] chlri_b = chro_a |          chlo_c | chlo_d | chlo_e | chlo_f | chlo_g | chlo_h;
+wire [8:1] chlri_c = chro_a | chro_b |          chlo_d | chlo_e | chlo_f | chlo_g | chlo_h;
+wire [8:1] chlri_d = chro_a | chro_b | chro_c |          chlo_e | chlo_f | chlo_g | chlo_h;
+wire [8:1] chlri_e = chro_a | chro_b | chro_c | chro_d |          chlo_f | chlo_g | chlo_h;
+wire [8:1] chlri_f = chro_a | chro_b | chro_c | chro_d | chro_e |          chlo_g | chlo_h;
+wire [8:1] chlri_g = chro_a | chro_b | chro_c | chro_d | chro_e | chro_f |          chlo_h;
+wire [8:1] chlri_h = chro_a | chro_b | chro_c | chro_d | chro_e | chro_f | chro_g         ;
 
 // only to top left or bottom right holds
 wire chlurdi_a[1] = 1'b0;
@@ -100,15 +117,11 @@ wire chlurdi_g[7] = |{chrdo_f[7],             chluo_h[5]};
 wire chlurdi_h[6] = |{chrdo_f[7], chrdo_g[6]            };
 
 wire chlurdi_g[8] = chluo_h[7];
-wire chlurdi_h[7] = chrdo_g[8];
+wire chlurdi_h[7] =             chrdo_g[8];
 
 wire chlurdi_h[8] = 1'b0;
 
 // TODO: to top right and bottom left direction holds
-// TODO: left right direction holds
-
-
-
 
 
 // Column A
