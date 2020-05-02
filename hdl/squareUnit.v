@@ -34,18 +34,18 @@ parameter ROOK = 3'o4;
 parameter QUEEN = 3'o5;
 parameter KING = 3'o6;
 parameter NOTUSED = 3'o7;
-parameter PVOID = 9'h0; // it's just {3'o0, 3'o0, EMPTY} - denotes an empty space at xpos = 0, ypos = 0
+parameter PVOID = {xpos, ypos, EMPTY}; // denotes an empty space at self
 parameter ROW3 = 3'o3; // value for ypos to be at row 3 (for pawn advance two blocks forward
-parameter ENDMOV = {6'o00, xpos, ypos, 6'o00, xpos, ypos, 6'o00, xpos, ypos, 6'o00, xpos, ypos,
-	6'o00, xpos, ypos, 6'o00, xpos, ypos, 6'o00, xpos, ypos, 6'o00, xpos, ypos}; // end squence for move list
+parameter ENDMOV = {xpos, ypos, xpos, ypos, xpos, ypos, xpos, ypos, xpos, ypos, xpos, ypos, xpos, ypos, xpos, ypos}; // end squence for move list
+	// indicates a move from self to self, an illegal move
 
 // Moves Output
 reg [5:0] mvrrd, mvrru, mvrdd, mvruu, mvldd, mvluu, mvlld, mvllu;
 reg [5:0] mvrd, mvr, mvru, mvd, mvu, mvld, mvl, mvlu;
 reg [47:0] wr1 = {mvrd, mvr, mvru, mvd, mvu, mvld, mvl, mvlu};
 reg [47:0] wr2 = {mvrrd, mvrru, mvrdd, mvruu, mvldd, mvluu, mvlld, mvllu};
-wire wren1 = |{wr1};
-wire wren2 = |{wr2};
+wire wren1 = (wr1 != ENDMOV);
+wire wren2 = (wr2 != ENDMOV);
 
 // FIFO Module Declaration
 MyFifo F1F0 (.clk(clk), .wr1(wr1), .wr2(wr2), .rd1(fifoOut), .wren1(wren1), .wren2(wren2));
@@ -63,14 +63,13 @@ always @(posedge clk) begin
 end
 
 // hold signal combinational
-wire hlu_c, hl_c, hld_c, hu_c, hru_c, hr_c, hrd_c;
-assign hlu_c = (oluo_c != PVOID);
-assign hl_c = (olo_c != PVOID);
-assign hld_c = (oldo_c != PVOID);
-assign hu_c = (ouo_c != PVOID);
-assign hru_c = (oruo_c != PVOID);
-assign hr_c = (oro_c != PVOID);
-assign hrd_c = (ordo_c != PVOID);
+wire hlu_c = (oluo_c != PVOID);
+wire hl_c = (olo_c != PVOID);
+wire hld_c = (oldo_c != PVOID);
+wire hu_c = (ouo_c != PVOID);
+wire hru_c = (oruo_c != PVOID);
+wire hr_c = (oro_c != PVOID);
+wire hrd_c = (ordo_c != PVOID);
 always @(posedge clk) begin
 	hlu <= hlu_c;
 	hl <= hl_c;
@@ -115,7 +114,7 @@ always @(*) begin
 	oruuo_c = PVOID; oruo_c = PVOID; oro_c = PVOID; ordo_c = PVOID; orddo_c = PVOID;
 	orruo_c = PVOID; orrdo_c = PVOID;
 	
-	if (reset_d == 1'b1) begin
+	if (reset_d == 1'b1) begin // generate case
 		// of course not done
 		done_c = 1'b0;
 		
@@ -164,7 +163,7 @@ always @(*) begin
 			default: begin end // EMPTY, NOTUSED case
 			endcase
 		end
-	else begin
+	else begin // propogate case
 		// PAWN case
 		if (cpiece[2:0] == EMPTY) begin
 			// if current place is empty, pawn can move up
@@ -353,10 +352,13 @@ always @(*) begin
 	end
 	
 	// finally set done signal if hold or is just got new board
-	if ((hold == 1'b1) || (reset_d == 1'b1))
+	if (hold == 1'b1)
 		done_c = 1'b0;
 	
-	// if position is actually a wall, simply not wire the output
+	if (reset_d == 1'b1)
+		done_c = 1'b0;
+	
+	// if output direction does not exist, simply not wire the output
 	// no extra logic should be used to clear that out
 end
 endmodule
