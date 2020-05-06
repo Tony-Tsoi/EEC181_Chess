@@ -3,7 +3,7 @@ ilddi, ildi, ili, ilui, iluui, illdi, illui,
 orrdo, orruo, orddo, ordo, oro, oruo, oruuo, odo, ouo, 
 olddo, oldo, olo, oluo, oluuo, olldo, olluo,
 hlu, hl, hld, hu, hd, hru, hr, hrd,
-clk, xpos, ypos, cpiece, reset, done, fifoOut, hold);
+clk, xpos, ypos, cpiece, reset, done, fifoOut, hold, rden);
 
 input clk; // clock input
 input reset; // if is new board, put self at the outgoing positions
@@ -47,8 +47,11 @@ reg [47:0] wr2 = {mvrrd, mvrru, mvrdd, mvruu, mvldd, mvluu, mvlld, mvllu};
 wire wren1 = (wr1 != ENDMOV);
 wire wren2 = (wr2 != ENDMOV);
 
+// fifo read enable input
+input rden;
+
 // FIFO Module Declaration
-MyFifo F1F0 (.clk(clk), .wr1(wr1), .wr2(wr2), .rd1(fifoOut), .wren1(wren1), .wren2(wren2));
+MyFifo F1F0 (.clk(clk), .wr1(wr1), .wr2(wr2), .rd1(fifoOut), .wren1(wren1), .wren2(wren2), .rden(rden));
 
 // done signal
 reg done_c;

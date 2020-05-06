@@ -3,10 +3,10 @@ cirrdi, cirrui, cirddi, cirdi, ciri, cirui, ciruui, cidi, ciui, cilddi, cildi,
 cili, cilui, ciluui, cilldi, cillui,
 colluo, colldo, coluuo, coluo, colo, coldo, colddo, couo, codo, coruuo, coruo, 
 coro, cordo, corddo, corruo, corrdo,
-chluo, chruo, chlo, chro, chldo, chrdo
+chluo, chruo, chlo, chro, chldo, chrdo,
+fifoOut
 );
 // TODO: Add breakdown board state
-// TODO: Add FIFO to collect from sq output, add output
 // TODO: Add output to control and sort by MVVLVA
 
 input clk, reset;
@@ -36,8 +36,10 @@ output [8:1] chlo, chro;
 output [7:1] chldo, chrdo;
 
 // done signal
-// TODO: change this logic for getting moves from each square: should be flagged by state machine
-output done = &{done_sqs};
+output done = (state == DONE);
+
+// output from fifo
+output [47:0] fifoOut;
 
 // parameter declarations
 parameter PVOID = 9'h0; // it's just {3'o0, 3'o0, EMPTY} - denotes an empty space at xpos = 0, ypos = 0
@@ -63,8 +65,134 @@ assign hold[3] = |{chuo[2:1], chdo[7:3], chdiri[3]}};
 assign hold[2] = |{chuo[  1], chdo[7:2], chdiri[2]}};
 assign hold[1] = |{           chdo[7:1], chdiri[1]}};
 
+// parameter for states
+parameter WAIT = 2'b01;
+parameter GETM = 2'b11;
+parameter DONE = 2'b10;
+
+// state bit
+reg [1:0] state, state_c;
+
+// moves transferred to local fifo flag
+reg [8:1] sq_moved_flags, sq_moved_flags_c;
+
+// pointer for GETM state
+reg [2:0] sq_move_ptr, sq_move_ptr_c;
+
+// read enable for square fifo
+reg [8:1] sq_rden, sq_rden_c;
+
+// indicates a move from self to self, an illegal move
+parameter ENDMOV = {xpos, sq_move_ptr, xpos, sq_move_ptr, xpos, sq_move_ptr, 
+	xpos, sq_move_ptr, xpos, sq_move_ptr, xpos, sq_move_ptr, xpos, sq_move_ptr, 
+	xpos, sq_move_ptr}; // end squence for move list
+
+// next state logic
+always @(*) begin
+	state_c = state;
+	sq_rden_c = 8'h00;
+	
+	case (state)
+		WAIT: begin
+			// if a done signal is up and is not grabbed to FIFO
+			if done_sqs[8]
+				if ~sq_moved_flags[8] begin
+					state_c = GETM;
+					sq_move_ptr_c = 3'd7;
+					sq_rden_c = 8'h80;
+				end
+			
+			if done_sqs[7]
+				if ~sq_moved_flags[7] begin
+					state_c = GETM;
+					sq_move_ptr_c = 3'd6;
+					sq_rden_c = 8'h40;
+				end
+			
+			if done_sqs[6]
+				if ~sq_moved_flags[6] begin
+					state_c = GETM;
+					sq_move_ptr_c = 3'd5;
+					sq_rden_c = 8'h20;
+				end
+			
+			if done_sqs[5]
+				if ~sq_moved_flags[5] begin
+					state_c = GETM;
+					sq_move_ptr_c = 3'd4;
+					sq_rden_c = 8'h10;
+				end
+			
+			if done_sqs[4]
+				if ~sq_moved_flags[4] begin
+					state_c = GETM;
+					sq_move_ptr_c = 3'd3;
+					sq_rden_c = 8'h08;
+				end
+			
+			if done_sqs[3]
+				if ~sq_moved_flags[3] begin
+					state_c = GETM;
+					sq_move_ptr_c = 3'd2;
+					sq_rden_c = 8'h04;
+				end
+			
+			if done_sqs[2]
+				if ~sq_moved_flags[2] begin
+					state_c = GETM;
+					sq_move_ptr_c = 3'd1;
+					sq_rden_c = 8'h02;
+				end
+			
+			if done_sqs[1]
+				if ~sq_moved_flags[1] begin
+					state_c = GETM;
+					sq_move_ptr_c = 3'd0;
+					sq_rden_c = 8'h01;
+				end
+			
+			if &{sq_moved_flags} // if all squares grabbed move
+				state_c = DONE;
+		end
+		GETM: begin
+			// get move from specified square until exhausted
+			sq_rden_c = sq_rden;
+			
+			// if all moves from square fifo gone
+			if (wr1 == ENDMOV)
+				state_c = WAIT;
+		end
+	endcase
+	
+	if (reset == 1'b1)
+		sq_moved_flags = 8'h00;
+end
+
+// FF for next state
+always @(posedge clk) begin
+	state <= reset? WAIT : state_c;
+	sq_rden <= sq_rden_c;
+	sq_move_ptr <= sq_move_ptr_c;
+	sq_moved_flags <= sq_moved_flags_c;
+end
+
+// FIFO Module Declaration
+reg wren1;
+wire [47:0] wr1 = (sq_move_ptr == 3'd7)? fifoOut_sq8 :
+	(sq_move_ptr == 3'd6)? fifoOut_sq7 :
+	(sq_move_ptr == 3'd5)? fifoOut_sq6 :
+	(sq_move_ptr == 3'd4)? fifoOut_sq5 :
+	(sq_move_ptr == 3'd3)? fifoOut_sq4 :
+	(sq_move_ptr == 3'd2)? fifoOut_sq3 :
+	(sq_move_ptr == 3'd1)? fifoOut_sq2 : fifoOut_sq1;
+MyFifo F1F0 (.clk(clk), .wr1(wr1), .wr2(48'd0), .rd1(fifoOut), .wren1(wren1), .wren2(1'b0));
+
+// Row fifo outs
+wire [47:0] fifoOut_sq8, fifoOut_sq7, fifoOut_sq6, fifoOut_sq5, fifoOut_sq4, fifoOut_sq3, fifoOut_sq2, fifoOut_sq1;
+
 // Row 8
-squareUnit sq8 (.clk(clk), .xpos(xpos), .ypos(ROW8), .reset(reset), .done(done_sqs[8]), .hold(holds[8]),
+squareUnit sq8 (.clk(clk), .xpos(xpos), .ypos(ROW8), .reset(reset), .done(done_sqs[8]), .hold(holds[8]), .rden(sq_rden[8]),
+	.rd1(fifoOut_sq8), 
 	.irrdi(PVOID), .irddi(PVOID), .irdi(PVOID), .idi(PVOID), .ilddi(PVOID), .ildi(PVOID), .illdi(PVOID),
 	.irrui(cirrui[71:63]), .iri(ciri[71:63]), .irui(cirui[71:63]), .iruui(ciruui[71:63]), .iui(ciui[71:63]), 
 	.ili(cili[71:63]), .ilui(cilui[71:63]), .iluui(ciluui[71:63]), .illui(cillui[71:63]),
@@ -75,7 +203,8 @@ squareUnit sq8 (.clk(clk), .xpos(xpos), .ypos(ROW8), .reset(reset), .done(done_s
 	.hl(chlo[8]), .hr(chro[8]), .hld(chldo[8]), .hrd(chrdo[8]) );
 
 // Row 7
-squareUnit sq7 (.clk(clk), .xpos(xpos), .ypos(ROW7), .reset(reset), .done(done_sqs[7]), .hold(holds[7]),
+squareUnit sq7 (.clk(clk), .xpos(xpos), .ypos(ROW7), .reset(reset), .done(done_sqs[7]), .hold(holds[7]), .rden(sq_rden[7]),
+	.rd1(fifoOut_sq7), 
 	.irddi(PVOID), .ilddi(PVOID), 
 	.irrdi(cirrdi[62:54]), .irrui(cirrui[62:54]), .irdi(cirdi[62:54]), .iri(ciri[62:54]), .irui(cirui[62:54]), 
 	.iruui(ciruui[62:54]), .idi(cidi[62:54]), .iui(ciui[62:54]), .ildi(cildi[62:54]), .ili(cili[62:54]), 
@@ -88,7 +217,8 @@ squareUnit sq7 (.clk(clk), .xpos(xpos), .ypos(ROW7), .reset(reset), .done(done_s
 	.hl(chlo[7]), .hr(chro[7]), .hld(chldo[7]), .hrd(chrdo[7]) );
 
 // Row 6
-squareUnit sq6 (.clk(clk), .xpos(xpos), .ypos(ROW6), .reset(reset), .done(done_sqs[6]), .hold(holds[6]),
+squareUnit sq6 (.clk(clk), .xpos(xpos), .ypos(ROW6), .reset(reset), .done(done_sqs[6]), .hold(holds[6]), .rden(sq_rden[6]),
+	.rd1(fifoOut_sq6), 
 	.irrdi(cirrdi[53:45]), .irrui(cirrui[53:45]), .irddi(cirddi[53:45]), .irdi(cirdi[53:45]), .iri(ciri[53:45]), 
 	.irui(cirui[53:45]), .iruui(ciruui[53:45]), .idi(cidi[53:45]), .iui(ciui[53:45]), .ilddi(cilddi[53:45]), 
 	.ildi(cildi[53:45]), .ili(cili[53:45]), .ilui(cilui[53:45]), .iluui(ciluui[53:45]), .illdi(cilldi[53:45]), 
@@ -101,7 +231,8 @@ squareUnit sq6 (.clk(clk), .xpos(xpos), .ypos(ROW6), .reset(reset), .done(done_s
 	.hl(chlo[6]), .hr(chro[6]), .hld(chldo[6]), .hrd(chrdo[6]) );
 
 // Row 5
-squareUnit sq5 (.clk(clk), .xpos(xpos), .ypos(ROW5), .reset(reset), .done(done_sqs[5]), .hold(holds[5]),
+squareUnit sq5 (.clk(clk), .xpos(xpos), .ypos(ROW5), .reset(reset), .done(done_sqs[5]), .hold(holds[5]), .rden(sq_rden[5]),
+	.rd1(fifoOut_sq5), 
 	.irrdi(cirrdi[44:36]), .irrui(cirrui[44:36]), .irddi(cirddi[44:36]), .irdi(cirdi[44:36]), .iri(ciri[44:36]), 
 	.irui(cirui[44:36]), .iruui(ciruui[44:36]), .idi(cidi[44:36]), .iui(ciui[44:36]), .ilddi(cilddi[44:36]), 
 	.ildi(cildi[44:36]), .ili(cili[44:36]), .ilui(cilui[44:36]), .iluui(ciluui[44:36]), .illdi(cilldi[44:36]), 
@@ -114,7 +245,8 @@ squareUnit sq5 (.clk(clk), .xpos(xpos), .ypos(ROW5), .reset(reset), .done(done_s
 	.hl(chlo[5]), .hr(chro[5]), .hld(chldo[5]), .hrd(chrdo[5]) );
 
 // Row 4
-squareUnit sq4 (.clk(clk), .xpos(xpos), .ypos(ROW4), .reset(reset), .done(done_sqs[4]), .hold(holds[4]),
+squareUnit sq4 (.clk(clk), .xpos(xpos), .ypos(ROW4), .reset(reset), .done(done_sqs[4]), .hold(holds[4]), .rden(sq_rden[4]),
+	.rd1(fifoOut_sq4), 
 	.irrdi(cirrdi[35:27]), .irrui(cirrui[35:27]), .irddi(cirddi[35:27]), .irdi(cirdi[35:27]), .iri(ciri[35:27]), 
 	.irui(cirui[35:27]), .iruui(ciruui[35:27]), .idi(cidi[35:27]), .iui(ciui[35:27]), .ilddi(cilddi[35:27]), 
 	.ildi(cildi[35:27]), .ili(cili[35:27]), .ilui(cilui[35:27]), .iluui(ciluui[35:27]), .illdi(cilldi[35:27]), 
@@ -127,7 +259,8 @@ squareUnit sq4 (.clk(clk), .xpos(xpos), .ypos(ROW4), .reset(reset), .done(done_s
 	.hl(chlo[4]), .hr(chro[4]), .hld(chldo[4]), .hrd(chrdo[4]) );
 
 // Row 3
-squareUnit sq3 (.clk(clk), .xpos(xpos), .ypos(ROW3), .reset(reset), .done(done_sqs[3]), .hold(holds[3]),
+squareUnit sq3 (.clk(clk), .xpos(xpos), .ypos(ROW3), .reset(reset), .done(done_sqs[3]), .hold(holds[3]), .rden(sq_rden[3]),
+	.rd1(fifoOut_sq3), 
 	.irrdi(cirrdi[26:18]), .irrui(cirrui[26:18]), .irddi(cirddi[26:18]), .irdi(cirdi[26:18]), .iri(ciri[26:18]), 
 	.irui(cirui[26:18]), .iruui(ciruui[26:18]), .idi(cidi[26:18]), .iui(ciui[26:18]), .ilddi(cilddi[26:18]), 
 	.ildi(cildi[26:18]), .ili(cili[26:18]), .ilui(cilui[26:18]), .iluui(ciluui[26:18]), .illdi(cilldi[26:18]), 
@@ -140,7 +273,8 @@ squareUnit sq3 (.clk(clk), .xpos(xpos), .ypos(ROW3), .reset(reset), .done(done_s
 	.hl(chlo[3]), .hr(chro[3]), .hld(chldo[3]), .hrd(chrdo[3]) );
 
 // Row 2
-squareUnit sq2 (.clk(clk), .xpos(xpos), .ypos(ROW2), .reset(reset), .done(done_sqs[2]), .hold(holds[2]),
+squareUnit sq2 (.clk(clk), .xpos(xpos), .ypos(ROW2), .reset(reset), .done(done_sqs[2]), .hold(holds[2]), .rden(sq_rden[2]),
+	.rd1(fifoOut_sq2), 
 	.iruui(PVOID), .iluui(PVOID), 
 	.irrdi(cirrdi[17:9]), .irrui(cirrui[17:9]), .irddi(cirddi[17:9]), .irdi(cirdi[17:9]), .iri(ciri[17:9]), 
 	.irui(cirui[17:9]), .idi(cidi[17:9]), .iui(ciui[17:9]), .ilddi(cilddi[17:9]), 
@@ -153,7 +287,8 @@ squareUnit sq2 (.clk(clk), .xpos(xpos), .ypos(ROW2), .reset(reset), .done(done_s
 	.hl(chlo[2]), .hr(chro[2]), .hld(chldo[2]), .hrd(chrdo[2]) );
 
 // Row 1
-squareUnit sq1 (.clk(clk), .xpos(xpos), .ypos(ROW1), .reset(reset), .done(done_sqs[1]), .hold(holds[1]),
+squareUnit sq1 (.clk(clk), .xpos(xpos), .ypos(ROW1), .reset(reset), .done(done_sqs[1]), .hold(holds[1]), .rden(sq_rden[1]),
+	.rd1(fifoOut_sq1), 
 	.irrui(PVOID), .irui(PVOID), .iruui(PVOID), .iui(PVOID), .ilui(PVOID), .iluui(PVOID), .illui(PVOID),
 	.irrdi(cirrdi[8:0]), .irddi(cirddi[8:0]), .irdi(cirdi[8:0]), .iri(ciri[8:0]), .idi(cidi[8:0]), 
 	.ilddi(cilddi[8:0]), .ildi(cildi[8:0]), .ili(cili[8:0]), .illdi(cilldi[8:0]), 
