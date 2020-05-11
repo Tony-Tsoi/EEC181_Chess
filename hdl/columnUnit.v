@@ -7,7 +7,6 @@ chluo, chruo, chlo, chro, chldo, chrdo,
 fifoOut
 );
 // TODO: Add breakdown board state
-// TODO: Add output to control and sort by MVVLVA
 
 input clk, reset;
 input [2:0] xpos;
@@ -56,7 +55,7 @@ wire [8:2] chdo;
 
 // hold signal logic for squares
 wire [8:1] holds;
-assign hold[8] = |{chuo[7:1]           , chdiri[8]}};
+assign hold[8] = |{chuo[7:1],            chdiri[8]}};
 assign hold[7] = |{chuo[6:1], chdo[7  ], chdiri[7]};
 assign hold[6] = |{chuo[5:1], chdo[7:6], chdiri[6]}};
 assign hold[5] = |{chuo[4:1], chdo[7:5], chdiri[5]}};

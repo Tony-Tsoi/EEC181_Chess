@@ -1,6 +1,7 @@
-module LMG (clk, reset, bstate,
-done
+module lmg (clk, reset, bstate, done, // fifo IO
 );
+// TODO: add fifo to collect from columns
+// TODO: add king castling
 
 input clk, reset;
 input [255:0] bstate;
