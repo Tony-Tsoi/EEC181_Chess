@@ -44,11 +44,11 @@ reg [ADDR_WIDTH-2:0] rd_addr_p1;
 reg [ADDR_WIDTH-2:0] wr_addr_p1;
 
 // Entry 0 = 0x0 in RAM, 1 = 0x1, etc.
-// 1024 bits for control/interface data.
+// 512 bits for control/interface data.
 // I always update control or interface_data[0] at the same time so they are consistent.
 // control bits at 0x0: {other[28:0], reset, done, start}
-reg [31:0] interface_data [0:31];
-reg [31:0] interface_data_p1 [0:31];
+reg [31:0] interface_data [0:15];
+reg [31:0] interface_data_p1 [0:15];
 reg [31:0] control; // control = interface_data[0]
 reg [31:0] control_p1;
 	
@@ -63,7 +63,8 @@ reg [4:0] counter_p1;
 // Entry 0 is 0x0 for slave address, 1 is 0x1,  etc.
 // 0x0 - 0x1 are the control bits (only 0x0 is used currently)
 // 0x2 - 0x9 are for SW to HW data
-// 0x10  HW to SW data
+// 0x10 - 0x15 are unused
+// 0x16 - 0x32767 and up are HW to SW data
 One_Mib_RAM	RAM_A(
    .clock		(clk),
    .data		(slave_writedata),
@@ -96,22 +97,6 @@ begin
 	interface_data[13] = interface_data_p1[13]; 
 	interface_data[14] = interface_data_p1[14]; 
 	interface_data[15] = interface_data_p1[15]; 
-	interface_data[16] = interface_data_p1[16]; 
-	interface_data[17] = interface_data_p1[17]; 
-	interface_data[18] = interface_data_p1[18]; 
-	interface_data[19] = interface_data_p1[19]; 
-	interface_data[20] = interface_data_p1[20]; 
-	interface_data[21] = interface_data_p1[21]; 
-	interface_data[22] = interface_data_p1[22]; 
-	interface_data[23] = interface_data_p1[23]; 
-	interface_data[24] = interface_data_p1[24]; 
-	interface_data[25] = interface_data_p1[25]; 
-	interface_data[26] = interface_data_p1[26]; 
-	interface_data[27] = interface_data_p1[27]; 
-	interface_data[28] = interface_data_p1[28]; 
-	interface_data[29] = interface_data_p1[29]; 
-	interface_data[30] = interface_data_p1[30]; 
-	interface_data[31] = interface_data_p1[31];
 	
 	control = interface_data[0];
 	rd_addr = rd_addr_p1;
@@ -121,11 +106,11 @@ begin
 	slave_readdata = 0;
 
 //========================== READ/WRITE ==========================================	
-	// NOTE: There are 1024 wasted bits in the RAM because these addresses are being used
+	// NOTE: There are 512 wasted bits in the RAM because these addresses are being used
 	// for control/interface regs. This method saves address space. Our RAM needs 15 bits 
 	// to address every entry. It's hard to create a small number of "unused" slave_addresses 
 	// like we've seen before so this is the best way to do it. 
-	// If we want to we can change it so when we write to the interface_data we also write
+	// If we want to, we can change it so when we write to the interface_data we also write
 	// to its respective spot in RAM. Just get rid of the wren = 0 line below.
 	if (slave_write == 1'b1) 
 	begin
@@ -134,10 +119,10 @@ begin
 		
 		// If writing to control/interface data.
 		// The 5 LSBs gives us 1024 bits that are readily available after the write.
-		if (slave_address[ADDR_WIDTH-1:5] == 0) 
+		if (slave_address[ADDR_WIDTH-1:4] == 0) 
 		begin
 			ram_wren = 1'b0;
-			interface_data[slave_address[4:0]] = slave_writedata;
+			interface_data[slave_address[3:0]] = slave_writedata;
 			control = interface_data[0];
 		end
 	end
@@ -147,9 +132,9 @@ begin
 		rd_addr = slave_address[ADDR_WIDTH-1:0];
 		slave_readdata = ram_out;
 		
-		if (slave_address[ADDR_WIDTH-1:5] == 0) 
+		if (slave_address[ADDR_WIDTH-1:4] == 0) 
 		begin
-			slave_readdata = interface_data[slave_address[4:0]];
+			slave_readdata = interface_data[slave_address[3:0]];
 		end
 	end
 	
@@ -221,22 +206,6 @@ always @ (posedge clk) begin
 	interface_data_p1[13] <= interface_data[13]; 
 	interface_data_p1[14] <= interface_data[14]; 
 	interface_data_p1[15] <= interface_data[15]; 
-	interface_data_p1[16] <= interface_data[16]; 
-	interface_data_p1[17] <= interface_data[17]; 
-	interface_data_p1[18] <= interface_data[18]; 
-	interface_data_p1[19] <= interface_data[19]; 
-	interface_data_p1[20] <= interface_data[20]; 
-	interface_data_p1[21] <= interface_data[21]; 
-	interface_data_p1[22] <= interface_data[22]; 
-	interface_data_p1[23] <= interface_data[23]; 
-	interface_data_p1[24] <= interface_data[24]; 
-	interface_data_p1[25] <= interface_data[25]; 
-	interface_data_p1[26] <= interface_data[26]; 
-	interface_data_p1[27] <= interface_data[27]; 
-	interface_data_p1[28] <= interface_data[28]; 
-	interface_data_p1[29] <= interface_data[29]; 
-	interface_data_p1[30] <= interface_data[30]; 
-	interface_data_p1[31] <= interface_data[31]; 
 	
 end // always @ (posedge clk)
    
