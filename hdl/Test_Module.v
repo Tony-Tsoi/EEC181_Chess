@@ -30,18 +30,18 @@ input [(DATA_WIDTH/8)-1:0] slave_byteenable;
 
 
 //==================================
-//			WIRES / REGS
+//          WIRES / REGS
 //==================================
 wire [DATA_WIDTH-1:0] ram_out;
 
 reg ram_wren;
 reg ram_wren_p1; // currently not used
 
-reg [ADDR_WIDTH-2:0] rd_addr;
-reg [ADDR_WIDTH-2:0] wr_addr;
+reg [ADDR_WIDTH-1:0] rd_addr;
+reg [ADDR_WIDTH-1:0] wr_addr;
 
-reg [ADDR_WIDTH-2:0] rd_addr_p1;
-reg [ADDR_WIDTH-2:0] wr_addr_p1;
+reg [ADDR_WIDTH-1:0] rd_addr_p1;
+reg [ADDR_WIDTH-1:0] wr_addr_p1;
 
 // Entry 0 = 0x0 in RAM, 1 = 0x1, etc.
 // 512 bits for control/interface data.
@@ -114,7 +114,7 @@ begin
 	// to its respective spot in RAM. Just get rid of the wren = 0 line below.
 	if (slave_write == 1'b1) 
 	begin
-		wr_addr = slave_address[ADDR_WIDTH-1:0];
+		wr_addr = slave_address;
 		ram_wren = 1'b1;
 		
 		// If writing to control/interface data.
@@ -129,7 +129,7 @@ begin
 	
 	if (slave_read == 1'b1) 
 	begin
-		rd_addr = slave_address[ADDR_WIDTH-1:0];
+		rd_addr = slave_address;
 		slave_readdata = ram_out;
 		
 		if (slave_address[ADDR_WIDTH-1:4] == 0) 
