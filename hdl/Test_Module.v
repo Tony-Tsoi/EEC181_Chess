@@ -64,7 +64,7 @@ reg [4:0] counter_p1;
 // 0x0 - 0x1 are the control bits (only 0x0 is used currently)
 // 0x2 - 0x9 are for SW to HW data
 // 0x10 - 0x15 are unused
-// 0x16 - 0x32767 and up are HW to SW data
+// 0x16 - 0x32767 are HW to SW data
 One_Mib_RAM	RAM_A(
    .clock		(clk),
    .data		(slave_writedata),
@@ -78,7 +78,7 @@ One_Mib_RAM	RAM_A(
 //				Main
 //===================================
 
-always @(*) // @(slave_address or matrixA_dout or matrixB_dout or matrixResult_dout)
+always @(*) 
 begin
 //================ DEFAULTS =======================
 	interface_data[0] = interface_data_p1[0]; 
