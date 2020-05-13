@@ -21,7 +21,7 @@ output reg [8:0] orrdo, orruo, orddo, ordo, oro, oruo, oruuo, odo, ouo,
 	olddo, oldo, olo, oluo, oluuo, olldo, olluo;
 	
 // output hold signal
-output reg hlu, hl, hld, hu, hru, hr, hrd;
+output reg hlu, hl, hld, hu, hd, hru, hr, hrd;
 
 // parameter declarations
 parameter WHITE = 1'b0;
@@ -70,6 +70,7 @@ wire hlu_c = (oluo_c != PVOID);
 wire hl_c = (olo_c != PVOID);
 wire hld_c = (oldo_c != PVOID);
 wire hu_c = (ouo_c != PVOID);
+wire hd_c = (odo_c != PVOID);
 wire hru_c = (oruo_c != PVOID);
 wire hr_c = (oro_c != PVOID);
 wire hrd_c = (ordo_c != PVOID);
@@ -78,6 +79,7 @@ always @(posedge clk) begin
 	hl <= hl_c;
 	hld <= hld_c;
 	hu <= hu_c;
+	hd <= hd_c;
 	hru <= hru_c;
 	hr <= hr_c;
 	hrd <= hrd_c;
