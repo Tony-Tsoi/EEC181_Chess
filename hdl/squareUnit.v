@@ -4,6 +4,13 @@ orrdo, orruo, orddo, ordo, oro, oruo, oruuo, odo, ouo,
 olddo, oldo, olo, oluo, oluuo, olldo, olluo,
 hlu, hl, hld, hu, hd, hru, hr, hrd,
 clk, xpos, ypos, cpiece, reset, done, fifoOut, hold, rden);
+// TODO: add bit flags for
+// 1 capture
+// 2 castle
+// 4 en passant capture
+// 8 pushing a pawn 2 squares
+// 16 pawn move
+// 32 promote
 
 input clk; // clock input
 input reset; // if is new board, put self at the outgoing positions

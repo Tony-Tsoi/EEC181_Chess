@@ -1,4 +1,4 @@
-module columnUnit (clk, bstate, xpos, reset, done, chdiri
+module columnUnit (clk, colstate, xpos, reset, done, chdiri
 cirrdi, cirrui, cirddi, cirdi, ciri, cirui, ciruui, cidi, ciui, cilddi, cildi, 
 cili, cilui, ciluui, cilldi, cillui,
 colluo, colldo, coluuo, coluo, colo, coldo, colddo, couo, codo, coruuo, coruo, 
@@ -10,7 +10,7 @@ fifoOut
 
 input clk, reset;
 input [2:0] xpos;
-input [255:0] bstate; // board state
+input [31:0] colstate; // column piece states
 
 // input signals from neightboring columns
 input [53:0] cirddi, cilddi;

@@ -1,12 +1,14 @@
-module lmg (clk, reset, bstate, done, // fifo IO
-);
+module lmg (clk, reset, bstate, done, fifoOut, rden);
 // TODO: add fifo to collect from columns
 // TODO: add king castling
 
 input clk, reset;
-input [255:0] bstate;
+input [255:0] bstate; // board state
 
-output done = &{done_cols};
+output done = &{done_cols}; // to be changed by state
+
+output [?:0] fifoOut;
+input rden;
 
 // parameter declarations
 parameter PVOID = 9'h0; // it's just {3'o0, 3'o0, EMPTY} - denotes an empty space at xpos = 0, ypos = 0
@@ -16,6 +18,9 @@ parameter PVOID6 = 54'h0;
 
 parameter COLA = 3'o0; parameter COLB = 3'o1; parameter COLC = 3'o2; parameter COLD = 3'o3;
 parameter COLE = 3'o4; parameter COLF = 3'o5; parameter COLG = 3'o6; parameter COLH = 3'o7;
+
+// disect board state
+wire colstate_a = { };// TODO
 
 // done signals from columns
 wire [7:0] done_cols;
