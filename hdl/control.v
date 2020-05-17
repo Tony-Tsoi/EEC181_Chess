@@ -54,6 +54,7 @@ input [(DATA_WIDTH/8)-1:0] slave_byteenable;
 //          WIRES / REGS
 //==================================
 wire [DATA_WIDTH-1:0] ram_out;
+reg [DATA_WIDTH-1:0] ram_in;
 
 reg ram_wren;
 reg ram_wren_p1; // currently not used
@@ -76,6 +77,37 @@ reg [31:0] control_p1;
 //reg [4:0] counter; // For incrementing through test data
 //reg [4:0] counter_p1;
 
+//lmg interface
+reg [255:0] boardState;
+reg lmgReset;
+reg lmgReadEnable;
+reg [151:0] lmgFifoOut;
+wire lmgDone;
+
+reg readWord1;
+reg readWord2;
+reg readWord3;
+reg readWord4;
+reg readWord5;
+reg readWord6;
+reg readWord7;
+reg readWord8;
+reg readWord1_c;
+reg readWord2_c;
+reg readWord3_c;
+reg readWord4_c;
+reg readWord5_c;
+reg readWord6_c;
+reg readWord7_c;
+reg readWord8_c;
+
+reg writeFromLmgDone;
+reg writeFromLmgDone_c;
+
+reg writeCount;
+reg writeCount_c;
+
+
 //===================================
 //		Module Instantiations
 //==================================
@@ -88,14 +120,20 @@ reg [31:0] control_p1;
 // 0x16 - 0x32767 are HW to SW data
 One_Mib_RAM	RAM_A(
    .clock		(clk),
-   .data		(slave_writedata),
+   .data		(ram_in),
    .rdaddress	(rd_addr),
    .wraddress	(wr_addr),
    .wren		(ram_wren),
    .q			(ram_out)
 );
 
-lmg LMG (.clk(clk), // IOs
+lmg LMG(
+	.clk(clk),
+	.reset(lmgReset),
+	.bstate(boardState),
+	.done(lmgDone),
+	.fifoOut(lmgFifoOut),
+	.rden(lmgReadEnable)
 );
 
 //===================================
@@ -128,6 +166,19 @@ begin
 	ram_wren = 1'b0;
 	//counter = counter_p1;
 	slave_readdata = 0;
+	ram_in = slave_writedata;
+	lmgReset = 1'b0;
+	lmgReadEnable = 1'b0;
+
+	boardState[255:224] = interface_data_p1[9]; //The order of bits here could be off
+	boardState[223:192] = interface_data_p1[8];
+	boardState[191:160] = interface_data_p1[7];
+	boardState[159:128] = interface_data_p1[6];
+	boardState[127:96] = interface_data_p1[5];
+	boardState[95:64] = interface_data_p1[4];
+	boardState[63:32] = interface_data_p1[3];
+	boardState[31:0] = interface_data_p1[2];
+
 
 //========================== READ/WRITE ==========================================	
 	// NOTE: There are 512 wasted bits in the RAM because these addresses are being used
@@ -167,10 +218,154 @@ begin
 	begin 
 		control[1] = 1'b0; // Done = 0
 		interface_data[0] = control;
+		writeCount_c = 1'b0 //I might move this
 	end
 	
+
 	if (control[0] == 1'b1) // if start == 1
 	begin 
+		//Give LMG board state and start(reset?) signal
+		if (control_p1[0] == 1'b0) begin
+			lmgReset = 1'b1; //toggle reset if start was just turned on
+		end
+		
+		//TODO Wait for done signal, then read from lmg fifo and write into block ram
+		if (lmgDone == 1'b1) begin
+			if (lmgDone_p1 = 1'b0 || writeFromLmgDone == 1'b1) begin //start when lmgDone first gets turned on or when the last word is done being processed
+				lmgReadEnable = 1'b1;
+				readWord1_c = 1'b1;
+			end
+			
+			if (readWord1 = 1'b1) begin
+				if (lmgFifoOut[18] == 1'b0) begin //write the first word if valid, otherwise look at the second word
+					ram_in = lmgFifoOut[17:0]; //This isn't exact yet
+					ram_wren = 1'b1;
+					wr_addr = 15'h17 + writeCount;
+					writeCount_c = writeCount + 1;
+					readWord1_c = 1'b0;
+					readWord2_c = 1'b1;
+				end else begin
+						readWord1_c = 1'b0;
+						readWord2 = 1'b1; //This might need to be pipelined
+					end
+			end
+			
+			if (readWord2 = 1'b1) begin
+				if (lmgFifoOut[37] == 1'b0) begin  //write the second word if valid, otherwise look at the third word
+					ram_in = lmgFifoOut[36:19]; //This isn't exact yet
+					ram_wren = 1'b1;
+					wr_addr = 15'h17 + writeCount;
+					writeCount_c = writeCount + 1;
+					readWord2_c = 1'b0;
+					readWord3_c = 1'b1;
+				end else begin
+						readWord2_c = 1'b0;
+						readWord3 = 1'b1; //This might need to be pipelined
+					end
+			end
+			
+			if (readWord3 = 1'b1) begin
+				if (lmgFifoOut[56] == 1'b0) begin  //write the third word if valid, otherwise look at the fourth word
+					ram_in = lmgFifoOut[55:38]; //This isn't exact yet
+					ram_wren = 1'b1;
+					wr_addr = 15'h17 + writeCount;
+					writeCount_c = writeCount + 1;
+					readWord3_c = 1'b0;
+					readWord4_c = 1'b1;
+				end else begin
+						readWord3_c = 1'b0;
+						readWord4 = 1'b1; //This might need to be pipelined
+					end
+			end
+			
+			if (readWord4 = 1'b1) begin
+				if (lmgFifoOut[75] == 1'b0) begin  //write the fourth word if valid, otherwise look at the fifth word
+					ram_in = lmgFifoOut[74:57]; //This isn't exact yet
+					ram_wren = 1'b1;
+					wr_addr = 15'h17 + writeCount;
+					writeCount_c = writeCount + 1;
+					readWord4_c = 1'b0;
+					readWord5_c = 1'b1;
+				end else begin
+						readWord4_c = 1'b0;
+						readWord5 = 1'b1; //This might need to be pipelined
+					end
+			end
+			
+			if (readWord5 = 1'b1) begin
+				if (lmgFifoOut[94] == 1'b0) begin  //write the fifth word if valid, otherwise look at the sixth word
+					ram_in = lmgFifoOut[93:76]; //This isn't exact yet
+					ram_wren = 1'b1;
+					wr_addr = 15'h17 + writeCount;
+					writeCount_c = writeCount + 1;
+					readWord5_c = 1'b0;
+					readWord6_c = 1'b1;
+				end else begin
+						readWord5_c = 1'b0;
+						readWord6 = 1'b1; //This might need to be pipelined
+					end
+			end
+			
+			if (readWord6 = 1'b1) begin
+				if (lmgFifoOut[113] == 1'b0) begin  //write the sixth word if valid, otherwise look at the seventh word
+					ram_in = lmgFifoOut[112:95]; //This isn't exact yet
+					ram_wren = 1'b1;
+					wr_addr = 15'h17 + writeCount;
+					writeCount_c = writeCount + 1;
+					readWord6_c = 1'b0;
+					readWord7_c = 1'b1;
+				end else begin
+						readWord6_c = 1'b0;
+						readWord7 = 1'b1; //This might need to be pipelined
+					end
+			end
+			
+			if (readWord7 = 1'b1) begin
+				if (lmgFifoOut[132] == 1'b0) begin  //write the seventh word if valid, otherwise look at the last word
+					ram_in = lmgFifoOut[131:114]; //This isn't exact yet
+					ram_wren = 1'b1;
+					wr_addr = 15'h17 + writeCount;
+					writeCount_c = writeCount + 1;
+					readWord7_c = 1'b0;
+					readWord8_c = 1'b1;
+				end else begin
+						readWord7_c = 1'b0;
+						readWord8 = 1'b1; //This might need to be pipelined
+					end
+			end
+			
+			if (readWord8 = 1'b1) begin
+				readWord8_c = 1'b0;
+				if (lmgFifoOut[151] == 1'b0) begin  //write the last word if valid, otherwise 
+					ram_in = lmgFifoOut[150:133]; //This isn't exact yet
+					ram_wren = 1'b1;
+					wr_addr = 15'h17 + writeCount;
+					writeCount_c = writeCount + 1;
+					writeFromLmgDone_c = 1'b1;
+				end else begin 
+						//if the entire word consists of invalid moves, end the process
+						if((lmgFifoOut[151] == 1) && (lmgFifoOut[132] == 1) && (lmgFifoOut[113] == 1) && (lmgFifoOut[94] == 1) && (lmgFifoOut[75] == 1) && (lmgFifoOut[56] == 1) && (lmgFifoOut[37] == 1) && (lmgFifoOut[18] == 1)) begin
+							writeFromLmgDone_c = 1'b0;
+							allMovesDone_c = 1'b1;
+						end else begin
+								writeFromLmgDone_c = 1'b1;
+							end
+					end
+			end
+			
+			//Write information to 0x16 for software and set done = 1
+			if(allMovesDone == 1'b1) begin
+				ram_in = writeCount; //might need to format this
+				ram_wren = 1'b1;
+				wr_addr = 15'h16;
+				control[1] = 1'b1; // Done = 1
+			end
+			
+		end //end start=1
+
+
+		
+
 		/*
 		// Hardcoded test data.
 		// interface_data[10] contains HW to SW data.
@@ -220,6 +415,18 @@ always @ (posedge clk) begin
 	ram_wren_p1 <= ram_wren; // currently not used
 	control_p1 <= interface_data[0];
 	
+	lmgDone_p1 <= lmgDone;
+	writeCount <= writeCount_c;	
+	writeFromLmgDone <= writeFromLmgDone_c;
+	readWord1 <= readWord1_c;
+	readWord2 <= readWord2_c;
+	readWord3 <= readWord3_c;
+	readWord4 <= readWord4_c;
+	readWord5 <= readWord5_c;
+	readWord6 <= readWord6_c;
+	readWord7 <= readWord7_c;
+	readWord8 <= readWord8_c;
+
 	interface_data_p1[0] <= interface_data[0]; 
 	interface_data_p1[1] <= interface_data[1]; 
 	interface_data_p1[2] <= interface_data[2]; 
@@ -239,18 +446,4 @@ always @ (posedge clk) begin
 	
 end // always @ (posedge clk)
    
-endmodule 
-
-
-
-
-   
-	      
-	     
-	     
-   
-   
-   
-		       
-
-   
+endmodule
