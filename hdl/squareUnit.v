@@ -4,13 +4,11 @@ orrdo, orruo, orddo, ordo, oro, oruo, oruuo, odo, ouo,
 olddo, oldo, olo, oluo, oluuo, olldo, olluo,
 hlu, hl, hld, hu, hd, hru, hr, hrd,
 clk, xpos, ypos, cpiece, reset, done, fifoOut, hold, rden);
-// TODO: add bit flags for
-// 1 capture
-// 2 castle
-// 4 en passant capture
-// 8 pushing a pawn 2 squares
-// 16 pawn move
-// 32 promote
+
+// 13 bit output per move from fifoOut has the following format:
+// [7b flag][6b from](omitted 6b to, redundant info)
+// seven bit flag bits as follows:
+// [invalid][promote][pawn move][pawn 2 sq][en passant][castle][capture]
 
 input clk; // clock input
 input reset; // if is new board, put self at the outgoing positions
@@ -19,7 +17,7 @@ input [3:0] cpiece; // current piece occupied at this spot
 input hold; // to hold the done signal from being flagged mistakenly
 
 output reg done; // done signal
-output [47:0] fifoOut; // output of FIFO
+output [103:0] fifoOut; // output of FIFO
 
 // inputs and outputs to neighbor cells
 input [8:0] irrdi, irrui, irddi, irdi, iri, irui, iruui, idi, iui, 
@@ -42,8 +40,10 @@ parameter QUEEN = 3'o5;
 parameter KING = 3'o6;
 parameter NOTUSED = 3'o7;
 parameter PVOID = {xpos, ypos, EMPTY}; // denotes an empty space at self
-parameter ROW3 = 3'o3; // value for ypos to be at row 3 (for pawn advance two blocks forward
-parameter ENDMOV = {xpos, ypos, xpos, ypos, xpos, ypos, xpos, ypos, xpos, ypos, xpos, ypos, xpos, ypos, xpos, ypos}; // end squence for move list
+parameter ROW2 = 3'o1;
+parameter ROW3 = 3'o2; // value for ypos to be at row 3 (for pawn advance two blocks forward
+parameter ROW4 = 3'o3;
+parameter ENDMOV = {8{1'b1, 6'o00, xpos, ypos}}; // end squence for move list
 	// indicates a move from self to self, an illegal move
 
 // Moves Output
@@ -115,6 +115,8 @@ always @(posedge clk) begin
 end
 
 // output logic
+wire capb = (cpiece[3] == BLACK); // capture bit
+
 always @(*) begin
 	// default not change done
 	done_c = done;
@@ -180,10 +182,13 @@ always @(*) begin
 		if (cpiece[2:0] == EMPTY) begin
 			// if current place is empty, pawn can move up
 			if (iui[2:0] != EMPTY) begin
-				mvu = iui[8:3];
+				mvu = {7'b0010000,iui[8:3]};
 				done_c = 1'b0;
 				
-				if (iui[5:3] == ROW2) begin
+				if (ypos == ROW4)
+					mvu = {7'b0011000, iui[8:3]};
+				
+				if ((iui[5:3] == ROW2) && (ypos == ROW3)) begin
 					// if started from ROW2
 					// pawn can move one more step forward
 					ouo_c = iui;
@@ -191,50 +196,50 @@ always @(*) begin
 			end 
 		end else begin
 			if (cpiece[3] == BLACK) begin
-				// if current place isn't empty and is of opposite, pawn can take sideway
+				// if current place isn't empty and is of opposite, pawn en passant capture
 				if (irui[2:0] == PAWN) begin
-					mvru = irui[8:3];
+					mvru = {7'b0010101, irui[8:3]};
 					done_c = 1'b0;
 				end
 				if (ilui]2:0] == PAWN) begin
-					mvlu = ilui[8:3];
+					mvlu = {7'b0010101,ilui[8:3]};
 					done_c = 1'b0;
 				end
 			end
 		end
 		
 		// KNIGHT case
-		if ((cpiece[2:0] == EMPTY) || (cpiece[3] == BLACK)) begin
+		if ((cpiece[2:0] == EMPTY) || (capb)) begin
 			if (irrdi[2:0] != EMPTY) begin
-				mvrrd = irrdi[8:3];
+				mvrrd = {6'o00, capb, irrdi[8:3]};
 				done_c = 1'b0;
 			end
 			if (irrui[2:0] != EMPTY) begin
-				mvrru = irrui[8:3];
+				mvrru = {6'o00, capb, irrui[8:3]};
 				done_c = 1'b0;
 			end
 			if (irddi[2:0] != EMPTY) begin
-				mvrdd = irddi[8:3];
+				mvrdd = {6'o00, capb, irddi[8:3]};
 				done_c = 1'b0;
 			end
 			if (iruui[2:0] != EMPTY) begin
-				mvruu = iruui[8:3];
+				mvruu = {6'o00, capb, iruui[8:3]};
 				done_c = 1'b0;
 			end
 			if (ilddi[2:0] != EMPTY) begin
-				mvldd = ilddi[8:3];
+				mvldd = {6'o00, capb, ilddi[8:3]};
 				done_c = 1'b0;
 			end
 			if (iluui[2:0] != EMPTY) begin
-				mvluu = iluui[8:3];
+				mvluu = {6'o00, capb, iluui[8:3]};
 				done_c = 1'b0;
 			end
 			if (illdi[2:0] != EMPTY) begin
-				mvlld = illdi[8:3];
+				mvlld = {6'o00, capb, illdi[8:3]};
 				done_c = 1'b0;
 			end
 			if (illui[2:0] != EMPTY) begin
-				mvllu = illui[8:3];
+				mvllu = {6'o00, capb, illui[8:3]};
 				done_c = 1'b0;
 			end
 		end
@@ -242,30 +247,30 @@ always @(*) begin
 		// RU and LU is available for pawn, if can take current piece
 		if (irui[2:0] != EMPTY) begin
 			if ((cpiece[2:0] == EMPTY) && (irui[2:0] != PAWN)) begin
-				mvru = irui[8:3];
+				mvru = {{6'o00, capb, irui[8:3]};
 				done_c = 1'b0;
 				
 				if ((irui[2:0] == BISHOP) && (irui[2:0] == QUEEN))
 					// if bishop or queen, propogate diag
 					oruo_c = irui;
 			end
-			if (cpiece[3] == BLACK) begin
-				mvru = irui[8:3];
+			if (capb) begin
+				mvru = {{6'o00, capb, irui[8:3]};
 				done_c = 1'b0;
 			end
 		end
 		
 		if (ilui[2:0] != EMPTY) begin
 			if ((cpiece[2:0] == EMPTY) && (ilui[2:0] != PAWN)) begin
-				mvlu = ilui[8:3];
+				mvlu = {6'o00, capb, ilui[8:3]};
 				done_c = 1'b0;
 				
 				if ((ilui[2:0] == BISHOP) && (ilui[2:0] == QUEEN))
 					// if bishop or queen, propogate diag
 					oruo_c = ilui;
 			end
-			if (cpiece[3] == BLACK) begin
-				mvlu = ilui[8:3];
+			if (capb) begin
+				mvlu = {6'o00, capb, ilui[8:3]};
 				done_c = 1'b0;
 			end
 		end
@@ -273,15 +278,15 @@ always @(*) begin
 		// U is available for pawn if empty
 		if (iui[2:0] != EMPTY) begin
 			if (cpiece[2:0] == EMPTY) begin
-				mvu = iui[8:3];
+				mvu = {2'b00, (iui[2:0] == PAWN), 3'o0, capb, iui[8:3]};
 				done_c = 1'b0;
 				
 				if ((iui[2:0] == BISHOP) && (iui[2:0] == QUEEN))
 					// if bishop or queen, propogate diag
 					oruo_c = irui;
 			end
-			if ((cpiece[3] == BLACK) && (iui[2:0] != PAWN)) begin
-				mvu = iui[8:3];
+			if ((capb) && (iui[2:0] != PAWN)) begin
+				mvu = {6'o00, capb, iui[8:3]};
 				done_c = 1'b0;
 			end
 		end
@@ -289,75 +294,75 @@ always @(*) begin
 		// 5 remaining neighboring positions
 		if (irdi[2:0] != EMPTY) begin
 			if (cpiece[2:0] == EMPTY) begin
-				mvrd = irdi[8:3];
+				mvrd = {6'o00, capb, irdi[8:3]};
 				done_c = 1'b0;
 				
 				if ((irdi[2:0] == BISHOP) && (irdi[2:0] == QUEEN))
 					// if bishop or queen, propogate diag
 					ordo_c = irdi;
 			end
-			if (cpiece[3] == BLACK) begin
-				mvrd = irdi[8:3];
+			if (capb) begin
+				mvrd = {6'o00, capb, irdi[8:3]};
 				done_c = 1'b0;
 			end
 		end
 		
 		if (ildi[2:0] != EMPTY) begin
 			if (cpiece[2:0] == EMPTY) begin
-				mvld = ildi[8:3];
+				mvld = {6'o00, capb, ildi[8:3]};
 				done_c = 1'b0;
 				
 				if ((ildi[2:0] == BISHOP) && (ildi[2:0] == QUEEN))
 					// if bishop or queen, propogate diag
 					oldo_c = ildi;
 			end
-			if (cpiece[3] == BLACK) begin
-				mvld = ildi[8:3];
+			if (capb) begin
+				mvld = {6'o00, capb, ildi[8:3]};
 				done_c = 1'b0;
 			end
 		end
 		
 		if (idi[2:0] != EMPTY) begin
 			if (cpiece[2:0] == EMPTY) begin
-				mvd = idi[8:3];
+				mvd = {6'o00, capb, idi[8:3]};
 				done_c = 1'b0;
 				
 				if ((idi[2:0] == BISHOP) && (idi[2:0] == QUEEN))
 					// if bishop or queen, propogate diag
 					odo_c = idi;
 			end
-			if (cpiece[3] == BLACK) begin
-				mvd = idi[8:3];
+			if (capb) begin
+				mvd = {6'o00, capb, idi[8:3]};
 				done_c = 1'b0;
 			end
 		end
 		
 		if (iri[2:0] != EMPTY) begin
 			if (cpiece[2:0] == EMPTY) begin
-				mvr = iri[8:3];
+				mvr = {6'o00, capb, iri[8:3]};
 				done_c = 1'b0;
 
 				if ((iri[2:0] == BISHOP) && (iri[2:0] == QUEEN))
 					// if bishop or queen, propogate diag
 					oro_c = iri;
 			end
-			if (cpiece[3] == BLACK) begin
-				mvr = iri[8:3];
+			if (capb) begin
+				mvr = {6'o00, capb, iri[8:3]};
 				done_c = 1'b0;
 			end
 		end
 		
 		if (ili[2:0] != EMPTY) begin
 			if (cpiece[2:0] == EMPTY) begin
-				mvl = ili[8:3];
+				mvl = {6'o00, capb, ili[8:3]};
 				done_c = 1'b0;
 				
 				if ((ili[2:0] == BISHOP) && (ili[2:0] == QUEEN))
 					// if bishop or queen, propogate diag
 					olo_c = ili;
 			end
-			if (cpiece[3] == BLACK) begin
-				mvl = ili[8:3];
+			if (capb) begin
+				mvl = {6'o00, capb, ili[8:3]};
 				done_c = 1'b0;
 			end
 		end

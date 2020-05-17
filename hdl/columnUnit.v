@@ -38,7 +38,7 @@ output [7:1] chldo, chrdo;
 output done = (state == DONE);
 
 // output from fifo
-output [47:0] fifoOut;
+output [127:0] fifoOut;
 
 // parameter declarations
 parameter PVOID = 9'h0; // it's just {3'o0, 3'o0, EMPTY} - denotes an empty space at xpos = 0, ypos = 0

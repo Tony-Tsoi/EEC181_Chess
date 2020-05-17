@@ -2,6 +2,14 @@ module lmg (clk, reset, bstate, done, fifoOut, rden);
 // TODO: add fifo to collect from columns
 // TODO: add king castling
 
+// board layout:
+/* 55 56 57 ... 63
+	.
+	.
+	.
+	8 9 10 ... 15
+	0 1 2 ...   7 */
+
 input clk, reset;
 input [255:0] bstate; // board state
 
