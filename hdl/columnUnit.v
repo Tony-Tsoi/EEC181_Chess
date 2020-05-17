@@ -7,8 +7,8 @@ chluo, chruo, chlo, chro, chldo, chrdo,
 fifoOut
 );
 
-// 16 bit output per move from fifoOut has the following format:
-// [7b flag][6b from][3b to xpos] (omitted 3b to ypos, redundant info)
+// 19 bit output per move from fifoOut has the following format:
+// [7b flag][6b from][6b to]
 // seven bit flag bits as follows:
 // [invalid][promote][pawn move][pawn 2 sq][en passant][castle][capture]
 
@@ -42,7 +42,7 @@ output [7:1] chldo, chrdo;
 output done = (state == DONE);
 
 // output from fifo
-output [127:0] fifoOut;
+output [151:0] fifoOut;
 
 // parameter declarations
 parameter PVOID = 9'h0; // it's just {3'o0, 3'o0, EMPTY} - denotes an empty space at xpos = 0, ypos = 0

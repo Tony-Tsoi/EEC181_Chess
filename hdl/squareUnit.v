@@ -5,8 +5,8 @@ olddo, oldo, olo, oluo, oluuo, olldo, olluo,
 hlu, hl, hld, hu, hd, hru, hr, hrd,
 clk, xpos, ypos, cpiece, reset, done, fifoOut, hold, rden);
 
-// 13 bit output per move from fifoOut has the following format:
-// [7b flag][6b from](omitted 6b to, redundant info)
+// 19 bit output per move from fifoOut has the following format:
+// [7b flag][6b from][6b to]
 // seven bit flag bits as follows:
 // [invalid][promote][pawn move][pawn 2 sq][en passant][castle][capture]
 
@@ -17,7 +17,7 @@ input [3:0] cpiece; // current piece occupied at this spot
 input hold; // to hold the done signal from being flagged mistakenly
 
 output reg done; // done signal
-output [103:0] fifoOut; // output of FIFO
+output [151:0] fifoOut; // output of FIFO
 
 // inputs and outputs to neighbor cells
 input [8:0] irrdi, irrui, irddi, irdi, iri, irui, iruui, idi, iui, 
@@ -43,7 +43,7 @@ parameter PVOID = {xpos, ypos, EMPTY}; // denotes an empty space at self
 parameter ROW2 = 3'o1;
 parameter ROW3 = 3'o2; // value for ypos to be at row 3 (for pawn advance two blocks forward
 parameter ROW4 = 3'o3;
-parameter ENDMOV = {8{1'b1, 6'o00, xpos, ypos}}; // end squence for move list
+parameter ENDMOV = {8{1'b1, 6'o00, xpos, ypos, xpos, ypos}}; // end squence for move list
 	// indicates a move from self to self, an illegal move
 
 // Moves Output
@@ -51,8 +51,8 @@ reg [5:0] mvrrd, mvrru, mvrdd, mvruu, mvldd, mvluu, mvlld, mvllu;
 reg [5:0] mvrd, mvr, mvru, mvd, mvu, mvld, mvl, mvlu;
 reg [47:0] wr1 = {mvrd, mvr, mvru, mvd, mvu, mvld, mvl, mvlu};
 reg [47:0] wr2 = {mvrrd, mvrru, mvrdd, mvruu, mvldd, mvluu, mvlld, mvllu};
-wire wren1 = (wr1 != ENDMOV);
-wire wren2 = (wr2 != ENDMOV);
+wire wren1 = ~&{wr1[151], wr1[132], wr1[113], wr1[94], wr1[75], wr1[56], wr1[37], wr1[18]};
+wire wren2 = ~&{wr2[151], wr2[132], wr2[113], wr2[94], wr2[75], wr2[56], wr2[37], wr2[18]};
 
 // fifo read enable input
 input rden;
@@ -182,11 +182,11 @@ always @(*) begin
 		if (cpiece[2:0] == EMPTY) begin
 			// if current place is empty, pawn can move up
 			if (iui[2:0] != EMPTY) begin
-				mvu = {7'b0010000,iui[8:3]};
+				mvu = {7'b0010000,iui[8:3], xpos, ypos};
 				done_c = 1'b0;
 				
 				if (ypos == ROW4)
-					mvu = {7'b0011000, iui[8:3]};
+					mvu = {7'b0011000, iui[8:3], xpos, ypos};
 				
 				if ((iui[5:3] == ROW2) && (ypos == ROW3)) begin
 					// if started from ROW2
@@ -198,11 +198,11 @@ always @(*) begin
 			if (cpiece[3] == BLACK) begin
 				// if current place isn't empty and is of opposite, pawn en passant capture
 				if (irui[2:0] == PAWN) begin
-					mvru = {7'b0010101, irui[8:3]};
+					mvru = {7'b0010101, irui[8:3], xpos, ypos};
 					done_c = 1'b0;
 				end
 				if (ilui]2:0] == PAWN) begin
-					mvlu = {7'b0010101,ilui[8:3]};
+					mvlu = {7'b0010101,ilui[8:3], xpos, ypos};
 					done_c = 1'b0;
 				end
 			end
@@ -211,35 +211,35 @@ always @(*) begin
 		// KNIGHT case
 		if ((cpiece[2:0] == EMPTY) || (capb)) begin
 			if (irrdi[2:0] != EMPTY) begin
-				mvrrd = {6'o00, capb, irrdi[8:3]};
+				mvrrd = {6'o00, capb, irrdi[8:3], xpos, ypos};
 				done_c = 1'b0;
 			end
 			if (irrui[2:0] != EMPTY) begin
-				mvrru = {6'o00, capb, irrui[8:3]};
+				mvrru = {6'o00, capb, irrui[8:3], xpos, ypos};
 				done_c = 1'b0;
 			end
 			if (irddi[2:0] != EMPTY) begin
-				mvrdd = {6'o00, capb, irddi[8:3]};
+				mvrdd = {6'o00, capb, irddi[8:3], xpos, ypos};
 				done_c = 1'b0;
 			end
 			if (iruui[2:0] != EMPTY) begin
-				mvruu = {6'o00, capb, iruui[8:3]};
+				mvruu = {6'o00, capb, iruui[8:3], xpos, ypos};
 				done_c = 1'b0;
 			end
 			if (ilddi[2:0] != EMPTY) begin
-				mvldd = {6'o00, capb, ilddi[8:3]};
+				mvldd = {6'o00, capb, ilddi[8:3], xpos, ypos};
 				done_c = 1'b0;
 			end
 			if (iluui[2:0] != EMPTY) begin
-				mvluu = {6'o00, capb, iluui[8:3]};
+				mvluu = {6'o00, capb, iluui[8:3], xpos, ypos};
 				done_c = 1'b0;
 			end
 			if (illdi[2:0] != EMPTY) begin
-				mvlld = {6'o00, capb, illdi[8:3]};
+				mvlld = {6'o00, capb, illdi[8:3], xpos, ypos};
 				done_c = 1'b0;
 			end
 			if (illui[2:0] != EMPTY) begin
-				mvllu = {6'o00, capb, illui[8:3]};
+				mvllu = {6'o00, capb, illui[8:3], xpos, ypos};
 				done_c = 1'b0;
 			end
 		end
@@ -247,7 +247,7 @@ always @(*) begin
 		// RU and LU is available for pawn, if can take current piece
 		if (irui[2:0] != EMPTY) begin
 			if ((cpiece[2:0] == EMPTY) && (irui[2:0] != PAWN)) begin
-				mvru = {{6'o00, capb, irui[8:3]};
+				mvru = {{6'o00, capb, irui[8:3], xpos, ypos};
 				done_c = 1'b0;
 				
 				if ((irui[2:0] == BISHOP) && (irui[2:0] == QUEEN))
@@ -255,14 +255,14 @@ always @(*) begin
 					oruo_c = irui;
 			end
 			if (capb) begin
-				mvru = {{6'o00, capb, irui[8:3]};
+				mvru = {{6'o00, capb, irui[8:3], xpos, ypos};
 				done_c = 1'b0;
 			end
 		end
 		
 		if (ilui[2:0] != EMPTY) begin
 			if ((cpiece[2:0] == EMPTY) && (ilui[2:0] != PAWN)) begin
-				mvlu = {6'o00, capb, ilui[8:3]};
+				mvlu = {6'o00, capb, ilui[8:3], xpos, ypos};
 				done_c = 1'b0;
 				
 				if ((ilui[2:0] == BISHOP) && (ilui[2:0] == QUEEN))
@@ -270,7 +270,7 @@ always @(*) begin
 					oruo_c = ilui;
 			end
 			if (capb) begin
-				mvlu = {6'o00, capb, ilui[8:3]};
+				mvlu = {6'o00, capb, ilui[8:3], xpos, ypos};
 				done_c = 1'b0;
 			end
 		end
@@ -278,7 +278,7 @@ always @(*) begin
 		// U is available for pawn if empty
 		if (iui[2:0] != EMPTY) begin
 			if (cpiece[2:0] == EMPTY) begin
-				mvu = {2'b00, (iui[2:0] == PAWN), 3'o0, capb, iui[8:3]};
+				mvu = {2'b00, (iui[2:0] == PAWN), 3'o0, capb, iui[8:3], xpos, ypos};
 				done_c = 1'b0;
 				
 				if ((iui[2:0] == BISHOP) && (iui[2:0] == QUEEN))
@@ -286,7 +286,7 @@ always @(*) begin
 					oruo_c = irui;
 			end
 			if ((capb) && (iui[2:0] != PAWN)) begin
-				mvu = {6'o00, capb, iui[8:3]};
+				mvu = {6'o00, capb, iui[8:3], xpos, ypos};
 				done_c = 1'b0;
 			end
 		end
@@ -294,7 +294,7 @@ always @(*) begin
 		// 5 remaining neighboring positions
 		if (irdi[2:0] != EMPTY) begin
 			if (cpiece[2:0] == EMPTY) begin
-				mvrd = {6'o00, capb, irdi[8:3]};
+				mvrd = {6'o00, capb, irdi[8:3], xpos, ypos};
 				done_c = 1'b0;
 				
 				if ((irdi[2:0] == BISHOP) && (irdi[2:0] == QUEEN))
@@ -302,14 +302,14 @@ always @(*) begin
 					ordo_c = irdi;
 			end
 			if (capb) begin
-				mvrd = {6'o00, capb, irdi[8:3]};
+				mvrd = {6'o00, capb, irdi[8:3], xpos, ypos};
 				done_c = 1'b0;
 			end
 		end
 		
 		if (ildi[2:0] != EMPTY) begin
 			if (cpiece[2:0] == EMPTY) begin
-				mvld = {6'o00, capb, ildi[8:3]};
+				mvld = {6'o00, capb, ildi[8:3], xpos, ypos};
 				done_c = 1'b0;
 				
 				if ((ildi[2:0] == BISHOP) && (ildi[2:0] == QUEEN))
@@ -317,14 +317,14 @@ always @(*) begin
 					oldo_c = ildi;
 			end
 			if (capb) begin
-				mvld = {6'o00, capb, ildi[8:3]};
+				mvld = {6'o00, capb, ildi[8:3], xpos, ypos};
 				done_c = 1'b0;
 			end
 		end
 		
 		if (idi[2:0] != EMPTY) begin
 			if (cpiece[2:0] == EMPTY) begin
-				mvd = {6'o00, capb, idi[8:3]};
+				mvd = {6'o00, capb, idi[8:3], xpos, ypos};
 				done_c = 1'b0;
 				
 				if ((idi[2:0] == BISHOP) && (idi[2:0] == QUEEN))
@@ -332,14 +332,14 @@ always @(*) begin
 					odo_c = idi;
 			end
 			if (capb) begin
-				mvd = {6'o00, capb, idi[8:3]};
+				mvd = {6'o00, capb, idi[8:3], xpos, ypos};
 				done_c = 1'b0;
 			end
 		end
 		
 		if (iri[2:0] != EMPTY) begin
 			if (cpiece[2:0] == EMPTY) begin
-				mvr = {6'o00, capb, iri[8:3]};
+				mvr = {6'o00, capb, iri[8:3], xpos, ypos};
 				done_c = 1'b0;
 
 				if ((iri[2:0] == BISHOP) && (iri[2:0] == QUEEN))
@@ -347,14 +347,14 @@ always @(*) begin
 					oro_c = iri;
 			end
 			if (capb) begin
-				mvr = {6'o00, capb, iri[8:3]};
+				mvr = {6'o00, capb, iri[8:3], xpos, ypos};
 				done_c = 1'b0;
 			end
 		end
 		
 		if (ili[2:0] != EMPTY) begin
 			if (cpiece[2:0] == EMPTY) begin
-				mvl = {6'o00, capb, ili[8:3]};
+				mvl = {6'o00, capb, ili[8:3], xpos, ypos};
 				done_c = 1'b0;
 				
 				if ((ili[2:0] == BISHOP) && (ili[2:0] == QUEEN))
@@ -362,7 +362,7 @@ always @(*) begin
 					olo_c = ili;
 			end
 			if (capb) begin
-				mvl = {6'o00, capb, ili[8:3]};
+				mvl = {6'o00, capb, ili[8:3], xpos, ypos};
 				done_c = 1'b0;
 			end
 		end
