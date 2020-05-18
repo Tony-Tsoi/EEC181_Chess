@@ -5,7 +5,6 @@ module lmg (clk, reset, bstate, done, fifoOut, rden);
 // seven bit flag bits as follows:
 // [invalid][promote][pawn move][pawn 2 sq][en passant][castle][capture]
 
-// TODO: add fifo to collect from columns
 // TODO: add king castling
 
 input clk, reset;
@@ -25,6 +24,11 @@ parameter PVOID6 = 54'h0;
 parameter COLA = 3'o0; parameter COLB = 3'o1; parameter COLC = 3'o2; parameter COLD = 3'o3;
 parameter COLE = 3'o4; parameter COLF = 3'o5; parameter COLG = 3'o6; parameter COLH = 3'o7;
 
+// parameter for states
+parameter WAIT = 2'b01;
+parameter GETM = 2'b11;
+parameter DONE = 2'b10;
+
 // board state
 wire colstate_a = {bstate[227:224], bstate[195:192], bstate[163:160], bstate[131:128], 
 	bstate[99:96], bstate[67:64], bstate[35:32], bstate[3:0]};
@@ -43,9 +47,115 @@ wire colstate_g = {bstate[251:248], bstate[219:216], bstate[187:184], bstate[155
 wire colstate_h = {bstate[255:252], bstate[223:220], bstate[191:188], bstate[159:156], 
 	bstate[127:124], bstate[95:92], bstate[63:60], bstate[31:28]};
 
-
 // done signals from columns
 wire [7:0] done_cols;
+
+// state bit
+reg [1:0] state, state_c;
+
+// moves transferred to local fifo flag
+reg [8:1] col_moved_flags, col_moved_flags_c;
+
+// pointer for GETM state
+reg [2:0] col_move_ptr, col_move_ptr_c;
+
+// read enable for square fifo
+reg [8:1] col_rden, col_rden_c;
+
+// FIFO Module Declaration
+wire [151:0] fifoOut_col8, fifoOut_col7, fifoOut_col6, fifoOut_col5, 
+	fifoOut_col4, fifoOut_col3, fifoOut_col2, fifoOut_col1;
+
+reg wren1;
+wire [47:0] wr1 = (col_move_ptr == 3'd7)? fifoOut_col8 :
+	(col_move_ptr == 3'd6)? fifoOut_col7 :
+	(col_move_ptr == 3'd5)? fifoOut_col6 :
+	(col_move_ptr == 3'd4)? fifoOut_col5 :
+	(col_move_ptr == 3'd3)? fifoOut_col4 :
+	(col_move_ptr == 3'd2)? fifoOut_col3 :
+	(col_move_ptr == 3'd1)? fifoOut_col2 : fifoOut_col1;
+MyFifo F1F0 (.clk(clk), .wr1(wr1), .wr2(48'd0), .rd1(fifoOut), .wren1(wren1), .wren2(1'b0));
+
+// next state logic
+always @(*) begin
+	state_c = state;
+	col_rden_c = 8'h00;
+	
+	case (state)
+		WAIT: begin
+			// if a done signal is up and is not grabbed to FIFO
+			if done_cols[8]
+				if ~col_moved_flags[8] begin
+					state_c = GETM;
+					col_move_ptr_c = 3'd7;
+					col_rden_c = 8'h80;
+				end
+			
+			if done_cols[7]
+				if ~col_moved_flags[7] begin
+					state_c = GETM;
+					col_move_ptr_c = 3'd6;
+					col_rden_c = 8'h40;
+				end
+			
+			if done_cols[6]
+				if ~col_moved_flags[6] begin
+					state_c = GETM;
+					col_move_ptr_c = 3'd5;
+					col_rden_c = 8'h20;
+				end
+			
+			if done_cols[5]
+				if ~col_moved_flags[5] begin
+					state_c = GETM;
+					col_move_ptr_c = 3'd4;
+					col_rden_c = 8'h10;
+				end
+			
+			if done_cols[4]
+				if ~col_moved_flags[4] begin
+					state_c = GETM;
+					col_move_ptr_c = 3'd3;
+					col_rden_c = 8'h08;
+				end
+			
+			if done_cols[3]
+				if ~col_moved_flags[3] begin
+					state_c = GETM;
+					col_move_ptr_c = 3'd2;
+					col_rden_c = 8'h04;
+				end
+			
+			if done_cols[2]
+				if ~col_moved_flags[2] begin
+					state_c = GETM;
+					col_move_ptr_c = 3'd1;
+					col_rden_c = 8'h02;
+				end
+			
+			if done_cols[1]
+				if ~col_moved_flags[1] begin
+					state_c = GETM;
+					col_move_ptr_c = 3'd0;
+					col_rden_c = 8'h01;
+				end
+			
+			if &{col_moved_flags} // if all columns grabbed move
+				state_c = DONE;
+		end
+		GETM: begin
+			// get move from specified column until exhausted
+			col_rden_c = col_rden;
+			
+			// if all moves from column fifo gone
+			if (wr1 == ENDMOV)
+				state_c = WAIT;
+		end
+	endcase
+	
+	if (reset == 1'b1)
+		col_moved_flags = 8'h00;
+end
 
 // wiring all the hold signals from all directions that is across columns
 wire [8:1] chdiri_a = chlri_a | chlurdi_a | chldrui_a;
