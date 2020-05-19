@@ -39,18 +39,18 @@ parameter ROOK = 3'o4;
 parameter QUEEN = 3'o5;
 parameter KING = 3'o6;
 parameter NOTUSED = 3'o7;
-parameter PVOID = {xpos, ypos, EMPTY}; // denotes an empty space at self
+wire PVOID = {xpos, ypos, EMPTY}; // denotes an empty space at self, Shane made a reg
 parameter ROW2 = 3'o1;
 parameter ROW3 = 3'o2; // value for ypos to be at row 3 (for pawn advance two blocks forward
 parameter ROW4 = 3'o3;
-parameter ENDMOV = {8{1'b1, 6'o00, xpos, ypos, xpos, ypos}}; // end squence for move list
+//parameter ENDMOV = {8{1'b1, 6'o00, xpos, ypos, xpos, ypos}}; // end squence for move list
 	// indicates a move from self to self, an illegal move
 
 // Moves Output
 reg [5:0] mvrrd, mvrru, mvrdd, mvruu, mvldd, mvluu, mvlld, mvllu;
 reg [5:0] mvrd, mvr, mvru, mvd, mvu, mvld, mvl, mvlu;
-reg [47:0] wr1 = {mvrd, mvr, mvru, mvd, mvu, mvld, mvl, mvlu};
-reg [47:0] wr2 = {mvrrd, mvrru, mvrdd, mvruu, mvldd, mvluu, mvlld, mvllu};
+wire [47:0] wr1 = {mvrd, mvr, mvru, mvd, mvu, mvld, mvl, mvlu}; //Shane made these wires to get around an error
+wire [47:0] wr2 = {mvrrd, mvrru, mvrdd, mvruu, mvldd, mvluu, mvlld, mvllu};//
 wire wren1 = ~&{wr1[151], wr1[132], wr1[113], wr1[94], wr1[75], wr1[56], wr1[37], wr1[18]};
 wire wren2 = ~&{wr2[151], wr2[132], wr2[113], wr2[94], wr2[75], wr2[56], wr2[37], wr2[18]};
 
@@ -72,28 +72,8 @@ always @(posedge clk) begin
 	reset_d <= reset;
 end
 
-// hold signal combinational
-wire hlu_c = (oluo_c != PVOID);
-wire hl_c = (olo_c != PVOID);
-wire hld_c = (oldo_c != PVOID);
-wire hu_c = (ouo_c != PVOID);
-wire hd_c = (odo_c != PVOID);
-wire hru_c = (oruo_c != PVOID);
-wire hr_c = (oro_c != PVOID);
-wire hrd_c = (ordo_c != PVOID);
-always @(posedge clk) begin
-	hlu <= hlu_c;
-	hl <= hl_c;
-	hld <= hld_c;
-	hu <= hu_c;
-	hd <= hd_c;
-	hru <= hru_c;
-	hr <= hr_c;
-	hrd <= hrd_c;
-end
-
 // outgoing output variables combinational
-reg [3:0] orrdo_c, orruo_c, orddo_c, ordo_c, oro_c, oruo_c, oruuo_c, odo_c, 
+reg [8:0] orrdo_c, orruo_c, orddo_c, ordo_c, oro_c, oruo_c, oruuo_c, odo_c, 
 	ouo_c, olddo_c, oldo_c, olo_c, oluo_c, oluuo_c, olldo_c, olluo_c;
 always @(posedge clk) begin
 	orrdo <= orrdo_c;
@@ -112,6 +92,26 @@ always @(posedge clk) begin
 	oluuo <= oluuo_c;
 	olldo <= olldo_c;
 	olluo <= olluo_c;
+end
+
+// hold signal combinational
+wire hlu_c = (oluo_c != PVOID);
+wire hl_c = (olo_c != PVOID);
+wire hld_c = (oldo_c != PVOID);
+wire hu_c = (ouo_c != PVOID);
+wire hd_c = (odo_c != PVOID);
+wire hru_c = (oruo_c != PVOID);
+wire hr_c = (oro_c != PVOID);
+wire hrd_c = (ordo_c != PVOID);
+always @(posedge clk) begin
+	hlu <= hlu_c;
+	hl <= hl_c;
+	hld <= hld_c;
+	hu <= hu_c;
+	hd <= hd_c;
+	hru <= hru_c;
+	hr <= hr_c;
+	hrd <= hrd_c;
 end
 
 // output logic
@@ -177,6 +177,7 @@ always @(*) begin
 			default: begin end // EMPTY, NOTUSED case
 			endcase
 		end
+	end//I think this belongs here
 	else begin // propogate case
 		// PAWN case
 		if (cpiece[2:0] == EMPTY) begin
@@ -201,7 +202,7 @@ always @(*) begin
 					mvru = {7'b0010101, irui[8:3], xpos, ypos};
 					done_c = 1'b0;
 				end
-				if (ilui]2:0] == PAWN) begin
+				if (ilui[2:0] == PAWN) begin
 					mvlu = {7'b0010101,ilui[8:3], xpos, ypos};
 					done_c = 1'b0;
 				end
@@ -247,7 +248,7 @@ always @(*) begin
 		// RU and LU is available for pawn, if can take current piece
 		if (irui[2:0] != EMPTY) begin
 			if ((cpiece[2:0] == EMPTY) && (irui[2:0] != PAWN)) begin
-				mvru = {{6'o00, capb, irui[8:3], xpos, ypos};
+				mvru = {6'o00, capb, irui[8:3], xpos, ypos};
 				done_c = 1'b0;
 				
 				if ((irui[2:0] == BISHOP) && (irui[2:0] == QUEEN))
@@ -255,7 +256,7 @@ always @(*) begin
 					oruo_c = irui;
 			end
 			if (capb) begin
-				mvru = {{6'o00, capb, irui[8:3], xpos, ypos};
+				mvru = {6'o00, capb, irui[8:3], xpos, ypos};
 				done_c = 1'b0;
 			end
 		end
@@ -378,4 +379,5 @@ always @(*) begin
 	// if output direction does not exist, simply not wire the output
 	// no extra logic should be used to clear that out
 end
+
 endmodule
