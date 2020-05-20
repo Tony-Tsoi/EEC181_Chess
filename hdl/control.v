@@ -47,8 +47,7 @@ input slave_read;
 input slave_write;
 output reg [DATA_WIDTH-1:0] slave_readdata;
 input [DATA_WIDTH-1:0] slave_writedata;
-input [(DATA_WIDTH/8)-1:0] slave_byteenable;
-
+input [(DATA_WIDTH/8)-1:0] slave_byteenable; //Not currently used
 
 //==================================
 //          WIRES / REGS
@@ -81,8 +80,10 @@ reg [31:0] control_p1;
 reg [255:0] boardState;
 reg lmgReset;
 reg lmgReadEnable;
-reg [151:0] lmgFifoOut;
+reg lmgReadEnable_c;
+wire [151:0] lmgFifoOut;
 wire lmgDone;
+reg lmgDone_p1;
 
 reg readWord1;
 reg readWord2;
@@ -104,8 +105,13 @@ reg readWord8_c;
 reg writeFromLmgDone;
 reg writeFromLmgDone_c;
 
-reg writeCount;
-reg writeCount_c;
+reg [7:0] writeCount; //8 bit size is completely arbitrary
+reg [7:0] writeCount_c;
+
+reg allMovesDone;
+reg allMovesDone_c;
+reg preDone;
+reg preDone_c;
 
 
 //===================================
@@ -126,6 +132,7 @@ One_Mib_RAM	RAM_A(
    .wren		(ram_wren),
    .q			(ram_out)
 );
+
 
 lmg LMG(
 	.clk(clk),
@@ -163,12 +170,14 @@ begin
 	control = interface_data[0];
 	rd_addr = rd_addr_p1;
 	wr_addr = wr_addr_p1;
-	ram_wren = 1'b0;
+	ram_wren = ram_wren_p1;
 	//counter = counter_p1;
 	slave_readdata = 0;
-	ram_in = slave_writedata;
+	//ram_in = slave_writedata; I don't think we need this default, but maybe we do
 	lmgReset = 1'b0;
-	lmgReadEnable = 1'b0;
+	lmgReadEnable_c = 1'b0;
+	writeFromLmgDone_c = 1'b0;
+	allMovesDone_c = 1'b0;
 
 	boardState[255:224] = interface_data_p1[9]; //The order of bits here could be off
 	boardState[223:192] = interface_data_p1[8];
@@ -189,6 +198,7 @@ begin
 	// to its respective spot in RAM. Just get rid of the wren = 0 line below.
 	if (slave_write == 1'b1) 
 	begin
+		ram_in = slave_writedata;
 		wr_addr = slave_address;
 		ram_wren = 1'b1;
 		
@@ -218,7 +228,7 @@ begin
 	begin 
 		control[1] = 1'b0; // Done = 0
 		interface_data[0] = control;
-		writeCount_c = 1'b0 //I might move this
+
 	end
 	
 
@@ -227,34 +237,48 @@ begin
 		//Give LMG board state and start(reset?) signal
 		if (control_p1[0] == 1'b0) begin
 			lmgReset = 1'b1; //toggle reset if start was just turned on
+			readWord1_c = 1'b0;
+			readWord2_c = 1'b0;
+			readWord3_c = 1'b0;
+			readWord4_c = 1'b0;
+			readWord5_c = 1'b0;
+			readWord6_c = 1'b0;
+			readWord7_c = 1'b0;
+			readWord8_c = 1'b0;
+			writeCount_c = 8'd0;
+			preDone_c = 1'b0;
+			writeFromLmgDone_c = 1'b0;
+			allMovesDone_c = 1'b0;
 		end
 		
-		//TODO Wait for done signal, then read from lmg fifo and write into block ram
+		//Wait for lmg done signal, then read from lmg fifo and write into block ram
 		if (lmgDone == 1'b1) begin
-			if (lmgDone_p1 = 1'b0 || writeFromLmgDone == 1'b1) begin //start when lmgDone first gets turned on or when the last word is done being processed
-				lmgReadEnable = 1'b1;
+			
+			if (lmgDone_p1 == 1'b0 || writeFromLmgDone == 1'b1) begin //start when lmgDone first gets turned on or when the last word is done being processed
+				lmgReadEnable = 1'b1; //trying to toggle the lmg read on/off here because i'm guessing the lmg gives me a new set of moves everytime I press read
+				lmgReadEnable_c = 1'b0;
 				readWord1_c = 1'b1;
 			end
 			
-			if (readWord1 = 1'b1) begin
+			if (readWord1 == 1'b1) begin
 				if (lmgFifoOut[18] == 1'b0) begin //write the first word if valid, otherwise look at the second word
 					ram_in = lmgFifoOut[17:0]; //This isn't exact yet
 					ram_wren = 1'b1;
-					wr_addr = 15'h17 + writeCount;
+					wr_addr = 15'd17 + writeCount;
 					writeCount_c = writeCount + 1;
 					readWord1_c = 1'b0;
 					readWord2_c = 1'b1;
 				end else begin
 						readWord1_c = 1'b0;
-						readWord2 = 1'b1; //This might need to be pipelined
+						readWord2 = 1'b1; //This might need to be pipelined but I think it saves a ton of time if it works
 					end
 			end
 			
-			if (readWord2 = 1'b1) begin
+			if (readWord2 == 1'b1) begin
 				if (lmgFifoOut[37] == 1'b0) begin  //write the second word if valid, otherwise look at the third word
 					ram_in = lmgFifoOut[36:19]; //This isn't exact yet
 					ram_wren = 1'b1;
-					wr_addr = 15'h17 + writeCount;
+					wr_addr = 15'd17 + writeCount;
 					writeCount_c = writeCount + 1;
 					readWord2_c = 1'b0;
 					readWord3_c = 1'b1;
@@ -264,11 +288,11 @@ begin
 					end
 			end
 			
-			if (readWord3 = 1'b1) begin
+			if (readWord3 == 1'b1) begin
 				if (lmgFifoOut[56] == 1'b0) begin  //write the third word if valid, otherwise look at the fourth word
 					ram_in = lmgFifoOut[55:38]; //This isn't exact yet
 					ram_wren = 1'b1;
-					wr_addr = 15'h17 + writeCount;
+					wr_addr = 15'd17 + writeCount;
 					writeCount_c = writeCount + 1;
 					readWord3_c = 1'b0;
 					readWord4_c = 1'b1;
@@ -278,11 +302,11 @@ begin
 					end
 			end
 			
-			if (readWord4 = 1'b1) begin
+			if (readWord4 == 1'b1) begin
 				if (lmgFifoOut[75] == 1'b0) begin  //write the fourth word if valid, otherwise look at the fifth word
 					ram_in = lmgFifoOut[74:57]; //This isn't exact yet
 					ram_wren = 1'b1;
-					wr_addr = 15'h17 + writeCount;
+					wr_addr = 15'd17 + writeCount;
 					writeCount_c = writeCount + 1;
 					readWord4_c = 1'b0;
 					readWord5_c = 1'b1;
@@ -292,11 +316,11 @@ begin
 					end
 			end
 			
-			if (readWord5 = 1'b1) begin
+			if (readWord5 == 1'b1) begin
 				if (lmgFifoOut[94] == 1'b0) begin  //write the fifth word if valid, otherwise look at the sixth word
 					ram_in = lmgFifoOut[93:76]; //This isn't exact yet
 					ram_wren = 1'b1;
-					wr_addr = 15'h17 + writeCount;
+					wr_addr = 15'd17 + writeCount;
 					writeCount_c = writeCount + 1;
 					readWord5_c = 1'b0;
 					readWord6_c = 1'b1;
@@ -306,11 +330,11 @@ begin
 					end
 			end
 			
-			if (readWord6 = 1'b1) begin
+			if (readWord6 == 1'b1) begin
 				if (lmgFifoOut[113] == 1'b0) begin  //write the sixth word if valid, otherwise look at the seventh word
 					ram_in = lmgFifoOut[112:95]; //This isn't exact yet
 					ram_wren = 1'b1;
-					wr_addr = 15'h17 + writeCount;
+					wr_addr = 15'd17 + writeCount;
 					writeCount_c = writeCount + 1;
 					readWord6_c = 1'b0;
 					readWord7_c = 1'b1;
@@ -320,11 +344,11 @@ begin
 					end
 			end
 			
-			if (readWord7 = 1'b1) begin
+			if (readWord7 == 1'b1) begin
 				if (lmgFifoOut[132] == 1'b0) begin  //write the seventh word if valid, otherwise look at the last word
 					ram_in = lmgFifoOut[131:114]; //This isn't exact yet
 					ram_wren = 1'b1;
-					wr_addr = 15'h17 + writeCount;
+					wr_addr = 15'd17 + writeCount;
 					writeCount_c = writeCount + 1;
 					readWord7_c = 1'b0;
 					readWord8_c = 1'b1;
@@ -334,12 +358,12 @@ begin
 					end
 			end
 			
-			if (readWord8 = 1'b1) begin
+			if (readWord8 == 1'b1) begin
 				readWord8_c = 1'b0;
 				if (lmgFifoOut[151] == 1'b0) begin  //write the last word if valid, otherwise 
 					ram_in = lmgFifoOut[150:133]; //This isn't exact yet
 					ram_wren = 1'b1;
-					wr_addr = 15'h17 + writeCount;
+					wr_addr = 15'd17 + writeCount;
 					writeCount_c = writeCount + 1;
 					writeFromLmgDone_c = 1'b1;
 				end else begin 
@@ -357,11 +381,19 @@ begin
 			if(allMovesDone == 1'b1) begin
 				ram_in = writeCount; //might need to format this
 				ram_wren = 1'b1;
-				wr_addr = 15'h16;
-				control[1] = 1'b1; // Done = 1
+				wr_addr = 15'd16;
+				preDone_c = 1'b1; //the name is dumb I just needed another step
+			end	
+			
+			if(preDone == 1'b1) begin
+				preDone_c = 1'b0;
+				wr_addr = 15'd16 + writeCount + 1;
+				ram_in = 32'd0;
+				ram_wren = 1'b1;
+				control[1] = 1'b1; //set done = 1;
 			end
 			
-		end //end start=1
+		end //end lmgDone=1
 
 
 		
@@ -386,7 +418,7 @@ begin
 		control[1] = 1'b1; // Done = 1
 		interface_data[0] = control;
 		*/
-	end
+	end //end start = 1
 	
 	/*
 	if ((!control[0]) && control_p1[0]) // If start changed from 1 to 0
@@ -397,6 +429,7 @@ begin
 	*/
 	
 //======================== RESET ======================================
+	
 	/*
 	if (control[2] == 1) // if reset == 1 (when reset is high the other control bits should be low)
 	begin
@@ -405,19 +438,24 @@ begin
 		counter = 0;
 	end
 	*/
+
 end
 
 
 always @ (posedge clk) begin
 	rd_addr_p1 <= rd_addr;
 	wr_addr_p1 <= wr_addr;
-	//counter_p1 <= counter;
-	ram_wren_p1 <= ram_wren; // currently not used
-	control_p1 <= interface_data[0];
+	//counter_p1 <= counter; // currently not used
+	ram_wren_p1 <= ram_wren; 
+	control_p1 <= control;
 	
+	lmgReadEnable <= lmgReadEnable_c;
 	lmgDone_p1 <= lmgDone;
 	writeCount <= writeCount_c;	
 	writeFromLmgDone <= writeFromLmgDone_c;
+	allMovesDone <= allMovesDone_c;
+	preDone <= preDone_c;
+	
 	readWord1 <= readWord1_c;
 	readWord2 <= readWord2_c;
 	readWord3 <= readWord3_c;
