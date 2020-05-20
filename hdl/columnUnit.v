@@ -69,14 +69,14 @@ wire [8:2] chdo;
 
 // hold signal logic for squares
 wire [8:1] holds;
-assign hold[8] = |{chuo[7:1],            chdiri[8]};
-assign hold[7] = |{chuo[6:1], chdo[7  ], chdiri[7]};
-assign hold[6] = |{chuo[5:1], chdo[7:6], chdiri[6]};
-assign hold[5] = |{chuo[4:1], chdo[7:5], chdiri[5]};
-assign hold[4] = |{chuo[3:1], chdo[7:4], chdiri[4]};
-assign hold[3] = |{chuo[2:1], chdo[7:3], chdiri[3]};
-assign hold[2] = |{chuo[  1], chdo[7:2], chdiri[2]};
-assign hold[1] = |{           chdo[7:1], chdiri[1]};
+assign holds[8] = |{chuo[7:1],            chdiri[8]};
+assign holds[7] = |{chuo[6:1], chdo[7  ], chdiri[7]};
+assign holds[6] = |{chuo[5:1], chdo[7:6], chdiri[6]};
+assign holds[5] = |{chuo[4:1], chdo[7:5], chdiri[5]};
+assign holds[4] = |{chuo[3:1], chdo[7:4], chdiri[4]};
+assign holds[3] = |{chuo[2:1], chdo[7:3], chdiri[3]};
+assign holds[2] = |{chuo[  1], chdo[7:2], chdiri[2]};
+assign holds[1] = |{           chdo[7:1], chdiri[1]};
 
 // parameter for states
 parameter WAIT = 2'b01;
@@ -96,7 +96,7 @@ reg [2:0] sq_move_ptr, sq_move_ptr_c;
 reg [8:1] sq_rden, sq_rden_c;
 
 // indicates a move from self to self, an illegal move
-wire [151:0] ENDMOV = {8{1'b1, 6'o00, xpos, ypos, xpos, ypos}}; // end squence for move list
+wire [151:0] ENDMOV = {8{1'b1, 6'o00, xpos, sq_move_ptr, xpos, sq_move_ptr}}; // end squence for move list
 
 // next state logic
 always @(*) begin

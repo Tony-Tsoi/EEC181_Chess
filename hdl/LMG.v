@@ -29,6 +29,9 @@ parameter WAIT = 2'b01;
 parameter GETM = 2'b11;
 parameter DONE = 2'b10;
 
+// legacy object, to be changed
+wire [151:0] ENDMOV = 152'd0; // TODO: fix states to not use this
+
 // board state
 wire colstate_a = {bstate[227:224], bstate[195:192], bstate[163:160], bstate[131:128], 
 	bstate[99:96], bstate[67:64], bstate[35:32], bstate[3:0]};
@@ -178,7 +181,7 @@ wire [8:1] chlri_g = chro_a | chro_b | chro_c | chro_d | chro_e | chro_f |      
 wire [8:1] chlri_h = chro_a | chro_b | chro_c | chro_d | chro_e | chro_f | chro_g         ;
 
 // only to top left or bottom right holds
-wire [8:1] chlurdi_a, chlurdi_b, chlurdi_c, chlurdi_d, chlurdi_e, chlurdi_f, chlurdi_g;
+wire [8:1] chlurdi_a, chlurdi_b, chlurdi_c, chlurdi_d, chlurdi_e, chlurdi_f, chlurdi_g, chlurdi_h;
 
 assign chlurdi_a[1] = 1'b0;
 
