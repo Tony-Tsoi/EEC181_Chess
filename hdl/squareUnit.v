@@ -20,6 +20,8 @@ output reg done; // done signal
 output [151:0] fifoOut; // output of FIFO
 
 // inputs and outputs to neighbor cells
+// 9 bits of the format of [6 bits origin pos][3 bits of piece info]
+// 1 bit of color is omitted since only white pieces can propagate
 input [8:0] irrdi, irrui, irddi, irdi, iri, irui, iruui, idi, iui, 
 	ilddi, ildi, ili, ilui, iluui, illdi, illui;
 output reg [8:0] orrdo, orruo, orddo, ordo, oro, oruo, oruuo, odo, ouo, 
@@ -39,18 +41,18 @@ parameter ROOK = 3'o4;
 parameter QUEEN = 3'o5;
 parameter KING = 3'o6;
 parameter NOTUSED = 3'o7;
-wire PVOID = {xpos, ypos, EMPTY}; // denotes an empty space at self, Shane made a reg
+parameter PVOID = {xpos, ypos, EMPTY}; // denotes an empty space at self
 parameter ROW2 = 3'o1;
 parameter ROW3 = 3'o2; // value for ypos to be at row 3 (for pawn advance two blocks forward
 parameter ROW4 = 3'o3;
-//parameter ENDMOV = {8{1'b1, 6'o00, xpos, ypos, xpos, ypos}}; // end squence for move list
+parameter ENDMOV = {8{1'b1, 6'o00, xpos, ypos, xpos, ypos}}; // end squence for move list
 	// indicates a move from self to self, an illegal move
 
 // Moves Output
-reg [5:0] mvrrd, mvrru, mvrdd, mvruu, mvldd, mvluu, mvlld, mvllu;
-reg [5:0] mvrd, mvr, mvru, mvd, mvu, mvld, mvl, mvlu;
-wire [47:0] wr1 = {mvrd, mvr, mvru, mvd, mvu, mvld, mvl, mvlu}; //Shane made these wires to get around an error
-wire [47:0] wr2 = {mvrrd, mvrru, mvrdd, mvruu, mvldd, mvluu, mvlld, mvllu};//
+reg [18:0] mvrrd, mvrru, mvrdd, mvruu, mvldd, mvluu, mvlld, mvllu;
+reg [18:0] mvrd, mvr, mvru, mvd, mvu, mvld, mvl, mvlu;
+wire [151:0] wr1 = {mvrd, mvr, mvru, mvd, mvu, mvld, mvl, mvlu};
+wire [151:0] wr2 = {mvrrd, mvrru, mvrdd, mvruu, mvldd, mvluu, mvlld, mvllu};
 wire wren1 = ~&{wr1[151], wr1[132], wr1[113], wr1[94], wr1[75], wr1[56], wr1[37], wr1[18]};
 wire wren2 = ~&{wr2[151], wr2[132], wr2[113], wr2[94], wr2[75], wr2[56], wr2[37], wr2[18]};
 
@@ -70,6 +72,26 @@ end
 reg reset_d;
 always @(posedge clk) begin
 	reset_d <= reset;
+end
+
+// hold signal combinational
+wire hlu_c = (oluo_c != PVOID);
+wire hl_c = (olo_c != PVOID);
+wire hld_c = (oldo_c != PVOID);
+wire hu_c = (ouo_c != PVOID);
+wire hd_c = (odo_c != PVOID);
+wire hru_c = (oruo_c != PVOID);
+wire hr_c = (oro_c != PVOID);
+wire hrd_c = (ordo_c != PVOID);
+always @(posedge clk) begin
+	hlu <= hlu_c;
+	hl <= hl_c;
+	hld <= hld_c;
+	hu <= hu_c;
+	hd <= hd_c;
+	hru <= hru_c;
+	hr <= hr_c;
+	hrd <= hrd_c;
 end
 
 // outgoing output variables combinational
@@ -94,26 +116,6 @@ always @(posedge clk) begin
 	olluo <= olluo_c;
 end
 
-// hold signal combinational
-wire hlu_c = (oluo_c != PVOID);
-wire hl_c = (olo_c != PVOID);
-wire hld_c = (oldo_c != PVOID);
-wire hu_c = (ouo_c != PVOID);
-wire hd_c = (odo_c != PVOID);
-wire hru_c = (oruo_c != PVOID);
-wire hr_c = (oro_c != PVOID);
-wire hrd_c = (ordo_c != PVOID);
-always @(posedge clk) begin
-	hlu <= hlu_c;
-	hl <= hl_c;
-	hld <= hld_c;
-	hu <= hu_c;
-	hd <= hd_c;
-	hru <= hru_c;
-	hr <= hr_c;
-	hrd <= hrd_c;
-end
-
 // output logic
 wire capb = (cpiece[3] == BLACK); // capture bit
 
@@ -132,8 +134,8 @@ always @(*) begin
 		// of course not done
 		done_c = 1'b0;
 		
-		// propogate current piece if it's ours (white)
-		// since known only propogate white pieces, not sending white prefix
+		// propagate current piece if it's ours (white)
+		// since known only propagate white pieces, not sending white prefix
 		// pad origin position before piece type
 		if (cpiece[3] == WHITE) begin
 			case (cpiece[2:0])
@@ -177,13 +179,13 @@ always @(*) begin
 			default: begin end // EMPTY, NOTUSED case
 			endcase
 		end
-	end//I think this belongs here
-	else begin // propogate case
+	end // end generate case	
+	else begin // propagate case
 		// PAWN case
 		if (cpiece[2:0] == EMPTY) begin
 			// if current place is empty, pawn can move up
 			if (iui[2:0] != EMPTY) begin
-				mvu = {7'b0010000,iui[8:3], xpos, ypos};
+				mvu = {7'b0010000, iui[8:3], xpos, ypos};
 				done_c = 1'b0;
 				
 				if (ypos == ROW4)
@@ -203,7 +205,7 @@ always @(*) begin
 					done_c = 1'b0;
 				end
 				if (ilui[2:0] == PAWN) begin
-					mvlu = {7'b0010101,ilui[8:3], xpos, ypos};
+					mvlu = {7'b0010101, ilui[8:3], xpos, ypos};
 					done_c = 1'b0;
 				end
 			end
@@ -252,7 +254,7 @@ always @(*) begin
 				done_c = 1'b0;
 				
 				if ((irui[2:0] == BISHOP) && (irui[2:0] == QUEEN))
-					// if bishop or queen, propogate diag
+					// if bishop or queen, propagate diag
 					oruo_c = irui;
 			end
 			if (capb) begin
@@ -267,7 +269,7 @@ always @(*) begin
 				done_c = 1'b0;
 				
 				if ((ilui[2:0] == BISHOP) && (ilui[2:0] == QUEEN))
-					// if bishop or queen, propogate diag
+					// if bishop or queen, propagate diag
 					oruo_c = ilui;
 			end
 			if (capb) begin
@@ -283,7 +285,7 @@ always @(*) begin
 				done_c = 1'b0;
 				
 				if ((iui[2:0] == BISHOP) && (iui[2:0] == QUEEN))
-					// if bishop or queen, propogate diag
+					// if bishop or queen, propagate diag
 					oruo_c = irui;
 			end
 			if ((capb) && (iui[2:0] != PAWN)) begin
@@ -299,7 +301,7 @@ always @(*) begin
 				done_c = 1'b0;
 				
 				if ((irdi[2:0] == BISHOP) && (irdi[2:0] == QUEEN))
-					// if bishop or queen, propogate diag
+					// if bishop or queen, propagate diag
 					ordo_c = irdi;
 			end
 			if (capb) begin
@@ -314,7 +316,7 @@ always @(*) begin
 				done_c = 1'b0;
 				
 				if ((ildi[2:0] == BISHOP) && (ildi[2:0] == QUEEN))
-					// if bishop or queen, propogate diag
+					// if bishop or queen, propagate diag
 					oldo_c = ildi;
 			end
 			if (capb) begin
@@ -329,7 +331,7 @@ always @(*) begin
 				done_c = 1'b0;
 				
 				if ((idi[2:0] == BISHOP) && (idi[2:0] == QUEEN))
-					// if bishop or queen, propogate diag
+					// if bishop or queen, propagate diag
 					odo_c = idi;
 			end
 			if (capb) begin
@@ -344,7 +346,7 @@ always @(*) begin
 				done_c = 1'b0;
 
 				if ((iri[2:0] == BISHOP) && (iri[2:0] == QUEEN))
-					// if bishop or queen, propogate diag
+					// if bishop or queen, propagate diag
 					oro_c = iri;
 			end
 			if (capb) begin
@@ -359,7 +361,7 @@ always @(*) begin
 				done_c = 1'b0;
 				
 				if ((ili[2:0] == BISHOP) && (ili[2:0] == QUEEN))
-					// if bishop or queen, propogate diag
+					// if bishop or queen, propagate diag
 					olo_c = ili;
 			end
 			if (capb) begin
@@ -367,7 +369,7 @@ always @(*) begin
 				done_c = 1'b0;
 			end
 		end
-	end
+	end // end propagate case
 	
 	// finally set done signal if hold or is just got new board
 	if (hold == 1'b1)
