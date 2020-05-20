@@ -84,63 +84,63 @@ always @(*) begin
 	case (state)
 		WAIT: begin
 			// if a done signal is up and is not grabbed to FIFO
-			if done_cols[8]
-				if ~col_moved_flags[8] begin
+			if (done_cols[8])
+				if (~col_moved_flags[8]) begin
 					state_c = GETM;
 					col_move_ptr_c = 3'd7;
 					col_rden_c = 8'h80;
 				end
 			
-			if done_cols[7]
-				if ~col_moved_flags[7] begin
+			if (done_cols[7])
+				if (~col_moved_flags[7]) begin
 					state_c = GETM;
 					col_move_ptr_c = 3'd6;
 					col_rden_c = 8'h40;
 				end
 			
-			if done_cols[6]
-				if ~col_moved_flags[6] begin
+			if (done_cols[6])
+				if (~col_moved_flags[6]) begin
 					state_c = GETM;
 					col_move_ptr_c = 3'd5;
 					col_rden_c = 8'h20;
 				end
 			
-			if done_cols[5]
-				if ~col_moved_flags[5] begin
+			if (done_cols[5])
+				if (~col_moved_flags[5]) begin
 					state_c = GETM;
 					col_move_ptr_c = 3'd4;
 					col_rden_c = 8'h10;
 				end
 			
-			if done_cols[4]
-				if ~col_moved_flags[4] begin
+			if (done_cols[4])
+				if (~col_moved_flags[4]) begin
 					state_c = GETM;
 					col_move_ptr_c = 3'd3;
 					col_rden_c = 8'h08;
 				end
 			
-			if done_cols[3]
-				if ~col_moved_flags[3] begin
+			if (done_cols[3])
+				if (~col_moved_flags[3]) begin
 					state_c = GETM;
 					col_move_ptr_c = 3'd2;
 					col_rden_c = 8'h04;
 				end
 			
-			if done_cols[2]
-				if ~col_moved_flags[2] begin
+			if (done_cols[2])
+				if (~col_moved_flags[2]) begin
 					state_c = GETM;
 					col_move_ptr_c = 3'd1;
 					col_rden_c = 8'h02;
 				end
 			
-			if done_cols[1]
-				if ~col_moved_flags[1] begin
+			if (done_cols[1])
+				if (~col_moved_flags[1]) begin
 					state_c = GETM;
 					col_move_ptr_c = 3'd0;
 					col_rden_c = 8'h01;
 				end
 			
-			if &{col_moved_flags} // if all columns grabbed move
+			if (&{col_moved_flags}) // if all columns grabbed move
 				state_c = DONE;
 		end
 		GETM: begin

@@ -106,63 +106,63 @@ always @(*) begin
 	case (state)
 		WAIT: begin
 			// if a done signal is up and is not grabbed to FIFO
-			if done_sqs[8]
-				if ~sq_moved_flags[8] begin
+			if (done_sqs[8])
+				if (~sq_moved_flags[8]) begin
 					state_c = GETM;
 					sq_move_ptr_c = 3'd7;
 					sq_rden_c = 8'h80;
 				end
 			
-			if done_sqs[7]
-				if ~sq_moved_flags[7] begin
+			if (done_sqs[7])
+				if (~sq_moved_flags[7]) begin
 					state_c = GETM;
 					sq_move_ptr_c = 3'd6;
 					sq_rden_c = 8'h40;
 				end
 			
-			if done_sqs[6]
-				if ~sq_moved_flags[6] begin
+			if (done_sqs[6])
+				if (~sq_moved_flags[6]) begin
 					state_c = GETM;
 					sq_move_ptr_c = 3'd5;
 					sq_rden_c = 8'h20;
 				end
 			
-			if done_sqs[5]
-				if ~sq_moved_flags[5] begin
+			if (done_sqs[5])
+				if (~sq_moved_flags[5]) begin
 					state_c = GETM;
 					sq_move_ptr_c = 3'd4;
 					sq_rden_c = 8'h10;
 				end
 			
-			if done_sqs[4]
-				if ~sq_moved_flags[4] begin
+			if (done_sqs[4])
+				if (~sq_moved_flags[4]) begin
 					state_c = GETM;
 					sq_move_ptr_c = 3'd3;
 					sq_rden_c = 8'h08;
 				end
 			
-			if done_sqs[3]
-				if ~sq_moved_flags[3] begin
+			if (done_sqs[3])
+				if (~sq_moved_flags[3]) begin
 					state_c = GETM;
 					sq_move_ptr_c = 3'd2;
 					sq_rden_c = 8'h04;
 				end
 			
-			if done_sqs[2]
-				if ~sq_moved_flags[2] begin
+			if (done_sqs[2])
+				if (~sq_moved_flags[2]) begin
 					state_c = GETM;
 					sq_move_ptr_c = 3'd1;
 					sq_rden_c = 8'h02;
 				end
 			
-			if done_sqs[1]
-				if ~sq_moved_flags[1] begin
+			if (done_sqs[1])
+				if (~sq_moved_flags[1]) begin
 					state_c = GETM;
 					sq_move_ptr_c = 3'd0;
 					sq_rden_c = 8'h01;
 				end
 			
-			if &{sq_moved_flags} // if all squares grabbed move
+			if (&{sq_moved_flags}) // if all squares grabbed move
 				state_c = DONE;
 		end
 		GETM: begin
