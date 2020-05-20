@@ -73,14 +73,15 @@ wire [151:0] fifoOut_col8, fifoOut_col7, fifoOut_col6, fifoOut_col5,
 	fifoOut_col4, fifoOut_col3, fifoOut_col2, fifoOut_col1;
 
 reg wren1;
-wire [47:0] wr1 = (col_move_ptr == 3'd7)? fifoOut_col8 :
+wire [151:0] wr1 = (col_move_ptr == 3'd7)? fifoOut_col8 :
 	(col_move_ptr == 3'd6)? fifoOut_col7 :
 	(col_move_ptr == 3'd5)? fifoOut_col6 :
 	(col_move_ptr == 3'd4)? fifoOut_col5 :
 	(col_move_ptr == 3'd3)? fifoOut_col4 :
 	(col_move_ptr == 3'd2)? fifoOut_col3 :
 	(col_move_ptr == 3'd1)? fifoOut_col2 : fifoOut_col1;
-MyFifo F1F0 (.clk(clk), .wr1(wr1), .wr2(48'd0), .rd1(fifoOut), .wren1(wren1), .wren2(1'b0));
+wire [159:152] fillwr = 8'd0; // white space to accomodate width of fifo
+MyFifo F1F0 (.clk(clk), .wr1({fillwr,wr1}), .wr2(160'd0), .rd1(fifoOut), .wren1(wren1), .wren2(1'b0));
 
 // next state logic
 always @(*) begin

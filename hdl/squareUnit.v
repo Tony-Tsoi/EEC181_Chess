@@ -55,6 +55,7 @@ wire [151:0] wr1 = {mvrd, mvr, mvru, mvd, mvu, mvld, mvl, mvlu};
 wire [151:0] wr2 = {mvrrd, mvrru, mvrdd, mvruu, mvldd, mvluu, mvlld, mvllu};
 wire wren1 = ~&{wr1[151], wr1[132], wr1[113], wr1[94], wr1[75], wr1[56], wr1[37], wr1[18]};
 wire wren2 = ~&{wr2[151], wr2[132], wr2[113], wr2[94], wr2[75], wr2[56], wr2[37], wr2[18]};
+wire [159:152] fillwr = 8'd0; // white space to accomodate width of fifo
 
 // fifo read enable input
 input rden;
@@ -63,7 +64,8 @@ input rden;
 output fifoEmpty;
 
 // FIFO Module Declaration
-MyFifo F1F0 (.clk(clk), .wr1(wr1), .wr2(wr2), .rd1(fifoOut), .wren1(wren1), .wren2(wren2), .rden(rden), .empty(fifoEmpty));
+MyFifo F1F0 (.clk(clk), .wr1({fillwr,wr1}), .wr2({fillwr,wr2}), .rd1(fifoOut), .wren1(wren1), .wren2(wren2), 
+	.rden(rden), .empty(fifoEmpty));
 
 // done signal
 reg done_c;

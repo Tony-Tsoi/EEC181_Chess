@@ -197,14 +197,15 @@ end
 
 // FIFO Module Declaration
 reg wren1;
-wire [47:0] wr1 = (sq_move_ptr == 3'd7)? fifoOut_sq8 :
+wire [151:0] wr1 = (sq_move_ptr == 3'd7)? fifoOut_sq8 :
 	(sq_move_ptr == 3'd6)? fifoOut_sq7 :
 	(sq_move_ptr == 3'd5)? fifoOut_sq6 :
 	(sq_move_ptr == 3'd4)? fifoOut_sq5 :
 	(sq_move_ptr == 3'd3)? fifoOut_sq4 :
 	(sq_move_ptr == 3'd2)? fifoOut_sq3 :
 	(sq_move_ptr == 3'd1)? fifoOut_sq2 : fifoOut_sq1;
-MyFifo F1F0 (.clk(clk), .wr1(wr1), .wr2(48'd0), .rd1(fifoOut), .wren1(wren1), .wren2(1'b0), .empty(fifoEmpty));
+wire [159:152] fillwr = 8'd0; // white space to accomodate width of fifo
+MyFifo F1F0 (.clk(clk), .wr1({fillwr,wr1}), .wr2(160'd0), .rd1(fifoOut), .wren1(wren1), .wren2(1'b0), .empty(fifoEmpty));
 
 // Row fifo outs
 wire [47:0] fifoOut_sq8, fifoOut_sq7, fifoOut_sq6, fifoOut_sq5, fifoOut_sq4, fifoOut_sq3, fifoOut_sq2, fifoOut_sq1;
