@@ -1,11 +1,9 @@
-module lmg (clk, reset, bstate, done, fifoOut, rden);
+module lmg (clk, reset, bstate, done, fifoOut, rden, fifoEmpty);
 
 // 19 bit output per move from fifoOut has the following format:
 // [7b flag][6b from][6b to]
 // seven bit flag bits as follows:
 // [invalid][promote][pawn move][pawn 2 sq][en passant][castle][capture]
-
-// TODO: add king castling
 
 input clk, reset;
 input [255:0] bstate; // board state
@@ -14,17 +12,30 @@ output done = (state == DONE);
 
 output [151:0] fifoOut;
 input rden;
+output fifoEmpty;
 
 // parameter declarations
-parameter PVOID = 9'h0; // it's just {3'o0, 3'o0, EMPTY} - denotes an empty space at xpos = 0, ypos = 0
-parameter PVOID8 = 72'h0;
-parameter PVOID7 = 63'h0;
-parameter PVOID6 = 54'h0;
+parameter PVOID = 9'd0; // it's just {3'o0, 3'o0, EMPTY} - denotes an empty space at xpos = 0, ypos = 0
+parameter PVOID8 = 72'd0;
+parameter PVOID7 = 63'd0;
+parameter PVOID6 = 54'd0;
 
 parameter COLA = 3'o0; parameter COLB = 3'o1; parameter COLC = 3'o2; parameter COLD = 3'o3;
 parameter COLE = 3'o4; parameter COLF = 3'o5; parameter COLG = 3'o6; parameter COLH = 3'o7;
 
+parameter WHITE = 1'b0;
+parameter BLACK = 1'b1;
+parameter EMPTY = 3'o0;
+parameter PAWN = 3'o1;
+parameter KNIGHT = 3'o2;
+parameter BISHOP = 3'o3;
+parameter ROOK = 3'o4;
+parameter QUEEN = 3'o5;
+parameter KING = 3'o6;
+parameter NOTUSED = 3'o7;
+
 // parameter for states
+parameter GCAS = 2'b00; // get castling stage
 parameter WAIT = 2'b01;
 parameter GETM = 2'b11;
 parameter DONE = 2'b10;
@@ -72,8 +83,9 @@ wire c_col_empty = colEmpty[col_move_ptr];
 wire [151:0] fifoOut_col8, fifoOut_col7, fifoOut_col6, fifoOut_col5, 
 	fifoOut_col4, fifoOut_col3, fifoOut_col2, fifoOut_col1;
 
-reg wren1;
-wire [151:0] wr1 = (col_move_ptr == 3'd7)? fifoOut_col8 :
+reg wren1, wren1_c;
+wire [151:0] wr1 = (state == GCAS) ? gcas_wr1 :
+	(col_move_ptr == 3'd7)? fifoOut_col8 :
 	(col_move_ptr == 3'd6)? fifoOut_col7 :
 	(col_move_ptr == 3'd5)? fifoOut_col6 :
 	(col_move_ptr == 3'd4)? fifoOut_col5 :
@@ -81,15 +93,36 @@ wire [151:0] wr1 = (col_move_ptr == 3'd7)? fifoOut_col8 :
 	(col_move_ptr == 3'd2)? fifoOut_col3 :
 	(col_move_ptr == 3'd1)? fifoOut_col2 : fifoOut_col1;
 wire [159:152] fillwr = 8'd0; // white space to accomodate width of fifo
-MyFifo F1F0 (.clk(clk), .wr1({fillwr,wr1}), .wr2(160'd0), .rd1(fifoOut), .wren1(wren1), .wren2(1'b0));
+MyFifo F1F0 (.clk(clk), .wr1({fillwr,wr1}), .wr2(160'd0), .rd1(fifoOut), .wren1((wren1 | cas_wren)), .wren2(1'b0), 
+	.empty(fifoEmpty));
+
+// for castling
+// Note: this check ignores the following rules:
+// Neither king nor roook previously moved
+// King not currently in check
+// King doesn't pass thru square attacked by enemy piece
+// if castling applies, enable write, put 1 or 2 moves
+wire cas_l = &{(bstate[3:0] == {WHITE,ROOK}), (bstate[6:4] == EMPTY), (bstate[10:8] == EMPTY), 
+	(bstate[14:12] == EMPTY), (bstate[19:16] == {WHITE,KING})};
+wire cas_r = &{(bstate[19:16] == {WHITE,KING}), (bstate[22:20] == EMPTY), (bstate[26:24] == EMPTY),
+	(bstate[31:28] == {WHITE,ROOK})};
+wire cas_wren = cas_l | cas_r;
+wire [151:0] gcas_wr1;
+assign gcas_wr1[151:133] = (cas_r) ? {7'b0000010, 6'o40, 6'o10} : 19'd0;
+assign gcas_wr1[132:114] = (cas_l) ? {7'b0000010, 6'o40, 6'o60} : 19'd0;
+assign gcas_wr1[113:0] = 134'd0;
 
 // next state logic
 always @(*) begin
 	state_c = state;
 	col_rden_c = 8'h00;
 	col_moved_flags_c = col_moved_flags;
+	wren1_c = 1'b0;
 	
 	case (state)
+		GCAS: begin
+			state_c = WAIT;
+		end
 		WAIT: begin
 			// if a done signal is up and is not grabbed to FIFO
 			if (done_cols[8])
@@ -97,6 +130,7 @@ always @(*) begin
 					state_c = GETM;
 					col_move_ptr_c = 3'd7;
 					col_rden_c = 8'h80;
+					wren1_c = 1'b1;
 				end
 			
 			if (done_cols[7])
@@ -104,6 +138,7 @@ always @(*) begin
 					state_c = GETM;
 					col_move_ptr_c = 3'd6;
 					col_rden_c = 8'h40;
+					wren1_c = 1'b1;
 				end
 			
 			if (done_cols[6])
@@ -111,6 +146,7 @@ always @(*) begin
 					state_c = GETM;
 					col_move_ptr_c = 3'd5;
 					col_rden_c = 8'h20;
+					wren1_c = 1'b1;
 				end
 			
 			if (done_cols[5])
@@ -118,6 +154,7 @@ always @(*) begin
 					state_c = GETM;
 					col_move_ptr_c = 3'd4;
 					col_rden_c = 8'h10;
+					wren1_c = 1'b1;
 				end
 			
 			if (done_cols[4])
@@ -125,6 +162,7 @@ always @(*) begin
 					state_c = GETM;
 					col_move_ptr_c = 3'd3;
 					col_rden_c = 8'h08;
+					wren1_c = 1'b1;
 				end
 			
 			if (done_cols[3])
@@ -132,6 +170,7 @@ always @(*) begin
 					state_c = GETM;
 					col_move_ptr_c = 3'd2;
 					col_rden_c = 8'h04;
+					wren1_c = 1'b1;
 				end
 			
 			if (done_cols[2])
@@ -139,6 +178,7 @@ always @(*) begin
 					state_c = GETM;
 					col_move_ptr_c = 3'd1;
 					col_rden_c = 8'h02;
+					wren1_c = 1'b1;
 				end
 			
 			if (done_cols[1])
@@ -146,6 +186,7 @@ always @(*) begin
 					state_c = GETM;
 					col_move_ptr_c = 3'd0;
 					col_rden_c = 8'h01;
+					wren1_c = 1'b1;
 				end
 			
 			if (&{col_moved_flags}) // if all columns grabbed move
@@ -154,17 +195,28 @@ always @(*) begin
 		GETM: begin
 			// get move from specified column until exhausted
 			col_rden_c = col_rden;
+			wren1_c = 1'b1;
 			
 			// if all moves from column fifo gone
 			if (c_col_empty) begin
 				state_c = WAIT;
 				col_moved_flags_c[col_move_ptr] = 1'b1;
+				wren1_c = 1'b0;
 			end
 		end
 	endcase
 	
 	if (reset == 1'b1)
 		col_moved_flags = 8'h00;
+end
+
+// state FF
+always @(posedge clk) begin
+	state <= reset? GCAS : state_c;
+	col_rden <= col_rden_c;
+	col_move_ptr <= col_move_ptr_c;
+	col_moved_flags <= col_moved_flags_c;
+	wren1 <= wren1_c;
 end
 
 // wiring all the hold signals from all directions that is across columns

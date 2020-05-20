@@ -117,6 +117,7 @@ always @(*) begin
 					state_c = GETM;
 					sq_move_ptr_c = 3'd7;
 					sq_rden_c = 8'h80;
+					wren1_c = 1'b1;
 				end
 			
 			if (done_sqs[7])
@@ -124,6 +125,7 @@ always @(*) begin
 					state_c = GETM;
 					sq_move_ptr_c = 3'd6;
 					sq_rden_c = 8'h40;
+					wren1_c = 1'b1;
 				end
 			
 			if (done_sqs[6])
@@ -131,6 +133,7 @@ always @(*) begin
 					state_c = GETM;
 					sq_move_ptr_c = 3'd5;
 					sq_rden_c = 8'h20;
+					wren1_c = 1'b1;
 				end
 			
 			if (done_sqs[5])
@@ -138,6 +141,7 @@ always @(*) begin
 					state_c = GETM;
 					sq_move_ptr_c = 3'd4;
 					sq_rden_c = 8'h10;
+					wren1_c = 1'b1;
 				end
 			
 			if (done_sqs[4])
@@ -145,6 +149,7 @@ always @(*) begin
 					state_c = GETM;
 					sq_move_ptr_c = 3'd3;
 					sq_rden_c = 8'h08;
+					wren1_c = 1'b1;
 				end
 			
 			if (done_sqs[3])
@@ -152,6 +157,7 @@ always @(*) begin
 					state_c = GETM;
 					sq_move_ptr_c = 3'd2;
 					sq_rden_c = 8'h04;
+					wren1_c = 1'b1;
 				end
 			
 			if (done_sqs[2])
@@ -159,6 +165,7 @@ always @(*) begin
 					state_c = GETM;
 					sq_move_ptr_c = 3'd1;
 					sq_rden_c = 8'h02;
+					wren1_c = 1'b1;
 				end
 			
 			if (done_sqs[1])
@@ -166,6 +173,7 @@ always @(*) begin
 					state_c = GETM;
 					sq_move_ptr_c = 3'd0;
 					sq_rden_c = 8'h01;
+					wren1_c = 1'b1;
 				end
 			
 			if (&{sq_moved_flags}) // if all squares grabbed move
@@ -174,11 +182,13 @@ always @(*) begin
 		GETM: begin
 			// get move from specified square until exhausted
 			sq_rden_c = sq_rden;
+			wren1_c = 1'b1;
 			
 			// if all moves from square fifo gone
 			if (c_sq_empty) begin
 				state_c = WAIT;
 				sq_moved_flags_c[sq_move_ptr] = 1'b1;
+				wren1_c = 1'b0;
 			end
 		end
 	endcase
@@ -193,10 +203,11 @@ always @(posedge clk) begin
 	sq_rden <= sq_rden_c;
 	sq_move_ptr <= sq_move_ptr_c;
 	sq_moved_flags <= sq_moved_flags_c;
+	wren1 <= wren1_c;
 end
 
 // FIFO Module Declaration
-reg wren1;
+reg wren1, wren1_c;
 wire [151:0] wr1 = (sq_move_ptr == 3'd7)? fifoOut_sq8 :
 	(sq_move_ptr == 3'd6)? fifoOut_sq7 :
 	(sq_move_ptr == 3'd5)? fifoOut_sq6 :
