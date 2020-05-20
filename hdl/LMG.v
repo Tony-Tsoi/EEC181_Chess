@@ -353,7 +353,8 @@ wire [8:1] chlo_a, chro_a;
 wire [7:1] chldo_a, chrdo_a;
 
 columnUnit cola (.clk(clk), .xpos(COLA), .done(done_cols[7]), .bstate(bstate), .reset(reset), .colstate(colstate_a),
-	.cirrdi(PVOID7), .cirrui(PVOID7), .cirddi(PVOID6), .cirdi(PVOID7), .ciri(PVOID8),
+	.chdiri(chdiri_a), 
+	.cirrdi(PVOID7), .cirrui(PVOID7), .cirddi(PVOID6), .cirdi(PVOID7), .ciri(PVOID8), 
 	.cirui(PVOID7), .ciruui(PVOID6),
 	.cidi(cidi_a), .ciui(ciui_a), .cilddi(cilddi_a), .cildi(cildi_a), .cili(cili_a), 
 	.cilui(cilui_a), .ciluui(ciluui_a), .cilldi(cilldi_a), .cillui(cillui_a),
@@ -380,10 +381,11 @@ wire [8:1] chlo_b, chro_b;
 wire [7:1] chldo_b, chrdo_b;
 
 columnUnit colb (.clk(clk), .xpos(COLB), .done(done_cols[6]), .bstate(bstate), .reset(reset), .colstate(colstate_b),
+	.chdiri(chdiri_b), 
 	.cirrdi(PVOID7), .cirrui(PVOID7), 
 	.cirddi(cirddi_b), .cirdi(cirdi_b), .ciri(ciri_b), .cirui(cirui_b), .ciruui(ciruui_b),
 	.cidi(cidi_b), .ciui(ciui_b), .cilddi(cilddi_b), .cildi(cildi_b), .cili(cili_b), 
-	cilui(cilui_b), .ciluui(ciluui_b), .cilldi(cilldi_b), .cillui(cillui_b),
+	.cilui(cilui_b), .ciluui(ciluui_b), .cilldi(cilldi_b), .cillui(cillui_b),
 	.colluo(), .colldo(),
 	.coluuo(coluuo_b), .coluo(coluo_b), .colo(colo_b), .coldo(coldo_b), .colddo(colddo_b),
 	.couo(couo_b), .codo(codo_b), .coruuo(coruuo_b), .coruo(coruo_b), .coro(coro_b),
@@ -408,10 +410,11 @@ wire [8:1] chlo_c, chro_c;
 wire [7:1] chldo_c, chrdo_c;
 
 columnUnit colc (.clk(clk), .xpos(COLC), .done(done_cols[5]), .bstate(bstate), .reset(reset), .colstate(colstate_c),
+	.chdiri(chdiri_c), 
 	.cirrdi(cirrdi_c), .cirrui(cirrui_c), 
 	.cirddi(cirddi_c), .cirdi(cirdi_c), .ciri(ciri_c), .cirui(cirui_c), .ciruui(ciruui_c),
 	.cidi(cidi_c), .ciui(ciui_c), .cilddi(cilddi_c), .cildi(cildi_c), .cili(cili_c), 
-	cilui(cilui_c), .ciluui(ciluui_c), .cilldi(cilldi_c), .cillui(cillui_c),
+	.cilui(cilui_c), .ciluui(ciluui_c), .cilldi(cilldi_c), .cillui(cillui_c),
 	.colluo(colluo_c), .colldo(colldo_c),
 	.coluuo(coluuo_c), .coluo(coluo_c), .colo(colo_c), .coldo(coldo_c), .colddo(colddo_c),
 	.couo(couo_c), .codo(codo_c), .coruuo(coruuo_c), .coruo(coruo_c), .coro(coro_c),
@@ -436,10 +439,11 @@ wire [8:1] chlo_d, chro_d;
 wire [7:1] chldo_d, chrdo_d;
 
 columnUnit cold (.clk(clk), .xpos(COLD), .done(done_cols[4]), .bstate(bstate), .reset(reset), .colstate(colstate_d),
+	.chdiri(chdiri_d), 
 	.cirrdi(cirrdi_d), .cirrui(cirrui_d), 
 	.cirddi(cirddi_d), .cirdi(cirdi_d), .ciri(ciri_d), .cirui(cirui_d), .ciruui(ciruui_d),
 	.cidi(cidi_d), .ciui(ciui_d), .cilddi(cilddi_d), .cildi(cildi_d), .cili(cili_d), 
-	cilui(cilui_d), .ciluui(ciluui_d), .cilldi(cilldi_d), .cillui(cillui_d),
+	.cilui(cilui_d), .ciluui(ciluui_d), .cilldi(cilldi_d), .cillui(cillui_d),
 	.colluo(colluo_d), .colldo(colldo_d),
 	.coluuo(coluuo_d), .coluo(coluo_d), .colo(colo_d), .coldo(coldo_d), .colddo(colddo_d),
 	.couo(couo_d), .codo(codo_d), .coruuo(coruuo_d), .coruo(coruo_d), .coro(coro_d),
@@ -464,10 +468,11 @@ wire [8:1] chlo_e, chro_e;
 wire [7:1] chldo_e, chrdo_e;
 
 columnUnit cole (.clk(clk), .xpos(COLE), .done(done_cols[3]), .bstate(bstate), .reset(reset), .colstate(colstate_e),
+	.chdiri(chdiri_e), 
 	.cirrdi(cirrdi_e), .cirrui(cirrui_e), 
 	.cirddi(cirddi_e), .cirdi(cirdi_e), .ciri(ciri_e), .cirui(cirui_e), .ciruui(ciruui_e),
 	.cidi(cidi_e), .ciui(ciui_e), .cilddi(cilddi_e), .cildi(cildi_e), .cili(cili_e), 
-	cilui(cilui_e), .ciluui(ciluui_e), .cilldi(cilldi_e), .cillui(cillui_e),
+	.cilui(cilui_e), .ciluui(ciluui_e), .cilldi(cilldi_e), .cillui(cillui_e),
 	.colluo(colluo_e), .colldo(colldo_e),
 	.coluuo(coluuo_e), .coluo(coluo_e), .colo(colo_e), .coldo(coldo_e), .colddo(colddo_e),
 	.couo(couo_e), .codo(codo_e), .coruuo(coruuo_e), .coruo(coruo_e), .coro(coro_e),
@@ -492,10 +497,11 @@ wire [8:1] chlo_f, chro_f;
 wire [7:1] chldo_f, chrdo_f;
 
 columnUnit colf (.clk(clk), .xpos(COLF), .done(done_cols[2]), .bstate(bstate), .reset(reset), .colstate(colstate_f),
+	.chdiri(chdiri_f), 
 	.cirrdi(cirrdi_f), .cirrui(cirrui_f), 
 	.cirddi(cirddi_f), .cirdi(cirdi_f), .ciri(ciri_f), .cirui(cirui_f), .ciruui(ciruui_f),
 	.cidi(cidi_f), .ciui(ciui_f), .cilddi(cilddi_f), .cildi(cildi_f), .cili(cili_f), 
-	cilui(cilui_f), .ciluui(ciluui_f), .cilldi(cilldi_f), .cillui(cillui_f),
+	.cilui(cilui_f), .ciluui(ciluui_f), .cilldi(cilldi_f), .cillui(cillui_f),
 	.colluo(colluo_f), .colldo(colldo_f),
 	.coluuo(coluuo_f), .coluo(coluo_f), .colo(colo_f), .coldo(coldo_f), .colddo(colddo_f),
 	.couo(couo_f), .codo(codo_f), .coruuo(coruuo_f), .coruo(coruo_f), .coro(coro_f),
@@ -520,10 +526,11 @@ wire [8:1] chlo_g, chro_g;
 wire [7:1] chldo_g, chrdo_g;
 
 columnUnit colg (.clk(clk), .xpos(COLG), .done(done_cols[1]), .bstate(bstate), .reset(reset), .colstate(colstate_g),
+	.chdiri(chdiri_g), 
 	.cirrdi(cirrdi_g), .cirrui(cirrui_g), 
 	.cirddi(cirddi_g), .cirdi(cirdi_g), .ciri(ciri_g), .cirui(cirui_g), .ciruui(ciruui_g),
 	.cidi(cidi_g), .ciui(ciui_g), .cilddi(cilddi_g), .cildi(cildi_g), .cili(cili_g), 
-	cilui(cilui_g), .ciluui(ciluui_g), .cilldi(PVOID7), .cillui(PVOID7),
+	.cilui(cilui_g), .ciluui(ciluui_g), .cilldi(PVOID7), .cillui(PVOID7),
 	.colluo(colluo_g), .colldo(colldo_g),
 	.coluuo(coluuo_g), .coluo(coluo_g), .colo(colo_g), .coldo(coldo_g), .colddo(colddo_g),
 	.couo(couo_g), .codo(codo_g), .coruuo(coruuo_g), .coruo(coruo_g), .coro(coro_g),
@@ -548,10 +555,11 @@ wire [8:1] chlo_h, chro_h;
 wire [7:1] chldo_h, chrdo_h;
 
 columnUnit colh (.clk(clk), .xpos(COLH), .done(done_cols[0]), .bstate(bstate), .reset(reset), .colstate(colstate_h),
+	.chdiri(chdiri_h), 
 	.cirrdi(cirrdi_h), .cirrui(cirrui_h), 
 	.cirddi(cirddi_h), .cirdi(cirdi_h), .ciri(ciri_h), .cirui(cirui_h), .ciruui(ciruui_h),
 	.cidi(cidi_h), .ciui(ciui_h), .cilddi(PVOID6), .cildi(PVOID7), .cili(PVOID8), 
-	cilui(PVOID7), .ciluui(PVOID6), .cilldi(PVOID7), .cillui(PVOID7),
+	.cilui(PVOID7), .ciluui(PVOID6), .cilldi(PVOID7), .cillui(PVOID7),
 	.colluo(colluo_h), .colldo(colldo_h),
 	.coluuo(coluuo_h), .coluo(coluo_h), .colo(colo_h), .coldo(coldo_h), .colddo(colddo_h),
 	.couo(couo_h), .codo(codo_h), .coruuo(), .coruo(), .coro(),
