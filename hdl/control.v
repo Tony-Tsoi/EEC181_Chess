@@ -249,18 +249,20 @@ begin
 			preDone_c = 1'b0;
 			writeFromLmgDone_c = 1'b0;
 			allMovesDone_c = 1'b0;
+			lmgReadEnable_c = 1'b0;
 		end
 		
 		//Wait for lmg done signal, then read from lmg fifo and write into block ram
 		if (lmgDone == 1'b1) begin
 			
 			if (lmgDone_p1 == 1'b0 || writeFromLmgDone == 1'b1) begin //start when lmgDone first gets turned on or when the last word is done being processed
-				lmgReadEnable = 1'b1; //trying to toggle the lmg read on/off here because i'm guessing the lmg gives me a new set of moves everytime I press read
-				lmgReadEnable_c = 1'b0;
+				 //trying to toggle the lmg read on/off here because i'm guessing the lmg gives me a new set of moves everytime I press read
+				lmgReadEnable_c = 1'b1;
 				readWord1_c = 1'b1;
 			end
 			
 			if (readWord1 == 1'b1) begin
+				lmgReadEnable_c = 1'b0;
 				if (lmgFifoOut[18] == 1'b0) begin //write the first word if valid, otherwise look at the second word
 					ram_in = lmgFifoOut[17:0]; //This isn't exact yet
 					ram_wren = 1'b1;
@@ -270,7 +272,7 @@ begin
 					readWord2_c = 1'b1;
 				end else begin
 						readWord1_c = 1'b0;
-						readWord2 = 1'b1; //This might need to be pipelined but I think it saves a ton of time if it works
+						readWord2_c = 1'b1; //This might need to be pipelined but I think it saves a ton of time if it works
 					end
 			end
 			
@@ -284,7 +286,7 @@ begin
 					readWord3_c = 1'b1;
 				end else begin
 						readWord2_c = 1'b0;
-						readWord3 = 1'b1; //This might need to be pipelined
+						readWord3_c = 1'b1; //This might need to be pipelined
 					end
 			end
 			
@@ -298,7 +300,7 @@ begin
 					readWord4_c = 1'b1;
 				end else begin
 						readWord3_c = 1'b0;
-						readWord4 = 1'b1; //This might need to be pipelined
+						readWord4_c = 1'b1; //This might need to be pipelined
 					end
 			end
 			
@@ -312,7 +314,7 @@ begin
 					readWord5_c = 1'b1;
 				end else begin
 						readWord4_c = 1'b0;
-						readWord5 = 1'b1; //This might need to be pipelined
+						readWord5_c = 1'b1; //This might need to be pipelined
 					end
 			end
 			
@@ -326,7 +328,7 @@ begin
 					readWord6_c = 1'b1;
 				end else begin
 						readWord5_c = 1'b0;
-						readWord6 = 1'b1; //This might need to be pipelined
+						readWord6_c = 1'b1; //This might need to be pipelined
 					end
 			end
 			
@@ -340,7 +342,7 @@ begin
 					readWord7_c = 1'b1;
 				end else begin
 						readWord6_c = 1'b0;
-						readWord7 = 1'b1; //This might need to be pipelined
+						readWord7_c = 1'b1; //This might need to be pipelined
 					end
 			end
 			
@@ -354,7 +356,7 @@ begin
 					readWord8_c = 1'b1;
 				end else begin
 						readWord7_c = 1'b0;
-						readWord8 = 1'b1; //This might need to be pipelined
+						readWord8_c = 1'b1; //This might need to be pipelined
 					end
 			end
 			
