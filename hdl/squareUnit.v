@@ -41,11 +41,14 @@ parameter ROOK = 3'o4;
 parameter QUEEN = 3'o5;
 parameter KING = 3'o6;
 parameter NOTUSED = 3'o7;
-parameter PVOID = {xpos, ypos, EMPTY}; // denotes an empty space at self
 parameter ROW2 = 3'o1;
 parameter ROW3 = 3'o2; // value for ypos to be at row 3 (for pawn advance two blocks forward
 parameter ROW4 = 3'o3;
-parameter ENDMOV = {8{1'b1, 6'o00, xpos, ypos, xpos, ypos}}; // end squence for move list
+
+
+// pseudo-constant "parameters"
+wire [8:0] PVOID = {xpos, ypos, EMPTY}; // denotes an empty space at self
+wire [151:0] ENDMOV = {8{1'b1, 6'o00, xpos, ypos, xpos, ypos}}; // end squence for move list
 	// indicates a move from self to self, an illegal move
 
 // Moves Output

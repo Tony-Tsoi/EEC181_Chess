@@ -96,7 +96,7 @@ reg [2:0] sq_move_ptr, sq_move_ptr_c;
 reg [8:1] sq_rden, sq_rden_c;
 
 // indicates a move from self to self, an illegal move
-parameter ENDMOV = {8{1'b1, 6'o00, xpos, ypos, xpos, ypos}}; // end squence for move list
+wire [151:0] ENDMOV = {8{1'b1, 6'o00, xpos, ypos, xpos, ypos}}; // end squence for move list
 
 // next state logic
 always @(*) begin
