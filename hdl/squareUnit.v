@@ -3,7 +3,7 @@ ilddi, ildi, ili, ilui, iluui, illdi, illui,
 orrdo, orruo, orddo, ordo, oro, oruo, oruuo, odo, ouo, 
 olddo, oldo, olo, oluo, oluuo, olldo, olluo,
 hlu, hl, hld, hu, hd, hru, hr, hrd,
-clk, xpos, ypos, cpiece, reset, done, fifoOut, hold, rden);
+clk, xpos, ypos, cpiece, reset, done, fifoOut, fifoEmpty, hold, rden);
 
 // 19 bit output per move from fifoOut has the following format:
 // [7b flag][6b from][6b to]
@@ -48,8 +48,6 @@ parameter ROW4 = 3'o3;
 
 // pseudo-constant "parameters"
 wire [8:0] PVOID = {xpos, ypos, EMPTY}; // denotes an empty space at self
-wire [151:0] ENDMOV = {8{1'b1, 6'o00, xpos, ypos, xpos, ypos}}; // end squence for move list
-	// indicates a move from self to self, an illegal move
 
 // Moves Output
 reg [18:0] mvrrd, mvrru, mvrdd, mvruu, mvldd, mvluu, mvlld, mvllu;
@@ -62,8 +60,11 @@ wire wren2 = ~&{wr2[151], wr2[132], wr2[113], wr2[94], wr2[75], wr2[56], wr2[37]
 // fifo read enable input
 input rden;
 
+// fifo empty output
+output fifoEmpty;
+
 // FIFO Module Declaration
-MyFifo F1F0 (.clk(clk), .wr1(wr1), .wr2(wr2), .rd1(fifoOut), .wren1(wren1), .wren2(wren2), .rden(rden));
+MyFifo F1F0 (.clk(clk), .wr1(wr1), .wr2(wr2), .rd1(fifoOut), .wren1(wren1), .wren2(wren2), .rden(rden), .empty(fifoEmpty));
 
 // done signal
 reg done_c;
