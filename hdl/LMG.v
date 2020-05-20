@@ -219,7 +219,7 @@ assign chlurdi_c[5] = |{chrdo_a[7], chrdo_b[6],             chluo_d[4], chluo_e[
 assign chlurdi_d[4] = |{chrdo_a[7], chrdo_b[6], chrdo_c[5],             chluo_e[3], chluo_f[2], chluo_g[1]};
 assign chlurdi_e[3] = |{chrdo_a[7], chrdo_b[6], chrdo_c[5], chrdo_d[4],             chluo_f[2], chluo_g[1]};
 assign chlurdi_f[2] = |{chrdo_a[7], chrdo_b[6], chrdo_c[5], chrdo_d[4], chrdo_e[3],             chluo_g[1]};
-assign chlurdi_f[1] = |{chrdo_a[7], chrdo_b[6], chrdo_c[5], chrdo_d[4], chrdo_e[3], chrdo_f[2]            };
+assign chlurdi_g[1] = |{chrdo_a[7], chrdo_b[6], chrdo_c[5], chrdo_d[4], chrdo_e[3], chrdo_f[2]            };
 
 assign chlurdi_a[8] = |{            chluo_b[7], chluo_c[6], chluo_d[5], chluo_e[4], chluo_f[3], chluo_g[2], chluo_h[1]};
 assign chlurdi_b[7] = |{chrdo_a[8],             chluo_c[6], chluo_d[5], chluo_e[4], chluo_f[3], chluo_g[2], chluo_h[1]};
