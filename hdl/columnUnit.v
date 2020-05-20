@@ -1,4 +1,4 @@
-module columnUnit (clk, colstate, xpos, reset, done, chdiri
+module columnUnit (clk, colstate, xpos, reset, done, chdiri,
 cirrdi, cirrui, cirddi, cirdi, ciri, cirui, ciruui, cidi, ciui, cilddi, cildi, 
 cili, cilui, ciluui, cilldi, cillui,
 colluo, colldo, coluuo, coluo, colo, coldo, colddo, couo, codo, coruuo, coruo, 
@@ -69,14 +69,14 @@ wire [8:2] chdo;
 
 // hold signal logic for squares
 wire [8:1] holds;
-assign hold[8] = |{chuo[7:1],            chdiri[8]}};
+assign hold[8] = |{chuo[7:1],            chdiri[8]};
 assign hold[7] = |{chuo[6:1], chdo[7  ], chdiri[7]};
-assign hold[6] = |{chuo[5:1], chdo[7:6], chdiri[6]}};
-assign hold[5] = |{chuo[4:1], chdo[7:5], chdiri[5]}};
-assign hold[4] = |{chuo[3:1], chdo[7:4], chdiri[4]}};
-assign hold[3] = |{chuo[2:1], chdo[7:3], chdiri[3]}};
-assign hold[2] = |{chuo[  1], chdo[7:2], chdiri[2]}};
-assign hold[1] = |{           chdo[7:1], chdiri[1]}};
+assign hold[6] = |{chuo[5:1], chdo[7:6], chdiri[6]};
+assign hold[5] = |{chuo[4:1], chdo[7:5], chdiri[5]};
+assign hold[4] = |{chuo[3:1], chdo[7:4], chdiri[4]};
+assign hold[3] = |{chuo[2:1], chdo[7:3], chdiri[3]};
+assign hold[2] = |{chuo[  1], chdo[7:2], chdiri[2]};
+assign hold[1] = |{           chdo[7:1], chdiri[1]};
 
 // parameter for states
 parameter WAIT = 2'b01;

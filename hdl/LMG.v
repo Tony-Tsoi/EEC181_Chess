@@ -178,164 +178,168 @@ wire [8:1] chlri_g = chro_a | chro_b | chro_c | chro_d | chro_e | chro_f |      
 wire [8:1] chlri_h = chro_a | chro_b | chro_c | chro_d | chro_e | chro_f | chro_g         ;
 
 // only to top left or bottom right holds
-wire chlurdi_a[1] = 1'b0;
+wire [8:1] chlurdi_a, chlurdi_b, chlurdi_c, chlurdi_d, chlurdi_e, chlurdi_f, chlurdi_g;
 
-wire chlurdi_a[2] =             chluo_b[1];
-wire chlurdi_b[1] = chrdo_a[2];
+assign chlurdi_a[1] = 1'b0;
 
-wire chlurdi_a[3] = |{            chluo_b[2], chluo_c[1]};
-wire chlurdi_b[2] = |{chrdo_a[3],             chluo_c[1]};
-wire chlurdi_c[1] = |{chrdo_a[3], chrdo_b[2]            };
+assign chlurdi_a[2] =             chluo_b[1];
+assign chlurdi_b[1] = chrdo_a[2];
 
-wire chlurdi_a[4] = |{            chluo_b[3], chluo_c[2], chluo_d[1]};
-wire chlurdi_b[3] = |{chrdo_a[4],             chluo_c[2], chluo_d[1]};
-wire chlurdi_c[2] = |{chrdo_a[4], chrdo_b[3],             chluo_d[1]};
-wire chlurdi_d[1] = |{chrdo_a[4], chrdo_b[3], chrdo_c[2]            };
+assign chlurdi_a[3] = |{            chluo_b[2], chluo_c[1]};
+assign chlurdi_b[2] = |{chrdo_a[3],             chluo_c[1]};
+assign chlurdi_c[1] = |{chrdo_a[3], chrdo_b[2]            };
 
-wire chlurdi_a[5] = |{            chluo_b[4], chluo_c[3], chluo_d[2], chluo_e[1]};
-wire chlurdi_b[4] = |{chrdo_a[5],             chluo_c[3], chluo_d[2], chluo_e[1]};
-wire chlurdi_c[3] = |{chrdo_a[5], chrdo_b[4],             chluo_d[2], chluo_e[1]};
-wire chlurdi_d[2] = |{chrdo_a[5], chrdo_b[4], chrdo_c[3],             chluo_e[1]};
-wire chlurdi_e[1] = |{chrdo_a[5], chrdo_b[4], chrdo_c[3], chrdo_d[2]            };
+assign chlurdi_a[4] = |{            chluo_b[3], chluo_c[2], chluo_d[1]};
+assign chlurdi_b[3] = |{chrdo_a[4],             chluo_c[2], chluo_d[1]};
+assign chlurdi_c[2] = |{chrdo_a[4], chrdo_b[3],             chluo_d[1]};
+assign chlurdi_d[1] = |{chrdo_a[4], chrdo_b[3], chrdo_c[2]            };
 
-wire chlurdi_a[6] = |{            chluo_b[5], chluo_c[4], chluo_d[3], chluo_e[2], chluo_f[1]};
-wire chlurdi_b[5] = |{chrdo_a[6],             chluo_c[4], chluo_d[3], chluo_e[2], chluo_f[1]};
-wire chlurdi_c[4] = |{chrdo_a[6], chrdo_b[5],             chluo_d[3], chluo_e[2], chluo_f[1]};
-wire chlurdi_d[3] = |{chrdo_a[6], chrdo_b[5], chrdo_c[4],             chluo_e[2], chluo_f[1]};
-wire chlurdi_e[2] = |{chrdo_a[6], chrdo_b[5], chrdo_c[4], chrdo_d[3],             chluo_f[1]};
-wire chlurdi_f[1] = |{chrdo_a[6], chrdo_b[5], chrdo_c[4], chrdo_d[3], chrdo_e[2],           };
+assign chlurdi_a[5] = |{            chluo_b[4], chluo_c[3], chluo_d[2], chluo_e[1]};
+assign chlurdi_b[4] = |{chrdo_a[5],             chluo_c[3], chluo_d[2], chluo_e[1]};
+assign chlurdi_c[3] = |{chrdo_a[5], chrdo_b[4],             chluo_d[2], chluo_e[1]};
+assign chlurdi_d[2] = |{chrdo_a[5], chrdo_b[4], chrdo_c[3],             chluo_e[1]};
+assign chlurdi_e[1] = |{chrdo_a[5], chrdo_b[4], chrdo_c[3], chrdo_d[2]            };
 
-wire chlurdi_a[7] = |{            chluo_b[6], chluo_c[5], chluo_d[4], chluo_e[3], chluo_f[2], chluo_g[1]};
-wire chlurdi_b[6] = |{chrdo_a[7],             chluo_c[5], chluo_d[4], chluo_e[3], chluo_f[2], chluo_g[1]};
-wire chlurdi_c[5] = |{chrdo_a[7], chrdo_b[6],             chluo_d[4], chluo_e[3], chluo_f[2], chluo_g[1]};
-wire chlurdi_d[4] = |{chrdo_a[7], chrdo_b[6], chrdo_c[5],             chluo_e[3], chluo_f[2], chluo_g[1]};
-wire chlurdi_e[3] = |{chrdo_a[7], chrdo_b[6], chrdo_c[5], chrdo_d[4],             chluo_f[2], chluo_g[1]};
-wire chlurdi_f[2] = |{chrdo_a[7], chrdo_b[6], chrdo_c[5], chrdo_d[4], chrdo_e[3],             chluo_g[1]};
-wire chlurdi_f[2] = |{chrdo_a[7], chrdo_b[6], chrdo_c[5], chrdo_d[4], chrdo_e[3], chrdo_f[2]            };
+assign chlurdi_a[6] = |{            chluo_b[5], chluo_c[4], chluo_d[3], chluo_e[2], chluo_f[1]};
+assign chlurdi_b[5] = |{chrdo_a[6],             chluo_c[4], chluo_d[3], chluo_e[2], chluo_f[1]};
+assign chlurdi_c[4] = |{chrdo_a[6], chrdo_b[5],             chluo_d[3], chluo_e[2], chluo_f[1]};
+assign chlurdi_d[3] = |{chrdo_a[6], chrdo_b[5], chrdo_c[4],             chluo_e[2], chluo_f[1]};
+assign chlurdi_e[2] = |{chrdo_a[6], chrdo_b[5], chrdo_c[4], chrdo_d[3],             chluo_f[1]};
+assign chlurdi_f[1] = |{chrdo_a[6], chrdo_b[5], chrdo_c[4], chrdo_d[3], chrdo_e[2],           };
 
-wire chlurdi_a[8] = |{            chluo_b[7], chluo_c[6], chluo_d[5], chluo_e[4], chluo_f[3], chluo_g[2], chluo_h[1]};
-wire chlurdi_b[7] = |{chrdo_a[8],             chluo_c[6], chluo_d[5], chluo_e[4], chluo_f[3], chluo_g[2], chluo_h[1]};
-wire chlurdi_c[6] = |{chrdo_a[8], chrdo_b[7],             chluo_d[5], chluo_e[4], chluo_f[3], chluo_g[2], chluo_h[1]};
-wire chlurdi_d[5] = |{chrdo_a[8], chrdo_b[7], chrdo_c[6],             chluo_e[4], chluo_f[3], chluo_g[2], chluo_h[1]};
-wire chlurdi_e[4] = |{chrdo_a[8], chrdo_b[7], chrdo_c[6], chrdo_d[5],             chluo_f[3], chluo_g[2], chluo_h[1]};
-wire chlurdi_f[3] = |{chrdo_a[8], chrdo_b[7], chrdo_c[6], chrdo_d[5], chrdo_e[4],             chluo_g[2], chluo_h[1]};
-wire chlurdi_g[2] = |{chrdo_a[8], chrdo_b[7], chrdo_c[6], chrdo_d[5], chrdo_e[4], chrdo_f[3],             chluo_h[1]};
-wire chlurdi_h[1] = |{chrdo_a[8], chrdo_b[7], chrdo_c[6], chrdo_d[5], chrdo_e[4], chrdo_f[3], chrdo_g[2]             };
+assign chlurdi_a[7] = |{            chluo_b[6], chluo_c[5], chluo_d[4], chluo_e[3], chluo_f[2], chluo_g[1]};
+assign chlurdi_b[6] = |{chrdo_a[7],             chluo_c[5], chluo_d[4], chluo_e[3], chluo_f[2], chluo_g[1]};
+assign chlurdi_c[5] = |{chrdo_a[7], chrdo_b[6],             chluo_d[4], chluo_e[3], chluo_f[2], chluo_g[1]};
+assign chlurdi_d[4] = |{chrdo_a[7], chrdo_b[6], chrdo_c[5],             chluo_e[3], chluo_f[2], chluo_g[1]};
+assign chlurdi_e[3] = |{chrdo_a[7], chrdo_b[6], chrdo_c[5], chrdo_d[4],             chluo_f[2], chluo_g[1]};
+assign chlurdi_f[2] = |{chrdo_a[7], chrdo_b[6], chrdo_c[5], chrdo_d[4], chrdo_e[3],             chluo_g[1]};
+assign chlurdi_f[2] = |{chrdo_a[7], chrdo_b[6], chrdo_c[5], chrdo_d[4], chrdo_e[3], chrdo_f[2]            };
 
-wire chlurdi_b[8] = |{            chluo_c[7], chluo_d[6], chluo_e[5], chluo_f[4], chluo_g[3], chluo_h[2]};
-wire chlurdi_c[7] = |{chrdo_b[8],             chluo_d[6], chluo_e[5], chluo_f[4], chluo_g[3], chluo_h[2]};
-wire chlurdi_d[6] = |{chrdo_b[8], chrdo_c[7],             chluo_e[5], chluo_f[4], chluo_g[3], chluo_h[2]};
-wire chlurdi_e[5] = |{chrdo_b[8], chrdo_c[7], chrdo_d[6],             chluo_f[4], chluo_g[3], chluo_h[2]};
-wire chlurdi_f[4] = |{chrdo_b[8], chrdo_c[7], chrdo_d[6], chrdo_e[5],             chluo_g[3], chluo_h[2]};
-wire chlurdi_g[3] = |{chrdo_b[8], chrdo_c[7], chrdo_d[6], chrdo_e[5], chrdo_f[4],             chluo_h[2]};
-wire chlurdi_h[2] = |{chrdo_b[8], chrdo_c[7], chrdo_d[6], chrdo_e[5], chrdo_f[4], chrdo_g[3]            };
+assign chlurdi_a[8] = |{            chluo_b[7], chluo_c[6], chluo_d[5], chluo_e[4], chluo_f[3], chluo_g[2], chluo_h[1]};
+assign chlurdi_b[7] = |{chrdo_a[8],             chluo_c[6], chluo_d[5], chluo_e[4], chluo_f[3], chluo_g[2], chluo_h[1]};
+assign chlurdi_c[6] = |{chrdo_a[8], chrdo_b[7],             chluo_d[5], chluo_e[4], chluo_f[3], chluo_g[2], chluo_h[1]};
+assign chlurdi_d[5] = |{chrdo_a[8], chrdo_b[7], chrdo_c[6],             chluo_e[4], chluo_f[3], chluo_g[2], chluo_h[1]};
+assign chlurdi_e[4] = |{chrdo_a[8], chrdo_b[7], chrdo_c[6], chrdo_d[5],             chluo_f[3], chluo_g[2], chluo_h[1]};
+assign chlurdi_f[3] = |{chrdo_a[8], chrdo_b[7], chrdo_c[6], chrdo_d[5], chrdo_e[4],             chluo_g[2], chluo_h[1]};
+assign chlurdi_g[2] = |{chrdo_a[8], chrdo_b[7], chrdo_c[6], chrdo_d[5], chrdo_e[4], chrdo_f[3],             chluo_h[1]};
+assign chlurdi_h[1] = |{chrdo_a[8], chrdo_b[7], chrdo_c[6], chrdo_d[5], chrdo_e[4], chrdo_f[3], chrdo_g[2]             };
 
-wire chlurdi_c[8] = |{            chluo_d[7], chluo_e[6], chluo_f[5], chluo_g[4], chluo_h[3]};
-wire chlurdi_d[7] = |{chrdo_c[8],             chluo_e[6], chluo_f[5], chluo_g[4], chluo_h[3]};
-wire chlurdi_e[6] = |{chrdo_c[8], chrdo_d[7],             chluo_f[5], chluo_g[4], chluo_h[3]};
-wire chlurdi_f[5] = |{chrdo_c[8], chrdo_d[7], chrdo_e[6],             chluo_g[4], chluo_h[3]};
-wire chlurdi_g[4] = |{chrdo_c[8], chrdo_d[7], chrdo_e[6], chrdo_f[5],             chluo_h[3]};
-wire chlurdi_h[3] = |{chrdo_c[8], chrdo_d[7], chrdo_e[6], chrdo_f[5], chrdo_g[4]            };
+assign chlurdi_b[8] = |{            chluo_c[7], chluo_d[6], chluo_e[5], chluo_f[4], chluo_g[3], chluo_h[2]};
+assign chlurdi_c[7] = |{chrdo_b[8],             chluo_d[6], chluo_e[5], chluo_f[4], chluo_g[3], chluo_h[2]};
+assign chlurdi_d[6] = |{chrdo_b[8], chrdo_c[7],             chluo_e[5], chluo_f[4], chluo_g[3], chluo_h[2]};
+assign chlurdi_e[5] = |{chrdo_b[8], chrdo_c[7], chrdo_d[6],             chluo_f[4], chluo_g[3], chluo_h[2]};
+assign chlurdi_f[4] = |{chrdo_b[8], chrdo_c[7], chrdo_d[6], chrdo_e[5],             chluo_g[3], chluo_h[2]};
+assign chlurdi_g[3] = |{chrdo_b[8], chrdo_c[7], chrdo_d[6], chrdo_e[5], chrdo_f[4],             chluo_h[2]};
+assign chlurdi_h[2] = |{chrdo_b[8], chrdo_c[7], chrdo_d[6], chrdo_e[5], chrdo_f[4], chrdo_g[3]            };
 
-wire chlurdi_d[8] = |{            chluo_e[7], chluo_f[6], chluo_g[5], chluo_h[4]};
-wire chlurdi_e[7] = |{chrdo_d[8],             chluo_f[6], chluo_g[5], chluo_h[4]};
-wire chlurdi_f[6] = |{chrdo_d[8], chrdo_e[7],             chluo_g[5], chluo_h[4]};
-wire chlurdi_g[5] = |{chrdo_d[8], chrdo_e[7], chrdo_f[6],             chluo_h[4]};
-wire chlurdi_h[4] = |{chrdo_d[8], chrdo_e[7], chrdo_f[6], chrdo_g[5]            };
+assign chlurdi_c[8] = |{            chluo_d[7], chluo_e[6], chluo_f[5], chluo_g[4], chluo_h[3]};
+assign chlurdi_d[7] = |{chrdo_c[8],             chluo_e[6], chluo_f[5], chluo_g[4], chluo_h[3]};
+assign chlurdi_e[6] = |{chrdo_c[8], chrdo_d[7],             chluo_f[5], chluo_g[4], chluo_h[3]};
+assign chlurdi_f[5] = |{chrdo_c[8], chrdo_d[7], chrdo_e[6],             chluo_g[4], chluo_h[3]};
+assign chlurdi_g[4] = |{chrdo_c[8], chrdo_d[7], chrdo_e[6], chrdo_f[5],             chluo_h[3]};
+assign chlurdi_h[3] = |{chrdo_c[8], chrdo_d[7], chrdo_e[6], chrdo_f[5], chrdo_g[4]            };
 
-wire chlurdi_e[8] = |{            chluo_f[7], chluo_g[6], chluo_h[5]};
-wire chlurdi_f[7] = |{chrdo_e[8],             chluo_g[6], chluo_h[5]};
-wire chlurdi_g[6] = |{chrdo_e[8], chrdo_f[7],             chluo_h[5]};
-wire chlurdi_h[5] = |{chrdo_e[8], chrdo_f[7], chrdo_g[6]            };
+assign chlurdi_d[8] = |{            chluo_e[7], chluo_f[6], chluo_g[5], chluo_h[4]};
+assign chlurdi_e[7] = |{chrdo_d[8],             chluo_f[6], chluo_g[5], chluo_h[4]};
+assign chlurdi_f[6] = |{chrdo_d[8], chrdo_e[7],             chluo_g[5], chluo_h[4]};
+assign chlurdi_g[5] = |{chrdo_d[8], chrdo_e[7], chrdo_f[6],             chluo_h[4]};
+assign chlurdi_h[4] = |{chrdo_d[8], chrdo_e[7], chrdo_f[6], chrdo_g[5]            };
 
-wire chlurdi_f[8] = |{            chluo_g[6], chluo_h[5]};
-wire chlurdi_g[7] = |{chrdo_f[7],             chluo_h[5]};
-wire chlurdi_h[6] = |{chrdo_f[7], chrdo_g[6]            };
+assign chlurdi_e[8] = |{            chluo_f[7], chluo_g[6], chluo_h[5]};
+assign chlurdi_f[7] = |{chrdo_e[8],             chluo_g[6], chluo_h[5]};
+assign chlurdi_g[6] = |{chrdo_e[8], chrdo_f[7],             chluo_h[5]};
+assign chlurdi_h[5] = |{chrdo_e[8], chrdo_f[7], chrdo_g[6]            };
 
-wire chlurdi_g[8] = chluo_h[7];
-wire chlurdi_h[7] =             chrdo_g[8];
+assign chlurdi_f[8] = |{            chluo_g[6], chluo_h[5]};
+assign chlurdi_g[7] = |{chrdo_f[7],             chluo_h[5]};
+assign chlurdi_h[6] = |{chrdo_f[7], chrdo_g[6]            };
 
-wire chlurdi_h[8] = 1'b0;
+assign chlurdi_g[8] = chluo_h[7];
+assign chlurdi_h[7] =             chrdo_g[8];
+
+assign chlurdi_h[8] = 1'b0;
 
 // only to top right and bottom left direction holds
-wire chldrui_a[8] = 1'b0;
+wire [8:1] chldrui_a, chldrui_b, chldrui_c, chldrui_d, chldrui_e, chldrui_f, chldrui_g, chldrui_h;
 
-wire chldrui_a[7] = chldo_b[8];
-wire chldrui_b[8] = chruo_a[7];
+assign chldrui_a[8] = 1'b0;
 
-wire chldrui_a[6] = |{            chldo_b[7], chldo_c[8]};
-wire chldrui_b[7] = |{chruo_a[6],             chldo_c[8]};
-wire chldrui_c[8] = |{chruo_a[6], chruo_b[7]            };
+assign chldrui_a[7] = chldo_b[8];
+assign chldrui_b[8] = chruo_a[7];
 
-wire chldrui_a[5] = |{            chldo_b[6], chldo_c[7], chldo_d[8]};
-wire chldrui_b[6] = |{chruo_a[5],             chldo_c[7], chldo_d[8]};
-wire chldrui_c[7] = |{chruo_a[5], chruo_b[6],             chldo_d[8]};
-wire chldrui_d[8] = |{chruo_a[5], chruo_b[6], chruo_c[7]            };
+assign chldrui_a[6] = |{            chldo_b[7], chldo_c[8]};
+assign chldrui_b[7] = |{chruo_a[6],             chldo_c[8]};
+assign chldrui_c[8] = |{chruo_a[6], chruo_b[7]            };
 
-wire chldrui_a[4] = |{            chldo_b[5], chldo_c[6], chldo_d[7], chldo_e[8]};
-wire chldrui_b[5] = |{chruo_a[4],             chldo_c[6], chldo_d[7], chldo_e[8]};
-wire chldrui_c[6] = |{chruo_a[4], chruo_b[5],             chldo_d[7], chldo_e[8]};
-wire chldrui_d[7] = |{chruo_a[4], chruo_b[5], chruo_c[6],             chldo_e[8]};
-wire chldrui_e[8] = |{chruo_a[4], chruo_b[5], chruo_c[6], chruo_d[7]            };
+assign chldrui_a[5] = |{            chldo_b[6], chldo_c[7], chldo_d[8]};
+assign chldrui_b[6] = |{chruo_a[5],             chldo_c[7], chldo_d[8]};
+assign chldrui_c[7] = |{chruo_a[5], chruo_b[6],             chldo_d[8]};
+assign chldrui_d[8] = |{chruo_a[5], chruo_b[6], chruo_c[7]            };
 
-wire chldrui_a[3] = |{            chldo_b[4], chldo_c[5], chldo_d[6], chldo_e[7], chldo_f[8]};
-wire chldrui_b[4] = |{chruo_a[3],             chldo_c[5], chldo_d[6], chldo_e[7], chldo_f[8]};
-wire chldrui_c[5] = |{chruo_a[3], chruo_b[4],             chldo_d[6], chldo_e[7], chldo_f[8]};
-wire chldrui_d[6] = |{chruo_a[3], chruo_b[4], chruo_c[5],             chldo_e[7], chldo_f[8]};
-wire chldrui_e[7] = |{chruo_a[3], chruo_b[4], chruo_c[5], chruo_d[6],             chldo_f[8]};
-wire chldrui_f[8] = |{chruo_a[3], chruo_b[4], chruo_c[5], chruo_d[6], chruo_e[7]            };
+assign chldrui_a[4] = |{            chldo_b[5], chldo_c[6], chldo_d[7], chldo_e[8]};
+assign chldrui_b[5] = |{chruo_a[4],             chldo_c[6], chldo_d[7], chldo_e[8]};
+assign chldrui_c[6] = |{chruo_a[4], chruo_b[5],             chldo_d[7], chldo_e[8]};
+assign chldrui_d[7] = |{chruo_a[4], chruo_b[5], chruo_c[6],             chldo_e[8]};
+assign chldrui_e[8] = |{chruo_a[4], chruo_b[5], chruo_c[6], chruo_d[7]            };
 
-wire chldrui_a[2] = |{            chldo_b[3], chldo_c[4], chldo_d[5], chldo_e[6], chldo_f[7], chldo_g[8]};
-wire chldrui_b[3] = |{chruo_a[2],             chldo_c[4], chldo_d[5], chldo_e[6], chldo_f[7], chldo_g[8]};
-wire chldrui_c[4] = |{chruo_a[2], chruo_b[3],             chldo_d[5], chldo_e[6], chldo_f[7], chldo_g[8]};
-wire chldrui_d[5] = |{chruo_a[2], chruo_b[3], chruo_c[4],             chldo_e[6], chldo_f[7], chldo_g[8]};
-wire chldrui_e[6] = |{chruo_a[2], chruo_b[3], chruo_c[4], chruo_d[5],             chldo_f[7], chldo_g[8]};
-wire chldrui_f[7] = |{chruo_a[2], chruo_b[3], chruo_c[4], chruo_d[5], chruo_e[6],             chldo_g[8]};
-wire chldrui_g[8] = |{chruo_a[2], chruo_b[3], chruo_c[4], chruo_d[5], chruo_e[6], chldo_f[7]            };
+assign chldrui_a[3] = |{            chldo_b[4], chldo_c[5], chldo_d[6], chldo_e[7], chldo_f[8]};
+assign chldrui_b[4] = |{chruo_a[3],             chldo_c[5], chldo_d[6], chldo_e[7], chldo_f[8]};
+assign chldrui_c[5] = |{chruo_a[3], chruo_b[4],             chldo_d[6], chldo_e[7], chldo_f[8]};
+assign chldrui_d[6] = |{chruo_a[3], chruo_b[4], chruo_c[5],             chldo_e[7], chldo_f[8]};
+assign chldrui_e[7] = |{chruo_a[3], chruo_b[4], chruo_c[5], chruo_d[6],             chldo_f[8]};
+assign chldrui_f[8] = |{chruo_a[3], chruo_b[4], chruo_c[5], chruo_d[6], chruo_e[7]            };
 
-wire chldrui_a[1] = |{            chldo_b[2], chldo_c[3], chldo_d[4], chldo_e[5], chldo_f[6], chldo_g[7], chldo_h[8]};
-wire chldrui_b[2] = |{chruo_a[1],             chldo_c[3], chldo_d[4], chldo_e[5], chldo_f[6], chldo_g[7], chldo_h[8]};
-wire chldrui_c[3] = |{chruo_a[1], chruo_b[2],             chldo_d[4], chldo_e[5], chldo_f[6], chldo_g[7], chldo_h[8]};
-wire chldrui_d[4] = |{chruo_a[1], chruo_b[2], chruo_c[3],             chldo_e[5], chldo_f[6], chldo_g[7], chldo_h[8]};
-wire chldrui_e[5] = |{chruo_a[1], chruo_b[2], chruo_c[3], chruo_d[4],             chldo_f[6], chldo_g[7], chldo_h[8]};
-wire chldrui_f[6] = |{chruo_a[1], chruo_b[2], chruo_c[3], chruo_d[4], chruo_e[5],             chldo_g[7], chldo_h[8]};
-wire chldrui_g[7] = |{chruo_a[1], chruo_b[2], chruo_c[3], chruo_d[4], chruo_e[5], chruo_f[6],             chldo_h[8]};
-wire chldrui_h[8] = |{chruo_a[1], chruo_b[2], chruo_c[3], chruo_d[4], chruo_e[5], chruo_f[6], chldo_g[7]            };
+assign chldrui_a[2] = |{            chldo_b[3], chldo_c[4], chldo_d[5], chldo_e[6], chldo_f[7], chldo_g[8]};
+assign chldrui_b[3] = |{chruo_a[2],             chldo_c[4], chldo_d[5], chldo_e[6], chldo_f[7], chldo_g[8]};
+assign chldrui_c[4] = |{chruo_a[2], chruo_b[3],             chldo_d[5], chldo_e[6], chldo_f[7], chldo_g[8]};
+assign chldrui_d[5] = |{chruo_a[2], chruo_b[3], chruo_c[4],             chldo_e[6], chldo_f[7], chldo_g[8]};
+assign chldrui_e[6] = |{chruo_a[2], chruo_b[3], chruo_c[4], chruo_d[5],             chldo_f[7], chldo_g[8]};
+assign chldrui_f[7] = |{chruo_a[2], chruo_b[3], chruo_c[4], chruo_d[5], chruo_e[6],             chldo_g[8]};
+assign chldrui_g[8] = |{chruo_a[2], chruo_b[3], chruo_c[4], chruo_d[5], chruo_e[6], chldo_f[7]            };
 
-wire chldrui_b[1] = |{            chldo_c[2], chldo_d[3], chldo_e[4], chldo_f[5], chldo_g[6], chldo_h[7]};
-wire chldrui_c[2] = |{chruo_b[1],             chldo_d[3], chldo_e[4], chldo_f[5], chldo_g[6], chldo_h[7]};
-wire chldrui_d[3] = |{chruo_b[1], chruo_c[2],             chldo_e[4], chldo_f[5], chldo_g[6], chldo_h[7]};
-wire chldrui_e[4] = |{chruo_b[1], chruo_c[2], chruo_d[3],             chldo_f[5], chldo_g[6], chldo_h[7]};
-wire chldrui_f[5] = |{chruo_b[1], chruo_c[2], chruo_d[3], chruo_e[4],             chldo_g[6], chldo_h[7]};
-wire chldrui_g[6] = |{chruo_b[1], chruo_c[2], chruo_d[3], chruo_e[4], chruo_f[5],             chldo_h[7]};
-wire chldrui_h[7] = |{chruo_b[1], chruo_c[2], chruo_d[3], chruo_e[4], chruo_f[5], chruo_g[6]            };
+assign chldrui_a[1] = |{            chldo_b[2], chldo_c[3], chldo_d[4], chldo_e[5], chldo_f[6], chldo_g[7], chldo_h[8]};
+assign chldrui_b[2] = |{chruo_a[1],             chldo_c[3], chldo_d[4], chldo_e[5], chldo_f[6], chldo_g[7], chldo_h[8]};
+assign chldrui_c[3] = |{chruo_a[1], chruo_b[2],             chldo_d[4], chldo_e[5], chldo_f[6], chldo_g[7], chldo_h[8]};
+assign chldrui_d[4] = |{chruo_a[1], chruo_b[2], chruo_c[3],             chldo_e[5], chldo_f[6], chldo_g[7], chldo_h[8]};
+assign chldrui_e[5] = |{chruo_a[1], chruo_b[2], chruo_c[3], chruo_d[4],             chldo_f[6], chldo_g[7], chldo_h[8]};
+assign chldrui_f[6] = |{chruo_a[1], chruo_b[2], chruo_c[3], chruo_d[4], chruo_e[5],             chldo_g[7], chldo_h[8]};
+assign chldrui_g[7] = |{chruo_a[1], chruo_b[2], chruo_c[3], chruo_d[4], chruo_e[5], chruo_f[6],             chldo_h[8]};
+assign chldrui_h[8] = |{chruo_a[1], chruo_b[2], chruo_c[3], chruo_d[4], chruo_e[5], chruo_f[6], chldo_g[7]            };
 
-wire chldrui_c[1] = |{            chldo_d[2], chldo_e[3], chldo_f[4], chldo_g[5], chldo_h[6]};
-wire chldrui_d[2] = |{chruo_c[1],             chldo_e[3], chldo_f[4], chldo_g[5], chldo_h[6]};
-wire chldrui_e[3] = |{chruo_c[1], chruo_d[2],             chldo_f[4], chldo_g[5], chldo_h[6]};
-wire chldrui_f[4] = |{chruo_c[1], chruo_d[2], chruo_e[3],             chldo_g[5], chldo_h[6]};
-wire chldrui_g[5] = |{chruo_c[1], chruo_d[2], chruo_e[3], chruo_f[4],             chldo_h[6]};
-wire chldrui_h[6] = |{chruo_c[1], chruo_d[2], chruo_e[3], chruo_f[4], chldo_g[5]            };
+assign chldrui_b[1] = |{            chldo_c[2], chldo_d[3], chldo_e[4], chldo_f[5], chldo_g[6], chldo_h[7]};
+assign chldrui_c[2] = |{chruo_b[1],             chldo_d[3], chldo_e[4], chldo_f[5], chldo_g[6], chldo_h[7]};
+assign chldrui_d[3] = |{chruo_b[1], chruo_c[2],             chldo_e[4], chldo_f[5], chldo_g[6], chldo_h[7]};
+assign chldrui_e[4] = |{chruo_b[1], chruo_c[2], chruo_d[3],             chldo_f[5], chldo_g[6], chldo_h[7]};
+assign chldrui_f[5] = |{chruo_b[1], chruo_c[2], chruo_d[3], chruo_e[4],             chldo_g[6], chldo_h[7]};
+assign chldrui_g[6] = |{chruo_b[1], chruo_c[2], chruo_d[3], chruo_e[4], chruo_f[5],             chldo_h[7]};
+assign chldrui_h[7] = |{chruo_b[1], chruo_c[2], chruo_d[3], chruo_e[4], chruo_f[5], chruo_g[6]            };
 
-wire chldrui_d[1] = |{            chldo_e[2], chldo_f[3], chldo_g[4], chldo_h[5]};
-wire chldrui_e[2] = |{chruo_d[1],             chldo_f[3], chldo_g[4], chldo_h[5]};
-wire chldrui_f[3] = |{chruo_d[1], chruo_e[2],             chldo_g[4], chldo_h[5]};
-wire chldrui_g[4] = |{chruo_d[1], chruo_e[2], chruo_f[3],             chldo_h[5]};
-wire chldrui_h[5] = |{chruo_d[1], chruo_e[2], chruo_f[3], chruo_g[4]            };
+assign chldrui_c[1] = |{            chldo_d[2], chldo_e[3], chldo_f[4], chldo_g[5], chldo_h[6]};
+assign chldrui_d[2] = |{chruo_c[1],             chldo_e[3], chldo_f[4], chldo_g[5], chldo_h[6]};
+assign chldrui_e[3] = |{chruo_c[1], chruo_d[2],             chldo_f[4], chldo_g[5], chldo_h[6]};
+assign chldrui_f[4] = |{chruo_c[1], chruo_d[2], chruo_e[3],             chldo_g[5], chldo_h[6]};
+assign chldrui_g[5] = |{chruo_c[1], chruo_d[2], chruo_e[3], chruo_f[4],             chldo_h[6]};
+assign chldrui_h[6] = |{chruo_c[1], chruo_d[2], chruo_e[3], chruo_f[4], chldo_g[5]            };
 
-wire chldrui_e[1] = |{            chldo_f[2], chldo_g[3], chldo_h[4]};
-wire chldrui_f[2] = |{chruo_e[1],             chldo_g[3], chldo_h[4]};
-wire chldrui_g[3] = |{chruo_e[1], chruo_f[2],             chldo_h[4]};
-wire chldrui_h[4] = |{chruo_e[1], chruo_f[2], chruo_g[3]            };
+assign chldrui_d[1] = |{            chldo_e[2], chldo_f[3], chldo_g[4], chldo_h[5]};
+assign chldrui_e[2] = |{chruo_d[1],             chldo_f[3], chldo_g[4], chldo_h[5]};
+assign chldrui_f[3] = |{chruo_d[1], chruo_e[2],             chldo_g[4], chldo_h[5]};
+assign chldrui_g[4] = |{chruo_d[1], chruo_e[2], chruo_f[3],             chldo_h[5]};
+assign chldrui_h[5] = |{chruo_d[1], chruo_e[2], chruo_f[3], chruo_g[4]            };
 
-wire chldrui_f[1] = |{            chldo_g[2], chldo_h[3]};
-wire chldrui_g[2] = |{chruo_f[1],             chldo_h[3]};
-wire chldrui_h[3] = |{chruo_f[1], chldo_g[2]            };
+assign chldrui_e[1] = |{            chldo_f[2], chldo_g[3], chldo_h[4]};
+assign chldrui_f[2] = |{chruo_e[1],             chldo_g[3], chldo_h[4]};
+assign chldrui_g[3] = |{chruo_e[1], chruo_f[2],             chldo_h[4]};
+assign chldrui_h[4] = |{chruo_e[1], chruo_f[2], chruo_g[3]            };
 
-wire chldrui_g[1] = chldo_h[2];
-wire chldrui_h[2] = chruo_g[1];
+assign chldrui_f[1] = |{            chldo_g[2], chldo_h[3]};
+assign chldrui_g[2] = |{chruo_f[1],             chldo_h[3]};
+assign chldrui_h[3] = |{chruo_f[1], chldo_g[2]            };
 
-wire chldrui_h[1] = 1'b0;
+assign chldrui_g[1] = chldo_h[2];
+assign chldrui_h[2] = chruo_g[1];
+
+assign chldrui_h[1] = 1'b0;
 
 // Column A
 wire [53:0] cilddi_a, coruuo_a;
