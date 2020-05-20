@@ -45,7 +45,6 @@ parameter ROW2 = 3'o1;
 parameter ROW3 = 3'o2; // value for ypos to be at row 3 (for pawn advance two blocks forward
 parameter ROW4 = 3'o3;
 
-
 // pseudo-constant "parameters"
 wire [8:0] PVOID = {xpos, ypos, EMPTY}; // denotes an empty space at self
 

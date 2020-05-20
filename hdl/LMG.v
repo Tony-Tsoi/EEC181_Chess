@@ -10,7 +10,7 @@ module lmg (clk, reset, bstate, done, fifoOut, rden);
 input clk, reset;
 input [255:0] bstate; // board state
 
-output done = &{done_cols}; // to be changed by state
+output done = (state == DONE);
 
 output [151:0] fifoOut;
 input rden;
@@ -48,7 +48,7 @@ wire colstate_h = {bstate[255:252], bstate[223:220], bstate[191:188], bstate[159
 	bstate[127:124], bstate[95:92], bstate[63:60], bstate[31:28]};
 
 // done signals from columns
-wire [7:0] done_cols;
+wire [8:1] done_cols;
 
 // state bit
 reg [1:0] state, state_c;
@@ -358,7 +358,7 @@ wire [8:2] chluo_a, chruo_a;
 wire [8:1] chlo_a, chro_a;
 wire [7:1] chldo_a, chrdo_a;
 
-columnUnit cola (.clk(clk), .xpos(COLA), .done(done_cols[7]), .bstate(bstate), .reset(reset), .colstate(colstate_a),
+columnUnit cola (.clk(clk), .xpos(COLA), .done(done_cols[8]), .bstate(bstate), .reset(reset), .colstate(colstate_a),
 	.chdiri(chdiri_a),  .fifoEmpty(colEmpty[7]),
 	.cirrdi(PVOID7), .cirrui(PVOID7), .cirddi(PVOID6), .cirdi(PVOID7), .ciri(PVOID8), 
 	.cirui(PVOID7), .ciruui(PVOID6),
@@ -386,7 +386,7 @@ wire [8:2] chluo_b, chruo_b;
 wire [8:1] chlo_b, chro_b;
 wire [7:1] chldo_b, chrdo_b;
 
-columnUnit colb (.clk(clk), .xpos(COLB), .done(done_cols[6]), .bstate(bstate), .reset(reset), .colstate(colstate_b),
+columnUnit colb (.clk(clk), .xpos(COLB), .done(done_cols[7]), .bstate(bstate), .reset(reset), .colstate(colstate_b),
 	.chdiri(chdiri_b), .fifoEmpty(colEmpty[6]),
 	.cirrdi(PVOID7), .cirrui(PVOID7), 
 	.cirddi(cirddi_b), .cirdi(cirdi_b), .ciri(ciri_b), .cirui(cirui_b), .ciruui(ciruui_b),
@@ -415,7 +415,7 @@ wire [8:2] chluo_c, chruo_c;
 wire [8:1] chlo_c, chro_c;
 wire [7:1] chldo_c, chrdo_c;
 
-columnUnit colc (.clk(clk), .xpos(COLC), .done(done_cols[5]), .bstate(bstate), .reset(reset), .colstate(colstate_c),
+columnUnit colc (.clk(clk), .xpos(COLC), .done(done_cols[6]), .bstate(bstate), .reset(reset), .colstate(colstate_c),
 	.chdiri(chdiri_c),  .fifoEmpty(colEmpty[5]),
 	.cirrdi(cirrdi_c), .cirrui(cirrui_c), 
 	.cirddi(cirddi_c), .cirdi(cirdi_c), .ciri(ciri_c), .cirui(cirui_c), .ciruui(ciruui_c),
@@ -444,7 +444,7 @@ wire [8:2] chluo_d, chruo_d;
 wire [8:1] chlo_d, chro_d;
 wire [7:1] chldo_d, chrdo_d;
 
-columnUnit cold (.clk(clk), .xpos(COLD), .done(done_cols[4]), .bstate(bstate), .reset(reset), .colstate(colstate_d),
+columnUnit cold (.clk(clk), .xpos(COLD), .done(done_cols[5]), .bstate(bstate), .reset(reset), .colstate(colstate_d),
 	.chdiri(chdiri_d),  .fifoEmpty(colEmpty[4]),
 	.cirrdi(cirrdi_d), .cirrui(cirrui_d), 
 	.cirddi(cirddi_d), .cirdi(cirdi_d), .ciri(ciri_d), .cirui(cirui_d), .ciruui(ciruui_d),
@@ -473,7 +473,7 @@ wire [8:2] chluo_e, chruo_e;
 wire [8:1] chlo_e, chro_e;
 wire [7:1] chldo_e, chrdo_e;
 
-columnUnit cole (.clk(clk), .xpos(COLE), .done(done_cols[3]), .bstate(bstate), .reset(reset), .colstate(colstate_e),
+columnUnit cole (.clk(clk), .xpos(COLE), .done(done_cols[4]), .bstate(bstate), .reset(reset), .colstate(colstate_e),
 	.chdiri(chdiri_e),  .fifoEmpty(colEmpty[3]),
 	.cirrdi(cirrdi_e), .cirrui(cirrui_e), 
 	.cirddi(cirddi_e), .cirdi(cirdi_e), .ciri(ciri_e), .cirui(cirui_e), .ciruui(ciruui_e),
@@ -502,7 +502,7 @@ wire [8:2] chluo_f, chruo_f;
 wire [8:1] chlo_f, chro_f;
 wire [7:1] chldo_f, chrdo_f;
 
-columnUnit colf (.clk(clk), .xpos(COLF), .done(done_cols[2]), .bstate(bstate), .reset(reset), .colstate(colstate_f),
+columnUnit colf (.clk(clk), .xpos(COLF), .done(done_cols[3]), .bstate(bstate), .reset(reset), .colstate(colstate_f),
 	.chdiri(chdiri_f),  .fifoEmpty(colEmpty[2]),
 	.cirrdi(cirrdi_f), .cirrui(cirrui_f), 
 	.cirddi(cirddi_f), .cirdi(cirdi_f), .ciri(ciri_f), .cirui(cirui_f), .ciruui(ciruui_f),
@@ -531,7 +531,7 @@ wire [8:2] chluo_g, chruo_g;
 wire [8:1] chlo_g, chro_g;
 wire [7:1] chldo_g, chrdo_g;
 
-columnUnit colg (.clk(clk), .xpos(COLG), .done(done_cols[1]), .bstate(bstate), .reset(reset), .colstate(colstate_g),
+columnUnit colg (.clk(clk), .xpos(COLG), .done(done_cols[2]), .bstate(bstate), .reset(reset), .colstate(colstate_g),
 	.chdiri(chdiri_g),  .fifoEmpty(colEmpty[1]),
 	.cirrdi(cirrdi_g), .cirrui(cirrui_g), 
 	.cirddi(cirddi_g), .cirdi(cirdi_g), .ciri(ciri_g), .cirui(cirui_g), .ciruui(ciruui_g),
@@ -560,7 +560,7 @@ wire [8:2] chluo_h, chruo_h;
 wire [8:1] chlo_h, chro_h;
 wire [7:1] chldo_h, chrdo_h;
 
-columnUnit colh (.clk(clk), .xpos(COLH), .done(done_cols[0]), .bstate(bstate), .reset(reset), .colstate(colstate_h),
+columnUnit colh (.clk(clk), .xpos(COLH), .done(done_cols[1]), .bstate(bstate), .reset(reset), .colstate(colstate_h),
 	.chdiri(chdiri_h),  .fifoEmpty(colEmpty[0]),
 	.cirrdi(cirrdi_h), .cirrui(cirrui_h), 
 	.cirddi(cirddi_h), .cirdi(cirdi_h), .ciri(ciri_h), .cirui(cirui_h), .ciruui(ciruui_h),
