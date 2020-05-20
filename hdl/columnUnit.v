@@ -34,9 +34,9 @@ output [71:18] colddo, corddo;
 input [8:1] chdiri;
 
 // output signals to hold from done flags
-output [8:2] chluo, chruo;
+output [7:1] chluo, chruo;
 output [8:1] chlo, chro;
-output [7:1] chldo, chrdo;
+output [8:2] chldo, chrdo;
 
 // done signal
 output done = (state == DONE);
