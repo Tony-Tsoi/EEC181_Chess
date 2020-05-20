@@ -6,7 +6,6 @@ coro, cordo, corddo, corruo, corrdo,
 chluo, chruo, chlo, chro, chldo, chrdo,
 fifoOut, fifoEmpty
 );
-
 // 19 bit output per move from fifoOut has the following format:
 // [7b flag][6b from][6b to]
 // seven bit flag bits as follows:
@@ -108,6 +107,7 @@ wire c_sq_empty = sqEmpty[sq_move_ptr];
 always @(*) begin
 	state_c = state;
 	sq_rden_c = 8'h00;
+	sq_moved_flags_c = sq_moved_flags;
 	
 	case (state)
 		WAIT: begin
@@ -176,13 +176,15 @@ always @(*) begin
 			sq_rden_c = sq_rden;
 			
 			// if all moves from square fifo gone
-			if (c_sq_empty)
+			if (c_sq_empty) begin
 				state_c = WAIT;
+				sq_moved_flags_c[sq_move_ptr] = 1'b1;
+			end
 		end
 	endcase
 	
 	if (reset == 1'b1)
-		sq_moved_flags = 8'h00;
+		sq_moved_flags_c = 8'h00;
 end
 
 // FF for next state

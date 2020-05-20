@@ -86,6 +86,7 @@ MyFifo F1F0 (.clk(clk), .wr1(wr1), .wr2(48'd0), .rd1(fifoOut), .wren1(wren1), .w
 always @(*) begin
 	state_c = state;
 	col_rden_c = 8'h00;
+	col_moved_flags_c = col_moved_flags;
 	
 	case (state)
 		WAIT: begin
@@ -154,8 +155,10 @@ always @(*) begin
 			col_rden_c = col_rden;
 			
 			// if all moves from column fifo gone
-			if (c_col_empty)
+			if (c_col_empty) begin
 				state_c = WAIT;
+				col_moved_flags_c[col_move_ptr] = 1'b1;
+			end
 		end
 	endcase
 	
