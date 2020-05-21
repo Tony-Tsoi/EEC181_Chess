@@ -162,7 +162,7 @@ always @(*) begin
 					genp_wr1_c[151:133] = {ENP_HEAD, 6'o04, 6'o15}; // en passant, a5 to b6
 				end
 				if (bstate[139:136] == {WHITE,PAWN}) begin
-					genp_wr1_c[144:132] = {ENP_HEAD, 6'o24, 6'o15}; // en passant, c5 to b6
+					genp_wr1_c[132:114] = {ENP_HEAD, 6'o24, 6'o15}; // en passant, c5 to b6
 				end
 			end
 			
