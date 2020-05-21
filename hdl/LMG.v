@@ -207,7 +207,7 @@ always @(*) begin
 	endcase
 	
 	if (reset == 1'b1)
-		col_moved_flags = 8'h00;
+		col_moved_flags_c = 8'h00;
 end
 
 // state FF
