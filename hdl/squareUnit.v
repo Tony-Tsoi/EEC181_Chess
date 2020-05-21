@@ -16,7 +16,7 @@ input [2:0] xpos, ypos; // specifies the position of the unit on the board
 input [3:0] cpiece; // current piece occupied at this spot
 input hold; // to hold the done signal from being flagged mistakenly
 
-output reg done; // done signal
+output done = (state == DONE); // done signal
 output [151:0] fifoOut; // output of FIFO
 
 // inputs and outputs to neighbor cells
@@ -45,7 +45,7 @@ parameter ROW2 = 3'o1;
 parameter ROW3 = 3'o2; // value for ypos to be at row 3 (for pawn advance two blocks forward
 parameter ROW4 = 3'o3;
 
-parameter INVM = {1'b1, 6'b000000, 6'o00, 6'o00}; // invalid move
+parameter IMOV = {1'b1, 6'b000000, 6'o00, 6'o00}; // invalid move
 
 // pseudo-constant "parameters"
 wire [8:0] PVOID = {xpos, ypos, EMPTY}; // denotes an empty space at self
@@ -55,8 +55,8 @@ reg [18:0] mvrrd, mvrru, mvrdd, mvruu, mvldd, mvluu, mvlld, mvllu;
 reg [18:0] mvrd, mvr, mvru, mvd, mvu, mvld, mvl, mvlu;
 wire [151:0] wr1 = {mvrd, mvr, mvru, mvd, mvu, mvld, mvl, mvlu};
 wire [151:0] wr2 = {mvrrd, mvrru, mvrdd, mvruu, mvldd, mvluu, mvlld, mvllu};
-wire wren1 = ~&{wr1[151], wr1[132], wr1[113], wr1[94], wr1[75], wr1[56], wr1[37], wr1[18]};
-wire wren2 = ~&{wr2[151], wr2[132], wr2[113], wr2[94], wr2[75], wr2[56], wr2[37], wr2[18]};
+wire [151:0] wrdata = (state == GKNI) ? wr2 : wr1;
+wire wren = ~&{wrdata[151], wrdata[132], wrdata[113], wrdata[94], wrdata[75], wrdata[56], wrdata[37], wrdata[18]};
 wire [159:152] fillwr = 8'd0; // white space to accomodate width of fifo
 
 // fifo read enable input
@@ -66,19 +66,19 @@ input rden;
 output fifoEmpty;
 
 // FIFO Module Declaration
-My_FIFO F1F0 (.clk(clk), .wr1({fillwr,wr1}), .wr2({fillwr,wr2}), .rd1(fifoOut), .wren1(wren1), .wren2(wren2), 
-	.rden(rden), .empty(fifoEmpty));
+My_FIFO F1F0 (.clock(clk), .data({fillwr,wrdata}), .q(fifoOut), .wrreq(wren), .rdreq(rden), .empty(fifoEmpty));
 
-// done signal
-reg done_c;
-always @(posedge clk) begin
-	done <= done_c;
-end
+// state bits
+parameter RSET = 3'b000; // reset 
+parameter GENC = 3'b001; // generate
+parameter PROC = 3'b011; // propagate
+parameter GKNI = 3'b111; // get knight moves
+parameter DONE = 3'b110; // done
 
-// delayed reset signal
-reg reset_d;
+reg [2:0] state, state_c;
+
 always @(posedge clk) begin
-	reset_d <= reset;
+	state <= (reset == 1'b1) ? RSET : state_c;
 end
 
 // hold signal combinational
@@ -123,274 +123,263 @@ always @(posedge clk) begin
 	olluo <= olluo_c;
 end
 
-// output logic
-wire capb = (cpiece[3] == BLACK); // capture bit
+// propagated piece can capture current square piece
+wire capb = (cpiece[3] == BLACK);
 
+// output logic
 always @(*) begin
-	// default not change done
-	done_c = done;
+	// default state unchanged
+	state_c = state;
 
 	// default empty
-	olluo_c = PVOID; olldo_c = PVOID;
-	oluuo_c = PVOID; oluo_c = PVOID; olo_c = PVOID; oldo_c = PVOID; olddo_c = PVOID;
+	oluo_c = PVOID; olo_c = PVOID; oldo_c = PVOID; 
 	ouo_c = PVOID; odo_c = PVOID;
-	oruuo_c = PVOID; oruo_c = PVOID; oro_c = PVOID; ordo_c = PVOID; orddo_c = PVOID;
-	orruo_c = PVOID; orrdo_c = PVOID;
+	oruo_c = PVOID; oro_c = PVOID; ordo_c = PVOID;
+	
+	// default hold the knight signals
+	olluo_c = olluo; olldo_c = olldo;
+	oluuo_c = oluuo; olddo_c = olddo;
+	oruuo_c = oruuo; orddo_c = orddo;
+	orruo_c = orruo; orrdo_c = orrdo;
 	
 	// default invalid moves
-	mvrrd = INVM;	mvrru = INVM; 	mvrdd = INVM; 	mvruu = INVM; 
-	mvldd = INVM; 	mvluu = INVM; 	mvlld = INVM; 	mvllu = INVM;
-	mvrd = INVM; 	mvr = INVM; 	mvru = INVM; 	mvd = INVM;
-	mvu = INVM;		mvld = INVM; 	mvl = INVM; 	mvlu = INVM;
+	mvrrd = IMOV;	mvrru = IMOV; 	mvrdd = IMOV; 	mvruu = IMOV; 
+	mvldd = IMOV; 	mvluu = IMOV; 	mvlld = IMOV; 	mvllu = IMOV;
+	mvrd = IMOV; 	mvr = IMOV; 	mvru = IMOV; 	mvd = IMOV;
+	mvu = IMOV;		mvld = IMOV; 	mvl = IMOV; 	mvlu = IMOV;
 	
-	// generate case
-	if (reset_d == 1'b1) begin 
-		// of course not done
-		done_c = 1'b0;
-		
-		// propagate current piece if it's ours (white)
-		// since known only propagate white pieces, not sending white prefix
-		// pad origin position before piece type
-		if (cpiece[3] == WHITE) begin
-			case (cpiece[2:0])
-			PAWN: begin
-				oluo_c = {xpos, ypos, PAWN};
-				ouo_c = {xpos, ypos, PAWN};
-				oruo_c = {xpos, ypos, PAWN};
-			end
-			KNIGHT: begin
-				olluo_c = {xpos, ypos, KNIGHT};
-				olldo_c = {xpos, ypos, KNIGHT};
-				oluuo_c = {xpos, ypos, KNIGHT};
-				olddo_c = {xpos, ypos, KNIGHT};
-				oruuo_c = {xpos, ypos, KNIGHT};
-				orddo_c = {xpos, ypos, KNIGHT};
-				orruo_c = {xpos, ypos, KNIGHT};
-				orrdo_c = {xpos, ypos, KNIGHT};
-			end
-			BISHOP: begin
-				oluo_c = {xpos, ypos, BISHOP};
-				oldo_c = {xpos, ypos, BISHOP};
-				oruo_c = {xpos, ypos, BISHOP};
-				ordo_c = {xpos, ypos, BISHOP};
-			end
-			ROOK: begin
-				olo_c = {xpos, ypos, ROOK};
-				ouo_c = {xpos, ypos, ROOK};
-				odo_c = {xpos, ypos, ROOK};
-				oro_c = {xpos, ypos, ROOK};
-			end
-			QUEEN, KING: begin
-				oluo_c = {xpos, ypos, QUEEN};
-				olo_c = {xpos, ypos, QUEEN};
-				oldo_c = {xpos, ypos, QUEEN};
-				ouo_c = {xpos, ypos, QUEEN};
-				odo_c = {xpos, ypos, QUEEN};
-				oruo_c = {xpos, ypos, QUEEN};
-				oro_c = {xpos, ypos, QUEEN};
-				ordo_c = {xpos, ypos, QUEEN};
-			end
-			default: begin end // EMPTY, NOTUSED case
-			endcase
+	case (state)
+		RSET: begin
+			state_c = GKNI;
+			
+			olluo_c = PVOID; olldo_c = PVOID;
+			oluuo_c = PVOID; olddo_c = PVOID;
+			oruuo_c = PVOID; orddo_c = PVOID;
+			orruo_c = PVOID; orrdo_c = PVOID;
 		end
-	end // end generate case	
-	else begin // propagate case
-		// PAWN case
-		if (cpiece[2:0] == EMPTY) begin
-			// if current place is empty, pawn can move up
+		GENC: begin
+			// generate output current piece if it's ours (white)
+			// since known only propagate white pieces, not sending white prefix
+			// pad origin position before piece type
+			state_c = PROC;
+			
+			if (cpiece[3] == WHITE) begin
+				case (cpiece[2:0])
+				PAWN: begin
+					oluo_c = {xpos, ypos, PAWN};
+					ouo_c = {xpos, ypos, PAWN};
+					oruo_c = {xpos, ypos, PAWN};
+				end
+				KNIGHT: begin
+					olluo_c = {xpos, ypos, KNIGHT};
+					olldo_c = {xpos, ypos, KNIGHT};
+					oluuo_c = {xpos, ypos, KNIGHT};
+					olddo_c = {xpos, ypos, KNIGHT};
+					oruuo_c = {xpos, ypos, KNIGHT};
+					orddo_c = {xpos, ypos, KNIGHT};
+					orruo_c = {xpos, ypos, KNIGHT};
+					orrdo_c = {xpos, ypos, KNIGHT};
+				end
+				BISHOP: begin
+					oluo_c = {xpos, ypos, BISHOP};
+					oldo_c = {xpos, ypos, BISHOP};
+					oruo_c = {xpos, ypos, BISHOP};
+					ordo_c = {xpos, ypos, BISHOP};
+				end
+				ROOK: begin
+					olo_c = {xpos, ypos, ROOK};
+					ouo_c = {xpos, ypos, ROOK};
+					odo_c = {xpos, ypos, ROOK};
+					oro_c = {xpos, ypos, ROOK};
+				end
+				QUEEN, KING: begin
+					oluo_c = {xpos, ypos, QUEEN};
+					olo_c = {xpos, ypos, QUEEN};
+					oldo_c = {xpos, ypos, QUEEN};
+					ouo_c = {xpos, ypos, QUEEN};
+					odo_c = {xpos, ypos, QUEEN};
+					oruo_c = {xpos, ypos, QUEEN};
+					oro_c = {xpos, ypos, QUEEN};
+					ordo_c = {xpos, ypos, QUEEN};
+				end
+				default: begin end // EMPTY, NOTUSED case
+				endcase
+			end
+		end
+		PROC: begin // propagate + get moves
+			// if no more hold, and finished propagate, move on to get knight case
+			if ((hold == 1'b0) && (wren == 1'b0))
+				state_c = GKNI;
+			
+			// PAWN case
+			if (cpiece[2:0] == EMPTY) begin
+				// if current place is empty, pawn can move up
+				if (iui[2:0] != EMPTY) begin
+					mvu = {7'b0010000, iui[8:3], xpos, ypos};
+					
+					
+					if (ypos == ROW4)
+						mvu = {7'b0011000, iui[8:3], xpos, ypos};
+					
+					if ((iui[5:3] == ROW2) && (ypos == ROW3)) begin
+						// if started from ROW2
+						// pawn can move one more step forward
+						ouo_c = iui;
+					end
+				end 
+			end else begin
+				if (cpiece[3] == BLACK) begin
+					// if current place isn't empty and is of opposite, pawn en passant capture
+					if (irui[2:0] == PAWN) begin
+						mvru = {7'b0010001, irui[8:3], xpos, ypos};
+					end
+					if (ilui[2:0] == PAWN) begin
+						mvlu = {7'b0010001, ilui[8:3], xpos, ypos};
+					end
+				end
+			end
+			
+			// RU and LU is available for pawn, if can take current piece
+			if (irui[2:0] != EMPTY) begin
+				if ((cpiece[2:0] == EMPTY) && (irui[2:0] != PAWN)) begin
+					mvru = {6'o00, capb, irui[8:3], xpos, ypos};
+					
+					if ((irui[2:0] == BISHOP) && (irui[2:0] == QUEEN))
+						// if bishop or queen, propagate diag
+						oruo_c = irui;
+				end
+				if (capb) begin
+					mvru = {6'o00, capb, irui[8:3], xpos, ypos};
+				end
+			end
+			
+			if (ilui[2:0] != EMPTY) begin
+				if ((cpiece[2:0] == EMPTY) && (ilui[2:0] != PAWN)) begin
+					mvlu = {6'o00, capb, ilui[8:3], xpos, ypos};
+					
+					if ((ilui[2:0] == BISHOP) && (ilui[2:0] == QUEEN))
+						// if bishop or queen, propagate diag
+						oruo_c = ilui;
+				end
+				if (capb) begin
+					mvlu = {6'o00, capb, ilui[8:3], xpos, ypos};
+				end
+			end
+			
+			// U is available for pawn if empty
 			if (iui[2:0] != EMPTY) begin
-				mvu = {7'b0010000, iui[8:3], xpos, ypos};
-				done_c = 1'b0;
-				
-				if (ypos == ROW4)
-					mvu = {7'b0011000, iui[8:3], xpos, ypos};
-				
-				if ((iui[5:3] == ROW2) && (ypos == ROW3)) begin
-					// if started from ROW2
-					// pawn can move one more step forward
-					ouo_c = iui;
+				if (cpiece[2:0] == EMPTY) begin
+					mvu = {2'b00, (iui[2:0] == PAWN), 3'o0, capb, iui[8:3], xpos, ypos};
+					
+					if ((iui[2:0] == BISHOP) && (iui[2:0] == QUEEN))
+						// if bishop or queen, propagate diag
+						oruo_c = irui;
 				end
-			end 
-		end else begin
-			if (cpiece[3] == BLACK) begin
-				// if current place isn't empty and is of opposite, pawn en passant capture
-				if (irui[2:0] == PAWN) begin
-					mvru = {7'b0010001, irui[8:3], xpos, ypos};
-					done_c = 1'b0;
-				end
-				if (ilui[2:0] == PAWN) begin
-					mvlu = {7'b0010001, ilui[8:3], xpos, ypos};
-					done_c = 1'b0;
+				if ((capb) && (iui[2:0] != PAWN)) begin
+					mvu = {6'o00, capb, iui[8:3], xpos, ypos};
 				end
 			end
-		end
-		
-		// KNIGHT case
-		if ((cpiece[2:0] == EMPTY) || (capb)) begin
-			if (irrdi[2:0] != EMPTY) begin
-				mvrrd = {6'o00, capb, irrdi[8:3], xpos, ypos};
-				done_c = 1'b0;
+			
+			// 5 remaining neighboring positions
+			if (irdi[2:0] != EMPTY) begin
+				if (cpiece[2:0] == EMPTY) begin
+					mvrd = {6'o00, capb, irdi[8:3], xpos, ypos};
+					
+					if ((irdi[2:0] == BISHOP) && (irdi[2:0] == QUEEN))
+						// if bishop or queen, propagate diag
+						ordo_c = irdi;
+				end
+				if (capb) begin
+					mvrd = {6'o00, capb, irdi[8:3], xpos, ypos};
+				end
 			end
-			if (irrui[2:0] != EMPTY) begin
-				mvrru = {6'o00, capb, irrui[8:3], xpos, ypos};
-				done_c = 1'b0;
+			
+			if (ildi[2:0] != EMPTY) begin
+				if (cpiece[2:0] == EMPTY) begin
+					mvld = {6'o00, capb, ildi[8:3], xpos, ypos};
+					
+					if ((ildi[2:0] == BISHOP) && (ildi[2:0] == QUEEN))
+						// if bishop or queen, propagate diag
+						oldo_c = ildi;
+				end
+				if (capb) begin
+					mvld = {6'o00, capb, ildi[8:3], xpos, ypos};
+				end
 			end
-			if (irddi[2:0] != EMPTY) begin
-				mvrdd = {6'o00, capb, irddi[8:3], xpos, ypos};
-				done_c = 1'b0;
+			
+			if (idi[2:0] != EMPTY) begin
+				if (cpiece[2:0] == EMPTY) begin
+					mvd = {6'o00, capb, idi[8:3], xpos, ypos};
+					
+					if ((idi[2:0] == BISHOP) && (idi[2:0] == QUEEN))
+						// if bishop or queen, propagate diag
+						odo_c = idi;
+				end
+				if (capb) begin
+					mvd = {6'o00, capb, idi[8:3], xpos, ypos};
+				end
 			end
-			if (iruui[2:0] != EMPTY) begin
-				mvruu = {6'o00, capb, iruui[8:3], xpos, ypos};
-				done_c = 1'b0;
-			end
-			if (ilddi[2:0] != EMPTY) begin
-				mvldd = {6'o00, capb, ilddi[8:3], xpos, ypos};
-				done_c = 1'b0;
-			end
-			if (iluui[2:0] != EMPTY) begin
-				mvluu = {6'o00, capb, iluui[8:3], xpos, ypos};
-				done_c = 1'b0;
-			end
-			if (illdi[2:0] != EMPTY) begin
-				mvlld = {6'o00, capb, illdi[8:3], xpos, ypos};
-				done_c = 1'b0;
-			end
-			if (illui[2:0] != EMPTY) begin
-				mvllu = {6'o00, capb, illui[8:3], xpos, ypos};
-				done_c = 1'b0;
-			end
-		end
-		
-		// RU and LU is available for pawn, if can take current piece
-		if (irui[2:0] != EMPTY) begin
-			if ((cpiece[2:0] == EMPTY) && (irui[2:0] != PAWN)) begin
-				mvru = {6'o00, capb, irui[8:3], xpos, ypos};
-				done_c = 1'b0;
-				
-				if ((irui[2:0] == BISHOP) && (irui[2:0] == QUEEN))
-					// if bishop or queen, propagate diag
-					oruo_c = irui;
-			end
-			if (capb) begin
-				mvru = {6'o00, capb, irui[8:3], xpos, ypos};
-				done_c = 1'b0;
-			end
-		end
-		
-		if (ilui[2:0] != EMPTY) begin
-			if ((cpiece[2:0] == EMPTY) && (ilui[2:0] != PAWN)) begin
-				mvlu = {6'o00, capb, ilui[8:3], xpos, ypos};
-				done_c = 1'b0;
-				
-				if ((ilui[2:0] == BISHOP) && (ilui[2:0] == QUEEN))
-					// if bishop or queen, propagate diag
-					oruo_c = ilui;
-			end
-			if (capb) begin
-				mvlu = {6'o00, capb, ilui[8:3], xpos, ypos};
-				done_c = 1'b0;
-			end
-		end
-		
-		// U is available for pawn if empty
-		if (iui[2:0] != EMPTY) begin
-			if (cpiece[2:0] == EMPTY) begin
-				mvu = {2'b00, (iui[2:0] == PAWN), 3'o0, capb, iui[8:3], xpos, ypos};
-				done_c = 1'b0;
-				
-				if ((iui[2:0] == BISHOP) && (iui[2:0] == QUEEN))
-					// if bishop or queen, propagate diag
-					oruo_c = irui;
-			end
-			if ((capb) && (iui[2:0] != PAWN)) begin
-				mvu = {6'o00, capb, iui[8:3], xpos, ypos};
-				done_c = 1'b0;
-			end
-		end
-		
-		// 5 remaining neighboring positions
-		if (irdi[2:0] != EMPTY) begin
-			if (cpiece[2:0] == EMPTY) begin
-				mvrd = {6'o00, capb, irdi[8:3], xpos, ypos};
-				done_c = 1'b0;
-				
-				if ((irdi[2:0] == BISHOP) && (irdi[2:0] == QUEEN))
-					// if bishop or queen, propagate diag
-					ordo_c = irdi;
-			end
-			if (capb) begin
-				mvrd = {6'o00, capb, irdi[8:3], xpos, ypos};
-				done_c = 1'b0;
-			end
-		end
-		
-		if (ildi[2:0] != EMPTY) begin
-			if (cpiece[2:0] == EMPTY) begin
-				mvld = {6'o00, capb, ildi[8:3], xpos, ypos};
-				done_c = 1'b0;
-				
-				if ((ildi[2:0] == BISHOP) && (ildi[2:0] == QUEEN))
-					// if bishop or queen, propagate diag
-					oldo_c = ildi;
-			end
-			if (capb) begin
-				mvld = {6'o00, capb, ildi[8:3], xpos, ypos};
-				done_c = 1'b0;
-			end
-		end
-		
-		if (idi[2:0] != EMPTY) begin
-			if (cpiece[2:0] == EMPTY) begin
-				mvd = {6'o00, capb, idi[8:3], xpos, ypos};
-				done_c = 1'b0;
-				
-				if ((idi[2:0] == BISHOP) && (idi[2:0] == QUEEN))
-					// if bishop or queen, propagate diag
-					odo_c = idi;
-			end
-			if (capb) begin
-				mvd = {6'o00, capb, idi[8:3], xpos, ypos};
-				done_c = 1'b0;
-			end
-		end
-		
-		if (iri[2:0] != EMPTY) begin
-			if (cpiece[2:0] == EMPTY) begin
-				mvr = {6'o00, capb, iri[8:3], xpos, ypos};
-				done_c = 1'b0;
+			
+			if (iri[2:0] != EMPTY) begin
+				if (cpiece[2:0] == EMPTY) begin
+					mvr = {6'o00, capb, iri[8:3], xpos, ypos};
 
-				if ((iri[2:0] == BISHOP) && (iri[2:0] == QUEEN))
-					// if bishop or queen, propagate diag
-					oro_c = iri;
+					if ((iri[2:0] == BISHOP) && (iri[2:0] == QUEEN))
+						// if bishop or queen, propagate diag
+						oro_c = iri;
+				end
+				if (capb) begin
+					mvr = {6'o00, capb, iri[8:3], xpos, ypos};
+				end
 			end
-			if (capb) begin
-				mvr = {6'o00, capb, iri[8:3], xpos, ypos};
-				done_c = 1'b0;
-			end
-		end
-		
-		if (ili[2:0] != EMPTY) begin
-			if (cpiece[2:0] == EMPTY) begin
-				mvl = {6'o00, capb, ili[8:3], xpos, ypos};
-				done_c = 1'b0;
-				
-				if ((ili[2:0] == BISHOP) && (ili[2:0] == QUEEN))
-					// if bishop or queen, propagate diag
-					olo_c = ili;
-			end
-			if (capb) begin
-				mvl = {6'o00, capb, ili[8:3], xpos, ypos};
-				done_c = 1'b0;
+			
+			if (ili[2:0] != EMPTY) begin
+				if (cpiece[2:0] == EMPTY) begin
+					mvl = {6'o00, capb, ili[8:3], xpos, ypos};
+					
+					if ((ili[2:0] == BISHOP) && (ili[2:0] == QUEEN))
+						// if bishop or queen, propagate diag
+						olo_c = ili;
+				end
+				if (capb) begin
+					mvl = {6'o00, capb, ili[8:3], xpos, ypos};
+				end
 			end
 		end
-	end // end propagate case
-	
-	// finally set done signal if hold or is just got new board
-	if (hold == 1'b1)
-		done_c = 1'b0;
-	
-	if (reset_d == 1'b1)
-		done_c = 1'b0;
+		GKNI: begin // store knight moves
+			state_c = DONE;
+			
+			// KNIGHT case
+			if ((cpiece[2:0] == EMPTY) || (capb)) begin
+				if (irrdi[2:0] != EMPTY) begin
+					mvrrd = {6'o00, capb, irrdi[8:3], xpos, ypos};
+				end
+				if (irrui[2:0] != EMPTY) begin
+					mvrru = {6'o00, capb, irrui[8:3], xpos, ypos};
+				end
+				if (irddi[2:0] != EMPTY) begin
+					mvrdd = {6'o00, capb, irddi[8:3], xpos, ypos};
+				end
+				if (iruui[2:0] != EMPTY) begin
+					mvruu = {6'o00, capb, iruui[8:3], xpos, ypos};
+				end
+				if (ilddi[2:0] != EMPTY) begin
+					mvldd = {6'o00, capb, ilddi[8:3], xpos, ypos};
+				end
+				if (iluui[2:0] != EMPTY) begin
+					mvluu = {6'o00, capb, iluui[8:3], xpos, ypos};
+				end
+				if (illdi[2:0] != EMPTY) begin
+					mvlld = {6'o00, capb, illdi[8:3], xpos, ypos};
+				end
+				if (illui[2:0] != EMPTY) begin
+					mvllu = {6'o00, capb, illui[8:3], xpos, ypos};
+				end
+			end
+		end
+		DONE: begin
+		end
+	endcase
 	
 	// if output direction does not exist, simply not wire the output
 	// no extra logic should be used to clear that out

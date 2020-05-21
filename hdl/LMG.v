@@ -101,8 +101,7 @@ wire [151:0] wr1 = (state == GSPM) ? gcas_wr1 :
 	(col_move_ptr == 3'd2)? fifoOut_col3 :
 	(col_move_ptr == 3'd1)? fifoOut_col2 : fifoOut_col1;
 wire [159:152] fillwr = 8'd0; // white space to accomodate width of fifo
-My_FIFO F1F0 (.clk(clk), .wr1({fillwr,wr1}), .wr2(160'd0), .rd1(fifoOut), .wren1((wren1 | cas_wren)), .wren2(1'b0), 
-	.empty(fifoEmpty));
+My_FIFO F1F0 (.clock(clk), .data({fillwr,wr1}), .q(fifoOut), .wrreq((wren1 | cas_wren)), .rdreq(rden), .empty(fifoEmpty));
 
 // for castling
 // Note: this check ignores the following rules:

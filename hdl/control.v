@@ -18,8 +18,6 @@ slave_byteenable
 // 3. for multiple depth: repeat step 2 and write into do/undo stack, until certain depth reached
 // 4. wait for SW to retrieve move list/tree from block RAM
 
-// TODO: create block RAM to satisfy the Avalon Bus spec
-// TODO: create state machine to wait for done signal from LMG and write into block RAM
 // TODO: make hardware that creates a boardstate that makes the move 
 	// (in consideration of castling, which is 2 moves in 1)
 // TODO: look into burst read from master
