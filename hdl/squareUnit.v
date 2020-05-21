@@ -45,6 +45,8 @@ parameter ROW2 = 3'o1;
 parameter ROW3 = 3'o2; // value for ypos to be at row 3 (for pawn advance two blocks forward
 parameter ROW4 = 3'o3;
 
+parameter INVM = {1'b1, 6'b000000, 6'o00, 6'o00}; // invalid move
+
 // pseudo-constant "parameters"
 wire [8:0] PVOID = {xpos, ypos, EMPTY}; // denotes an empty space at self
 
@@ -64,7 +66,7 @@ input rden;
 output fifoEmpty;
 
 // FIFO Module Declaration
-MyFifo F1F0 (.clk(clk), .wr1({fillwr,wr1}), .wr2({fillwr,wr2}), .rd1(fifoOut), .wren1(wren1), .wren2(wren2), 
+My_FIFO F1F0 (.clk(clk), .wr1({fillwr,wr1}), .wr2({fillwr,wr2}), .rd1(fifoOut), .wren1(wren1), .wren2(wren2), 
 	.rden(rden), .empty(fifoEmpty));
 
 // done signal
@@ -135,7 +137,14 @@ always @(*) begin
 	oruuo_c = PVOID; oruo_c = PVOID; oro_c = PVOID; ordo_c = PVOID; orddo_c = PVOID;
 	orruo_c = PVOID; orrdo_c = PVOID;
 	
-	if (reset_d == 1'b1) begin // generate case
+	// default invalid moves
+	mvrrd = INVM;	mvrru = INVM; 	mvrdd = INVM; 	mvruu = INVM; 
+	mvldd = INVM; 	mvluu = INVM; 	mvlld = INVM; 	mvllu = INVM;
+	mvrd = INVM; 	mvr = INVM; 	mvru = INVM; 	mvd = INVM;
+	mvu = INVM;		mvld = INVM; 	mvl = INVM; 	mvlu = INVM;
+	
+	// generate case
+	if (reset_d == 1'b1) begin 
 		// of course not done
 		done_c = 1'b0;
 		

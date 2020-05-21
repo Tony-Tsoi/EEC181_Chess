@@ -1,4 +1,5 @@
-module lmg (clk, reset, bstate, done, fifoOut, rden, fifoEmpty);
+module lmg (clk, reset, bstate, done, fifoOut, rden, fifoEmpty,
+	lcas_flag, rcas_flag, enp_flags);
 
 // 19 bit output per move from fifoOut has the following format:
 // [7b flag][6b from][6b to]
@@ -13,6 +14,9 @@ output done = (state == DONE);
 output [151:0] fifoOut;
 input rden;
 output fifoEmpty;
+
+input lcas_flag, rcas_flag; // high when the king, left/right rook is not moved
+input [1:8] enp_flags; // en passant flags, high when opponent pawn just moved two squares front
 
 // parameter declarations
 parameter PVOID = 9'd0; // it's just {3'o0, 3'o0, EMPTY} - denotes an empty space at xpos = 0, ypos = 0
@@ -33,12 +37,15 @@ parameter ROOK = 3'o4;
 parameter QUEEN = 3'o5;
 parameter KING = 3'o6;
 parameter NOTUSED = 3'o7;
+parameter INVM = {1'b1, 6'b000000, 6'o00, 6'o00}; // invalid move
 
 // parameter for states
-parameter GCAS = 2'b00; // get castling stage
-parameter WAIT = 2'b01;
-parameter GETM = 2'b11;
-parameter DONE = 2'b10;
+parameter RSET = 3'b000; // reset stage
+parameter GSPM = 3'b001; // get special moves stage (castling, en passant)
+parameter GSPD = 3'b101; // the clock cycle right after GSPM
+parameter WAIT = 3'b111; // wait for columns
+parameter GETM = 3'b110; // get moves from columns
+parameter DONE = 3'b100; // done
 
 // board state
 wire colstate_a = {bstate[227:224], bstate[195:192], bstate[163:160], bstate[131:128], 
@@ -62,7 +69,7 @@ wire colstate_h = {bstate[255:252], bstate[223:220], bstate[191:188], bstate[159
 wire [8:1] done_cols;
 
 // state bit
-reg [1:0] state, state_c;
+reg [2:0] state, state_c;
 
 // moves transferred to local fifo flag
 reg [8:1] col_moved_flags, col_moved_flags_c;
@@ -84,7 +91,8 @@ wire [151:0] fifoOut_col8, fifoOut_col7, fifoOut_col6, fifoOut_col5,
 	fifoOut_col4, fifoOut_col3, fifoOut_col2, fifoOut_col1;
 
 reg wren1, wren1_c;
-wire [151:0] wr1 = (state == GCAS) ? gcas_wr1 :
+wire [151:0] wr1 = (state == GSPM) ? gcas_wr1 :
+	(state == GSPD) ? genp_wr1 :
 	(col_move_ptr == 3'd7)? fifoOut_col8 :
 	(col_move_ptr == 3'd6)? fifoOut_col7 :
 	(col_move_ptr == 3'd5)? fifoOut_col6 :
@@ -93,24 +101,28 @@ wire [151:0] wr1 = (state == GCAS) ? gcas_wr1 :
 	(col_move_ptr == 3'd2)? fifoOut_col3 :
 	(col_move_ptr == 3'd1)? fifoOut_col2 : fifoOut_col1;
 wire [159:152] fillwr = 8'd0; // white space to accomodate width of fifo
-MyFifo F1F0 (.clk(clk), .wr1({fillwr,wr1}), .wr2(160'd0), .rd1(fifoOut), .wren1((wren1 | cas_wren)), .wren2(1'b0), 
+My_FIFO F1F0 (.clk(clk), .wr1({fillwr,wr1}), .wr2(160'd0), .rd1(fifoOut), .wren1((wren1 | cas_wren)), .wren2(1'b0), 
 	.empty(fifoEmpty));
 
 // for castling
 // Note: this check ignores the following rules:
-// Neither king nor roook previously moved
 // King not currently in check
 // King doesn't pass thru square attacked by enemy piece
 // if castling applies, enable write, put 1 or 2 moves
 wire cas_l = &{(bstate[3:0] == {WHITE,ROOK}), (bstate[6:4] == EMPTY), (bstate[10:8] == EMPTY), 
-	(bstate[14:12] == EMPTY), (bstate[19:16] == {WHITE,KING})};
+	(bstate[14:12] == EMPTY), (bstate[19:16] == {WHITE,KING}), lcas_flag};
 wire cas_r = &{(bstate[19:16] == {WHITE,KING}), (bstate[22:20] == EMPTY), (bstate[26:24] == EMPTY),
-	(bstate[31:28] == {WHITE,ROOK})};
+	(bstate[31:28] == {WHITE,ROOK}), rcas_flag};
 wire cas_wren = cas_l | cas_r;
 wire [151:0] gcas_wr1;
 assign gcas_wr1[151:133] = (cas_r) ? {7'b0000010, 6'o40, 6'o10} : 19'd0;
 assign gcas_wr1[132:114] = (cas_l) ? {7'b0000010, 6'o40, 6'o60} : 19'd0;
 assign gcas_wr1[113:0] = 134'd0;
+
+// for en passant
+parameter ENP_HEAD = 7'b0010101;
+
+reg [151:0] genp_wr1, genp_wr1_c;
 
 // next state logic
 always @(*) begin
@@ -118,9 +130,83 @@ always @(*) begin
 	col_rden_c = 8'h00;
 	col_moved_flags_c = col_moved_flags;
 	wren1_c = 1'b0;
+	genp_wr1_c = {8{INVM}}; // default 8 invalid moves
 	
 	case (state)
-		GCAS: begin
+		RSET: begin
+			state_c = GSPM;
+		end
+		GSPM: begin
+			state_c = GSPD;
+			
+			// en passant logic			
+			// a5/b5 case
+			if (enp_flags[1] == 1'b1) begin 
+				if (bstate[135:132] == {WHITE,PAWN}) begin
+					genp_wr1_c[132:114] = {ENP_HEAD, 6'o14, 6'o05}; // en passant, b5 to a6
+				end
+			end 
+			else if (enp_flags[2] == 1'b1) begin // b5 case (a5 and b5 case can't coexist)
+				if (bstate[131:128] == {WHITE,PAWN}) begin
+					genp_wr1_c[151:133] = {ENP_HEAD, 6'o04, 6'o15}; // en passant, a5 to b6
+				end
+				if (bstate[139:136] == {WHITE,PAWN}) begin
+					genp_wr1_c[132:144] = {ENP_HEAD, 6'o24, 6'o15}; // en passant, c5 to b6
+				end
+			end
+			
+			// c5/d5 case
+			if (enp_flags[3] == 1'b1) begin
+				if (bstate[135:132] == {WHITE,PAWN}) begin
+					genp_wr1_c[113:95] = {ENP_HEAD, 6'o14, 6'o25}; // en passant, b5 to c6
+				end
+				if (bstate[143:140] == {WHITE,PAWN}) begin
+					genp_wr1_c[94:76] = {ENP_HEAD, 6'o34, 6'o25}; // en passant, d5 to c6
+				end
+			end 
+			else if (enp_flags[4] == 1'b1) begin
+				if (bstate[139:136] == {WHITE,PAWN}) begin
+					genp_wr1_c[113:95] = {ENP_HEAD, 6'o24, 6'o35}; // en passant, c5 to d6
+				end
+				if (bstate[147:144] == {WHITE,PAWN}) begin
+					genp_wr1_c[94:76] = {ENP_HEAD, 6'o44, 6'o35}; // en passant, e5 to d6
+				end
+			end
+			
+			// e5/f5 case
+			if (enp_flags[5] == 1'b1) begin
+				if (bstate[143:140] == {WHITE,PAWN}) begin
+					genp_wr1_c[75:57] = {ENP_HEAD, 6'o34, 6'o45}; // en passant, d5 to e6
+				end
+				if (bstate[151:148] == {WHITE,PAWN}) begin
+					genp_wr1_c[56:38] = {ENP_HEAD, 6'o54, 6'o45}; // en passant, f5 to e6
+				end
+			end 
+			else if (enp_flags[6] == 1'b1) begin
+				if (bstate[147:144] == {WHITE,PAWN}) begin
+					genp_wr1_c[75:57] = {ENP_HEAD, 6'o44, 6'o55}; // en passant, e5 to f6
+				end
+				if (bstate[155:152] == {WHITE,PAWN}) begin
+					genp_wr1_c[56:38] = {ENP_HEAD, 6'o64, 6'o55}; // en passant, g5 to f6
+				end
+			end
+			
+			// g5/h5 case
+			if (enp_flags[5] == 1'b1) begin
+				if (bstate[151:148] == {WHITE,PAWN}) begin
+					genp_wr1_c[37:19] = {ENP_HEAD, 6'o54, 6'o65}; // en passant, f5 to g6
+				end
+				if (bstate[159:156] == {WHITE,PAWN}) begin
+					genp_wr1_c[18:0] = {ENP_HEAD, 6'o74, 6'o65}; // en passant, h5 to g6
+				end
+			end 
+			else if (enp_flags[6] == 1'b1) begin
+				if (bstate[155:152] == {WHITE,PAWN}) begin
+					genp_wr1_c[37:19] = {ENP_HEAD, 6'o64, 6'o75}; // en passant, g5 to h6
+				end
+			end
+		end
+		GSPD: begin
 			state_c = WAIT;
 		end
 		WAIT: begin
@@ -204,6 +290,9 @@ always @(*) begin
 				wren1_c = 1'b0;
 			end
 		end
+		default: begin
+			state_c = RSET; // in case stuck in states not defined
+		end
 	endcase
 	
 	if (reset == 1'b1)
@@ -212,11 +301,12 @@ end
 
 // state FF
 always @(posedge clk) begin
-	state <= reset? GCAS : state_c;
+	state <= reset? RSET : state_c;
 	col_rden <= col_rden_c;
 	col_move_ptr <= col_move_ptr_c;
 	col_moved_flags <= col_moved_flags_c;
 	wren1 <= wren1_c;
+	genp_wr1 <= genp_wr1_c;
 end
 
 // wiring all the hold signals from all directions that is across columns
