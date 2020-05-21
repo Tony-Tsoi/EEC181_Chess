@@ -140,7 +140,7 @@ lmg LMG(
 	.fifoOut(lmgFifoOut),
 	.rden(lmgReadEnable),
 	.lcas_flag(1'b0), // change these flags to generate in HW
-	.lcas_flag(1'b0),
+	.rcas_flag(1'b0),
 	.enp_flags(8'd0)
 );
 

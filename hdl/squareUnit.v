@@ -66,7 +66,8 @@ input rden;
 output fifoEmpty;
 
 // FIFO Module Declaration
-My_FIFO F1F0 (.clock(clk), .data({fillwr,wrdata}), .q(fifoOut), .wrreq(wren), .rdreq(rden), .empty(fifoEmpty));
+My_FIFO F1F0 (.clock(clk), .data({fillwr,wrdata}), .q(fifoOut), .wrreq(wren), .rdreq(rden), .empty(fifoEmpty),
+	.usedw(), .full());
 
 // state bits
 parameter RSET = 3'b000; // reset 
