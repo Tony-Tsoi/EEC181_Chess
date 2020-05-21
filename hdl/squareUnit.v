@@ -206,11 +206,11 @@ always @(*) begin
 			if (cpiece[3] == BLACK) begin
 				// if current place isn't empty and is of opposite, pawn en passant capture
 				if (irui[2:0] == PAWN) begin
-					mvru = {7'b0010101, irui[8:3], xpos, ypos};
+					mvru = {7'b0010001, irui[8:3], xpos, ypos};
 					done_c = 1'b0;
 				end
 				if (ilui[2:0] == PAWN) begin
-					mvlu = {7'b0010101, ilui[8:3], xpos, ypos};
+					mvlu = {7'b0010001, ilui[8:3], xpos, ypos};
 					done_c = 1'b0;
 				end
 			end
