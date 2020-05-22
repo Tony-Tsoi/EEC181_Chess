@@ -37,7 +37,7 @@ parameter ADDR_WIDTH = 15; // There are no "unused" addresses. Each slave addres
 
 // clock interface
 input clk;
-input reset;
+input reset; // Not currently used
 
 // slave interface
 input [ADDR_WIDTH-1:0] slave_address;
@@ -139,6 +139,7 @@ lmg LMG(
 	.done(lmgDone),
 	.fifoOut(lmgFifoOut),
 	.rden(lmgReadEnable),
+	.fifoEmpty(),
 	.lcas_flag(1'b0), // change these flags to generate in HW
 	.rcas_flag(1'b0),
 	.enp_flags(8'd0)

@@ -10,26 +10,6 @@ clk, xpos, ypos, cpiece, reset, done, fifoOut, fifoEmpty, hold, rden);
 // seven bit flag bits as follows:
 // [invalid][promote][pawn move][pawn 2 sq][en passant][castle][capture]
 
-input clk; // clock input
-input reset; // if is new board, put self at the outgoing positions
-input [2:0] xpos, ypos; // specifies the position of the unit on the board
-input [3:0] cpiece; // current piece occupied at this spot
-input hold; // to hold the done signal from being flagged mistakenly
-
-output done = (state == DONE); // done signal
-output [151:0] fifoOut; // output of FIFO
-
-// inputs and outputs to neighbor cells
-// 9 bits of the format of [6 bits origin pos][3 bits of piece info]
-// 1 bit of color is omitted since only white pieces can propagate
-input [8:0] irrdi, irrui, irddi, irdi, iri, irui, iruui, idi, iui, 
-	ilddi, ildi, ili, ilui, iluui, illdi, illui;
-output reg [8:0] orrdo, orruo, orddo, ordo, oro, oruo, oruuo, odo, ouo, 
-	olddo, oldo, olo, oluo, oluuo, olldo, olluo;
-	
-// output hold signal
-output reg hlu, hl, hld, hu, hd, hru, hr, hrd;
-
 // parameter declarations
 parameter WHITE = 1'b0;
 parameter BLACK = 1'b1;
@@ -46,6 +26,41 @@ parameter ROW3 = 3'o2; // value for ypos to be at row 3 (for pawn advance two bl
 parameter ROW4 = 3'o3;
 
 parameter IMOV = {1'b1, 6'b000000, 6'o00, 6'o00}; // invalid move
+
+// state bits
+parameter RSET = 3'b000; // reset 
+parameter GENC = 3'b001; // generate
+parameter PROC = 3'b011; // propagate
+parameter GKNI = 3'b111; // get knight moves
+parameter DONE = 3'b110; // done
+
+reg [2:0] state, state_c;
+
+input clk; // clock input
+input reset; // if is new board, put self at the outgoing positions
+input [2:0] xpos, ypos; // specifies the position of the unit on the board
+input [3:0] cpiece; // current piece occupied at this spot
+input hold; // to hold the done signal from being flagged mistakenly
+
+output done; // done signal
+assign done = (state == DONE);
+output [151:0] fifoOut; // output of FIFO
+
+// inputs and outputs to neighbor cells
+// 9 bits of the format of [6 bits origin pos][3 bits of piece info]
+// 1 bit of color is omitted since only white pieces can propagate
+input [8:0] irrdi, irrui, irddi, irdi, iri, irui, iruui, idi, iui, 
+	ilddi, ildi, ili, ilui, iluui, illdi, illui;
+output reg [8:0] orrdo, orruo, orddo, ordo, oro, oruo, oruuo, odo, ouo, 
+	olddo, oldo, olo, oluo, oluuo, olldo, olluo;
+	
+// output hold signal
+output reg hlu, hl, hld, hu, hd, hru, hr, hrd;
+
+// outgoing output variables combinational
+reg [8:0] orrdo_c, orruo_c, orddo_c, ordo_c, oro_c, oruo_c, oruuo_c, odo_c, 
+	ouo_c, olddo_c, oldo_c, olo_c, oluo_c, oluuo_c, olldo_c, olluo_c;
+
 
 // pseudo-constant "parameters"
 wire [8:0] PVOID = {xpos, ypos, EMPTY}; // denotes an empty space at self
@@ -69,14 +84,9 @@ output fifoEmpty;
 My_FIFO F1F0 (.clock(clk), .data({fillwr,wrdata}), .q(fifoOut), .wrreq(wren), .rdreq(rden), .empty(fifoEmpty),
 	.usedw(), .full());
 
-// state bits
-parameter RSET = 3'b000; // reset 
-parameter GENC = 3'b001; // generate
-parameter PROC = 3'b011; // propagate
-parameter GKNI = 3'b111; // get knight moves
-parameter DONE = 3'b110; // done
 
-reg [2:0] state, state_c;
+
+
 
 always @(posedge clk) begin
 	state <= (reset == 1'b1) ? RSET : state_c;
@@ -102,9 +112,7 @@ always @(posedge clk) begin
 	hrd <= hrd_c;
 end
 
-// outgoing output variables combinational
-reg [8:0] orrdo_c, orruo_c, orddo_c, ordo_c, oro_c, oruo_c, oruuo_c, odo_c, 
-	ouo_c, olddo_c, oldo_c, olo_c, oluo_c, oluuo_c, olldo_c, olluo_c;
+
 always @(posedge clk) begin
 	orrdo <= orrdo_c;
 	orruo <= orruo_c;

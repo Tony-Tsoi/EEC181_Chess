@@ -6,18 +6,6 @@ module lmg (clk, reset, bstate, done, fifoOut, rden, fifoEmpty,
 // seven bit flag bits as follows:
 // [invalid][promote][pawn move][pawn 2 sq][en passant][castle][capture]
 
-input clk, reset;
-input [255:0] bstate; // board state
-
-output done = (state == DONE);
-
-output [151:0] fifoOut;
-input rden;
-output fifoEmpty;
-
-input lcas_flag, rcas_flag; // high when the king, left/right rook is not moved
-input [1:8] enp_flags; // en passant flags, high when opponent pawn just moved two squares front
-
 // parameter declarations
 parameter PVOID = 9'd0; // it's just {3'o0, 3'o0, EMPTY} - denotes an empty space at xpos = 0, ypos = 0
 parameter PVOID8 = 72'd0;
@@ -47,29 +35,50 @@ parameter WAIT = 3'b111; // wait for columns
 parameter GETM = 3'b110; // get moves from columns
 parameter DONE = 3'b100; // done
 
+// state bit
+reg [2:0] state, state_c;
+
+input clk, reset;
+input [255:0] bstate; // board state
+
+output done; // done signal
+assign done = (state == DONE);
+
+output [151:0] fifoOut;
+input rden;
+output fifoEmpty;
+
+input lcas_flag, rcas_flag; // high when the king, left/right rook is not moved
+input [1:8] enp_flags; // en passant flags, high when opponent pawn just moved two squares front
+
+
+
 // board state
-wire colstate_a = {bstate[227:224], bstate[195:192], bstate[163:160], bstate[131:128], 
+wire [31:0] colstate_a = {bstate[227:224], bstate[195:192], bstate[163:160], bstate[131:128], 
 	bstate[99:96], bstate[67:64], bstate[35:32], bstate[3:0]};
-wire colstate_b = {bstate[231:228], bstate[199:196], bstate[167:164], bstate[135:132], 
+wire [31:0] colstate_b = {bstate[231:228], bstate[199:196], bstate[167:164], bstate[135:132], 
 	bstate[103:100], bstate[71:68], bstate[39:36], bstate[7:4]};
-wire colstate_c = {bstate[235:232], bstate[203:200], bstate[171:168], bstate[139:136], 
+wire [31:0] colstate_c = {bstate[235:232], bstate[203:200], bstate[171:168], bstate[139:136], 
 	bstate[107:104], bstate[75:72], bstate[43:40], bstate[11:8]};
-wire colstate_d = {bstate[239:236], bstate[207:204], bstate[175:172], bstate[143:140], 
+wire [31:0] colstate_d = {bstate[239:236], bstate[207:204], bstate[175:172], bstate[143:140], 
 	bstate[111:108], bstate[79:76], bstate[47:44], bstate[15:12]};
-wire colstate_e = {bstate[243:240], bstate[211:208], bstate[179:176], bstate[147:144], 
+wire [31:0] colstate_e = {bstate[243:240], bstate[211:208], bstate[179:176], bstate[147:144], 
 	bstate[115:112], bstate[83:80], bstate[51:48], bstate[19:16]};
-wire colstate_f = {bstate[247:244], bstate[215:212], bstate[183:180], bstate[151:148], 
+wire [31:0] colstate_f = {bstate[247:244], bstate[215:212], bstate[183:180], bstate[151:148], 
 	bstate[119:116], bstate[87:84], bstate[55:52], bstate[23:20]};
-wire colstate_g = {bstate[251:248], bstate[219:216], bstate[187:184], bstate[155:152], 
+wire [31:0] colstate_g = {bstate[251:248], bstate[219:216], bstate[187:184], bstate[155:152], 
 	bstate[123:120], bstate[91:88], bstate[59:56], bstate[27:24]};
-wire colstate_h = {bstate[255:252], bstate[223:220], bstate[191:188], bstate[159:156], 
+wire [31:0] colstate_h = {bstate[255:252], bstate[223:220], bstate[191:188], bstate[159:156], 
 	bstate[127:124], bstate[95:92], bstate[63:60], bstate[31:28]};
+
+
+wire [151:0] gcas_wr1;// MOVED THIS UP
+reg [151:0] genp_wr1, genp_wr1_c;
 
 // done signals from columns
 wire [8:1] done_cols;
 
-// state bit
-reg [2:0] state, state_c;
+
 
 // moves transferred to local fifo flag
 reg [8:1] col_moved_flags, col_moved_flags_c;
@@ -85,6 +94,21 @@ wire [7:0] colEmpty;
 
 // pointed column fifo empty flag
 wire c_col_empty = colEmpty[col_move_ptr];
+
+// for castling
+// Note: this check ignores the following rules:
+// King not currently in check
+// King doesn't pass thru square attacked by enemy piece
+// if castling applies, enable write, put 1 or 2 moves
+wire cas_l = &{(bstate[3:0] == {WHITE,ROOK}), (bstate[6:4] == EMPTY), (bstate[10:8] == EMPTY), 
+	(bstate[14:12] == EMPTY), (bstate[19:16] == {WHITE,KING}), lcas_flag};
+wire cas_r = &{(bstate[19:16] == {WHITE,KING}), (bstate[22:20] == EMPTY), (bstate[26:24] == EMPTY),
+	(bstate[31:28] == {WHITE,ROOK}), rcas_flag};
+wire cas_wren = cas_l | cas_r;
+
+assign gcas_wr1[151:133] = (cas_r) ? {7'b0000010, 6'o40, 6'o10} : 19'd0;
+assign gcas_wr1[132:114] = (cas_l) ? {7'b0000010, 6'o40, 6'o60} : 19'd0;
+assign gcas_wr1[113:0] = 134'd0;
 
 // FIFO Module Declaration
 wire [151:0] fifoOut_col8, fifoOut_col7, fifoOut_col6, fifoOut_col5, 
@@ -104,25 +128,12 @@ wire [159:152] fillwr = 8'd0; // white space to accomodate width of fifo
 My_FIFO F1F0 (.clock(clk), .data({fillwr,wr1}), .q(fifoOut), .wrreq((wren1 | cas_wren)), .rdreq(rden), .empty(fifoEmpty),
 	.usedw(), .full() );
 
-// for castling
-// Note: this check ignores the following rules:
-// King not currently in check
-// King doesn't pass thru square attacked by enemy piece
-// if castling applies, enable write, put 1 or 2 moves
-wire cas_l = &{(bstate[3:0] == {WHITE,ROOK}), (bstate[6:4] == EMPTY), (bstate[10:8] == EMPTY), 
-	(bstate[14:12] == EMPTY), (bstate[19:16] == {WHITE,KING}), lcas_flag};
-wire cas_r = &{(bstate[19:16] == {WHITE,KING}), (bstate[22:20] == EMPTY), (bstate[26:24] == EMPTY),
-	(bstate[31:28] == {WHITE,ROOK}), rcas_flag};
-wire cas_wren = cas_l | cas_r;
-wire [151:0] gcas_wr1;
-assign gcas_wr1[151:133] = (cas_r) ? {7'b0000010, 6'o40, 6'o10} : 19'd0;
-assign gcas_wr1[132:114] = (cas_l) ? {7'b0000010, 6'o40, 6'o60} : 19'd0;
-assign gcas_wr1[113:0] = 134'd0;
+
 
 // for en passant
 parameter ENP_HEAD = 7'b0010101;
 
-reg [151:0] genp_wr1, genp_wr1_c;
+
 
 // next state logic
 always @(*) begin
@@ -309,25 +320,150 @@ always @(posedge clk) begin
 	genp_wr1 <= genp_wr1_c;
 end
 
-// wiring all the hold signals from all directions that is across columns
-wire [8:1] chdiri_a = chlri_a | chlurdi_a | chldrui_a;
-wire [8:1] chdiri_b = chlri_b | chlurdi_b | chldrui_b;
-wire [8:1] chdiri_c = chlri_c | chlurdi_c | chldrui_c;
-wire [8:1] chdiri_d = chlri_d | chlurdi_d | chldrui_d;
-wire [8:1] chdiri_e = chlri_e | chlurdi_e | chldrui_e;
-wire [8:1] chdiri_f = chlri_f | chlurdi_f | chldrui_f;
-wire [8:1] chdiri_g = chlri_g | chlurdi_g | chldrui_g;
-wire [8:1] chdiri_h = chlri_h | chlurdi_h | chldrui_h;
 
-// only to left or right holds
-wire [8:1] chlri_a =          chlo_b | chlo_c | chlo_d | chlo_e | chlo_f | chlo_g | chlo_h;
-wire [8:1] chlri_b = chro_a |          chlo_c | chlo_d | chlo_e | chlo_f | chlo_g | chlo_h;
-wire [8:1] chlri_c = chro_a | chro_b |          chlo_d | chlo_e | chlo_f | chlo_g | chlo_h;
-wire [8:1] chlri_d = chro_a | chro_b | chro_c |          chlo_e | chlo_f | chlo_g | chlo_h;
-wire [8:1] chlri_e = chro_a | chro_b | chro_c | chro_d |          chlo_f | chlo_g | chlo_h;
-wire [8:1] chlri_f = chro_a | chro_b | chro_c | chro_d | chro_e |          chlo_g | chlo_h;
-wire [8:1] chlri_g = chro_a | chro_b | chro_c | chro_d | chro_e | chro_f |          chlo_h;
-wire [8:1] chlri_h = chro_a | chro_b | chro_c | chro_d | chro_e | chro_f | chro_g         ;
+// Column A
+wire [53:0] cilddi_a, coruuo_a;
+wire [62:0] cidi_a, cildi_a, cilldi_a, couo_a, coruo_a, corruo_a;
+wire [71:0] cili_a, coro_a;
+wire [71:9] ciui_a, cilui_a, cillui_a, codo_a, cordo_a, corrdo_a;
+wire [71:18] ciluui_a, corddo_a;
+
+wire [7:1] chluo_a, chruo_a;
+wire [8:1] chlo_a, chro_a;
+wire [8:2] chldo_a, chrdo_a;
+
+
+
+// Column B
+wire [53:0] cirddi_b, cilddi_b;
+wire [62:0] cirdi_b, cidi_b, cildi_b, cilldi_b;
+wire [71:0] ciri_b, cili_b;
+wire [71:9] cirui_b, ciui_b, cilui_b, cillui_b;
+wire [71:18] ciruui_b, ciluui_b;
+
+wire [53:0] coluuo_b, coruuo_b;
+wire [62:0] coluo_b, couo_b, coruo_b, corruo_b;
+wire [71:0] colo_b, coro_b;
+wire [71:9] coldo_b, codo_b, cordo_b, corrdo_b;
+wire [71:18] colddo_b, corddo_b;
+
+wire [7:1] chluo_b, chruo_b;
+wire [8:1] chlo_b, chro_b;
+wire [8:2] chldo_b, chrdo_b;
+
+
+
+// Column C
+wire [53:0] cirddi_c, cilddi_c;
+wire [62:0] cirrdi_c, cirdi_c, cidi_c, cildi_c, cilldi_c;
+wire [71:0] ciri_c, cili_c;
+wire [71:9] cirrui_c, cirui_c, ciui_c, cilui_c, cillui_c;
+wire [71:18] ciruui_c, ciluui_c;
+
+wire [53:0] coluuo_c, coruuo_c;
+wire [62:0] colluo_c, coluo_c, couo_c, coruo_c, corruo_c;
+wire [71:0] colo_c, coro_c;
+wire [71:9] colldo_c, coldo_c, codo_c, cordo_c, corrdo_c;
+wire [71:18] colddo_c, corddo_c;
+
+wire [7:1] chluo_c, chruo_c;
+wire [8:1] chlo_c, chro_c;
+wire [8:2] chldo_c, chrdo_c;
+
+
+
+// Column D
+wire [53:0] cirddi_d, cilddi_d;
+wire [62:0] cirrdi_d, cirdi_d, cidi_d, cildi_d, cilldi_d;
+wire [71:0] ciri_d, cili_d;
+wire [71:9] cirrui_d, cirui_d, ciui_d, cilui_d, cillui_d;
+wire [71:18] ciruui_d, ciluui_d;
+
+wire [53:0] coluuo_d, coruuo_d;
+wire [62:0] colluo_d, coluo_d, couo_d, coruo_d, corruo_d;
+wire [71:0] colo_d, coro_d;
+wire [71:9] colldo_d, coldo_d, codo_d, cordo_d, corrdo_d;
+wire [71:18] colddo_d, corddo_d;
+
+wire [7:1] chluo_d, chruo_d;
+wire [8:1] chlo_d, chro_d;
+wire [8:2] chldo_d, chrdo_d;
+
+
+
+// Column E
+wire [53:0] cirddi_e, cilddi_e;
+wire [62:0] cirrdi_e, cirdi_e, cidi_e, cildi_e, cilldi_e;
+wire [71:0] ciri_e, cili_e;
+wire [71:9] cirrui_e, cirui_e, ciui_e, cilui_e, cillui_e;
+wire [71:18] ciruui_e, ciluui_e;
+
+wire [53:0] coluuo_e, coruuo_e;
+wire [62:0] colluo_e, coluo_e, couo_e, coruo_e, corruo_e;
+wire [71:0] colo_e, coro_e;
+wire [71:9] colldo_e, coldo_e, codo_e, cordo_e, corrdo_e;
+wire [71:18] colddo_e, corddo_e;
+
+wire [7:1] chluo_e, chruo_e;
+wire [8:1] chlo_e, chro_e;
+wire [8:2] chldo_e, chrdo_e;
+
+
+
+// Column F
+wire [53:0] cirddi_f, cilddi_f;
+wire [62:0] cirrdi_f, cirdi_f, cidi_f, cildi_f, cilldi_f;
+wire [71:0] ciri_f, cili_f;
+wire [71:9] cirrui_f, cirui_f, ciui_f, cilui_f, cillui_f;
+wire [71:18] ciruui_f, ciluui_f;
+
+wire [53:0] coluuo_f, coruuo_f;
+wire [62:0] colluo_f, coluo_f, couo_f, coruo_f, corruo_f;
+wire [71:0] colo_f, coro_f;
+wire [71:9] colldo_f, coldo_f, codo_f, cordo_f, corrdo_f;
+wire [71:18] colddo_f, corddo_f;
+
+wire [7:1] chluo_f, chruo_f;
+wire [8:1] chlo_f, chro_f;
+wire [8:2] chldo_f, chrdo_f;
+
+
+
+// Column G
+wire [53:0] cirddi_g, cilddi_g;
+wire [62:0] cirrdi_g, cirdi_g, cidi_g, cildi_g;
+wire [71:0] ciri_g, cili_g;
+wire [71:9] cirrui_g, cirui_g, ciui_g, cilui_g;
+wire [71:18] ciruui_g, ciluui_g;
+
+wire [53:0] coluuo_g, coruuo_g;
+wire [62:0] colluo_g, coluo_g, couo_g, coruo_g;
+wire [71:0] colo_g, coro_g;
+wire [71:9] colldo_g, coldo_g, codo_g, cordo_g;
+wire [71:18] colddo_g, corddo_g;
+
+wire [7:1] chluo_g, chruo_g;
+wire [8:1] chlo_g, chro_g;
+wire [8:2] chldo_g, chrdo_g;
+
+
+
+// Column H
+wire [53:0] cirddi_h;
+wire [62:0] cirrdi_h, cirdi_h, cidi_h;
+wire [71:0] ciri_h;
+wire [71:9] cirrui_h, cirui_h, ciui_h;
+wire [71:18] ciruui_h;
+
+wire [53:0] coluuo_h;
+wire [62:0] colluo_h, coluo_h, couo_h;
+wire [71:0] colo_h;
+wire [71:9] colldo_h, coldo_h, codo_h;
+wire [71:18] colddo_h;
+
+wire [7:1] chluo_h, chruo_h;
+wire [8:1] chlo_h, chro_h;
+wire [8:2] chldo_h, chrdo_h;
 
 // only to top left or bottom right holds
 wire [8:1] chlurdi_a, chlurdi_b, chlurdi_c, chlurdi_d, chlurdi_e, chlurdi_f, chlurdi_g, chlurdi_h;
@@ -357,7 +493,7 @@ assign chlurdi_b[5] = |{chrdo_a[6],             chluo_c[4], chluo_d[3], chluo_e[
 assign chlurdi_c[4] = |{chrdo_a[6], chrdo_b[5],             chluo_d[3], chluo_e[2], chluo_f[1]};
 assign chlurdi_d[3] = |{chrdo_a[6], chrdo_b[5], chrdo_c[4],             chluo_e[2], chluo_f[1]};
 assign chlurdi_e[2] = |{chrdo_a[6], chrdo_b[5], chrdo_c[4], chrdo_d[3],             chluo_f[1]};
-assign chlurdi_f[1] = |{chrdo_a[6], chrdo_b[5], chrdo_c[4], chrdo_d[3], chrdo_e[2],           };
+assign chlurdi_f[1] = |{chrdo_a[6], chrdo_b[5], chrdo_c[4], chrdo_d[3], chrdo_e[2]           };
 
 assign chlurdi_a[7] = |{            chluo_b[6], chluo_c[5], chluo_d[4], chluo_e[3], chluo_f[2], chluo_g[1]};
 assign chlurdi_b[6] = |{chrdo_a[7],             chluo_c[5], chluo_d[4], chluo_e[3], chluo_f[2], chluo_g[1]};
@@ -493,18 +629,27 @@ assign chldrui_h[2] = chruo_g[1];
 
 assign chldrui_h[1] = 1'b0;
 
-// Column A
-wire [53:0] cilddi_a, coruuo_a;
-wire [62:0] cidi_a, cildi_a, cilldi_a, couo_a, coruo_a, corruo_a;
-wire [71:0] cili_a, coro_a;
-wire [71:9] ciui_a, cilui_a, cillui_a, codo_a, cordo_a, corrdo_a;
-wire [71:18] ciluui_a, corddo_a;
+// only to left or right holds
+wire [8:1] chlri_a =          chlo_b | chlo_c | chlo_d | chlo_e | chlo_f | chlo_g | chlo_h;
+wire [8:1] chlri_b = chro_a |          chlo_c | chlo_d | chlo_e | chlo_f | chlo_g | chlo_h;
+wire [8:1] chlri_c = chro_a | chro_b |          chlo_d | chlo_e | chlo_f | chlo_g | chlo_h;
+wire [8:1] chlri_d = chro_a | chro_b | chro_c |          chlo_e | chlo_f | chlo_g | chlo_h;
+wire [8:1] chlri_e = chro_a | chro_b | chro_c | chro_d |          chlo_f | chlo_g | chlo_h;
+wire [8:1] chlri_f = chro_a | chro_b | chro_c | chro_d | chro_e |          chlo_g | chlo_h;
+wire [8:1] chlri_g = chro_a | chro_b | chro_c | chro_d | chro_e | chro_f |          chlo_h;
+wire [8:1] chlri_h = chro_a | chro_b | chro_c | chro_d | chro_e | chro_f | chro_g         ;
 
-wire [7:1] chluo_a, chruo_a;
-wire [8:1] chlo_a, chro_a;
-wire [8:2] chldo_a, chrdo_a;
+// wiring all the hold signals from all directions that is across columns
+wire [8:1] chdiri_a = chlri_a | chlurdi_a | chldrui_a;
+wire [8:1] chdiri_b = chlri_b | chlurdi_b | chldrui_b;
+wire [8:1] chdiri_c = chlri_c | chlurdi_c | chldrui_c;
+wire [8:1] chdiri_d = chlri_d | chlurdi_d | chldrui_d;
+wire [8:1] chdiri_e = chlri_e | chlurdi_e | chldrui_e;
+wire [8:1] chdiri_f = chlri_f | chlurdi_f | chldrui_f;
+wire [8:1] chdiri_g = chlri_g | chlurdi_g | chldrui_g;
+wire [8:1] chdiri_h = chlri_h | chlurdi_h | chldrui_h;
 
-columnUnit cola (.clk(clk), .xpos(COLA), .done(done_cols[8]), .bstate(bstate), .reset(reset), .colstate(colstate_a),
+columnUnit cola (.clk(clk), .xpos(COLA), .done(done_cols[8]), .reset(reset), .colstate(colstate_a),
 	.chdiri(chdiri_a),  .fifoEmpty(colEmpty[7]),
 	.cirrdi(PVOID7), .cirrui(PVOID7), .cirddi(PVOID6), .cirdi(PVOID7), .ciri(PVOID8), 
 	.cirui(PVOID7), .ciruui(PVOID6),
@@ -515,24 +660,7 @@ columnUnit cola (.clk(clk), .xpos(COLA), .done(done_cols[8]), .bstate(bstate), .
 	.cordo(cordo_a), .corddo(corddo_a), .corruo(corruo_a), .corrdo(corrdo_a),
 	.chluo(chluo_a), .chruo(chruo_a), .chlo(chlo_a), .chro(chro_a), .chldo(chldo_a), .chrdo(chrdo_a));
 
-// Column B
-wire [53:0] cirddi_b, cilddi_b;
-wire [62:0] cirdi_b, cidi_b, cildi_b, cilldi_b;
-wire [71:0] ciri_b, cili_b;
-wire [71:9] cirui_b, ciui_b, cilui_b, cillui_b;
-wire [71:18] ciruui_b, ciluui_b;
-
-wire [53:0] coluuo_b, coruuo_b;
-wire [62:0] coluo_b, couo_b, coruo_b, corruo_b;
-wire [71:0] colo_b, coro_b;
-wire [71:9] coldo_b, codo_b, cordo_b, corrdo_b;
-wire [71:18] colddo_b, corddo_b;
-
-wire [7:1] chluo_b, chruo_b;
-wire [8:1] chlo_b, chro_b;
-wire [8:2] chldo_b, chrdo_b;
-
-columnUnit colb (.clk(clk), .xpos(COLB), .done(done_cols[7]), .bstate(bstate), .reset(reset), .colstate(colstate_b),
+columnUnit colb (.clk(clk), .xpos(COLB), .done(done_cols[7]), .reset(reset), .colstate(colstate_b),
 	.chdiri(chdiri_b), .fifoEmpty(colEmpty[6]),
 	.cirrdi(PVOID7), .cirrui(PVOID7), 
 	.cirddi(cirddi_b), .cirdi(cirdi_b), .ciri(ciri_b), .cirui(cirui_b), .ciruui(ciruui_b),
@@ -544,24 +672,7 @@ columnUnit colb (.clk(clk), .xpos(COLB), .done(done_cols[7]), .bstate(bstate), .
 	.cordo(cordo_b), .corddo(corddo_b), .corruo(corruo_b), .corrdo(corrdo_b),
 	.chluo(chluo_b), .chruo(chruo_b), .chlo(chlo_b), .chro(chro_b), .chldo(chldo_b), .chrdo(chrdo_b) );
 
-// Column C
-wire [53:0] cirddi_c, cilddi_c;
-wire [62:0] cirrdi_c, cirdi_c, cidi_c, cildi_c, cilldi_c;
-wire [71:0] ciri_c, cili_c;
-wire [71:9] cirrui_c, cirui_c, ciui_c, cilui_c, cillui_c;
-wire [71:18] ciruui_c, ciluui_c;
-
-wire [53:0] coluuo_c, coruuo_c;
-wire [62:0] colluo_c, coluo_c, couo_c, coruo_c, corruo_c;
-wire [71:0] colo_c, coro_c;
-wire [71:9] colldo_c, coldo_c, codo_c, cordo_c, corrdo_c;
-wire [71:18] colddo_c, corddo_c;
-
-wire [7:1] chluo_c, chruo_c;
-wire [8:1] chlo_c, chro_c;
-wire [8:2] chldo_c, chrdo_c;
-
-columnUnit colc (.clk(clk), .xpos(COLC), .done(done_cols[6]), .bstate(bstate), .reset(reset), .colstate(colstate_c),
+columnUnit colc (.clk(clk), .xpos(COLC), .done(done_cols[6]), .reset(reset), .colstate(colstate_c),
 	.chdiri(chdiri_c),  .fifoEmpty(colEmpty[5]),
 	.cirrdi(cirrdi_c), .cirrui(cirrui_c), 
 	.cirddi(cirddi_c), .cirdi(cirdi_c), .ciri(ciri_c), .cirui(cirui_c), .ciruui(ciruui_c),
@@ -573,24 +684,7 @@ columnUnit colc (.clk(clk), .xpos(COLC), .done(done_cols[6]), .bstate(bstate), .
 	.cordo(cordo_c), .corddo(corddo_c), .corruo(corruo_c), .corrdo(corrdo_c),
 	.chluo(chluo_c), .chruo(chruo_c), .chlo(chlo_c), .chro(chro_c), .chldo(chldo_c), .chrdo(chrdo_c) );
 
-// Column D
-wire [53:0] cirddi_d, cilddi_d;
-wire [62:0] cirrdi_d, cirdi_d, cidi_d, cildi_d, cilldi_d;
-wire [71:0] ciri_d, cili_d;
-wire [71:9] cirrui_d, cirui_d, ciui_d, cilui_d, cillui_d;
-wire [71:18] ciruui_d, ciluui_d;
-
-wire [53:0] coluuo_d, coruuo_d;
-wire [62:0] colluo_d, coluo_d, couo_d, coruo_d, corruo_d;
-wire [71:0] colo_d, coro_d;
-wire [71:9] colldo_d, coldo_d, codo_d, cordo_d, corrdo_d;
-wire [71:18] colddo_d, corddo_d;
-
-wire [7:1] chluo_d, chruo_d;
-wire [8:1] chlo_d, chro_d;
-wire [8:2] chldo_d, chrdo_d;
-
-columnUnit cold (.clk(clk), .xpos(COLD), .done(done_cols[5]), .bstate(bstate), .reset(reset), .colstate(colstate_d),
+columnUnit cold (.clk(clk), .xpos(COLD), .done(done_cols[5]), .reset(reset), .colstate(colstate_d),
 	.chdiri(chdiri_d),  .fifoEmpty(colEmpty[4]),
 	.cirrdi(cirrdi_d), .cirrui(cirrui_d), 
 	.cirddi(cirddi_d), .cirdi(cirdi_d), .ciri(ciri_d), .cirui(cirui_d), .ciruui(ciruui_d),
@@ -602,24 +696,7 @@ columnUnit cold (.clk(clk), .xpos(COLD), .done(done_cols[5]), .bstate(bstate), .
 	.cordo(cordo_d), .corddo(corddo_d), .corruo(corruo_d), .corrdo(corrdo_d),
 	.chluo(chluo_d), .chruo(chruo_d), .chlo(chlo_d), .chro(chro_d), .chldo(chldo_d), .chrdo(chrdo_d) );
 
-// Column E
-wire [53:0] cirddi_e, cilddi_e;
-wire [62:0] cirrdi_e, cirdi_e, cidi_e, cildi_e, cilldi_e;
-wire [71:0] ciri_e, cili_e;
-wire [71:9] cirrui_e, cirui_e, ciui_e, cilui_e, cillui_e;
-wire [71:18] ciruui_e, ciluui_e;
-
-wire [53:0] coluuo_e, coruuo_e;
-wire [62:0] colluo_e, coluo_e, couo_e, coruo_e, corruo_e;
-wire [71:0] colo_e, coro_e;
-wire [71:9] colldo_e, coldo_e, codo_e, cordo_e, corrdo_e;
-wire [71:18] colddo_e, corddo_e;
-
-wire [7:1] chluo_e, chruo_e;
-wire [8:1] chlo_e, chro_e;
-wire [8:2] chldo_e, chrdo_e;
-
-columnUnit cole (.clk(clk), .xpos(COLE), .done(done_cols[4]), .bstate(bstate), .reset(reset), .colstate(colstate_e),
+columnUnit cole (.clk(clk), .xpos(COLE), .done(done_cols[4]), .reset(reset), .colstate(colstate_e),
 	.chdiri(chdiri_e),  .fifoEmpty(colEmpty[3]),
 	.cirrdi(cirrdi_e), .cirrui(cirrui_e), 
 	.cirddi(cirddi_e), .cirdi(cirdi_e), .ciri(ciri_e), .cirui(cirui_e), .ciruui(ciruui_e),
@@ -631,24 +708,7 @@ columnUnit cole (.clk(clk), .xpos(COLE), .done(done_cols[4]), .bstate(bstate), .
 	.cordo(cordo_e), .corddo(corddo_e), .corruo(corruo_e), .corrdo(corrdo_e),
 	.chluo(chluo_e), .chruo(chruo_e), .chlo(chlo_e), .chro(chro_e), .chldo(chldo_e), .chrdo(chrdo_e) );
 
-// Column F
-wire [53:0] cirddi_f, cilddi_f;
-wire [62:0] cirrdi_f, cirdi_f, cidi_f, cildi_f, cilldi_f;
-wire [71:0] ciri_f, cili_f;
-wire [71:9] cirrui_f, cirui_f, ciui_f, cilui_f, cillui_f;
-wire [71:18] ciruui_f, ciluui_f;
-
-wire [53:0] coluuo_f, coruuo_f;
-wire [62:0] colluo_f, coluo_f, couo_f, coruo_f, corruo_f;
-wire [71:0] colo_f, coro_f;
-wire [71:9] colldo_f, coldo_f, codo_f, cordo_f, corrdo_f;
-wire [71:18] colddo_f, corddo_f;
-
-wire [7:1] chluo_f, chruo_f;
-wire [8:1] chlo_f, chro_f;
-wire [8:2] chldo_f, chrdo_f;
-
-columnUnit colf (.clk(clk), .xpos(COLF), .done(done_cols[3]), .bstate(bstate), .reset(reset), .colstate(colstate_f),
+columnUnit colf (.clk(clk), .xpos(COLF), .done(done_cols[3]), .reset(reset), .colstate(colstate_f),
 	.chdiri(chdiri_f),  .fifoEmpty(colEmpty[2]),
 	.cirrdi(cirrdi_f), .cirrui(cirrui_f), 
 	.cirddi(cirddi_f), .cirdi(cirdi_f), .ciri(ciri_f), .cirui(cirui_f), .ciruui(ciruui_f),
@@ -660,24 +720,7 @@ columnUnit colf (.clk(clk), .xpos(COLF), .done(done_cols[3]), .bstate(bstate), .
 	.cordo(cordo_f), .corddo(corddo_f), .corruo(corruo_f), .corrdo(corrdo_f),
 	.chluo(chluo_f), .chruo(chruo_f), .chlo(chlo_f), .chro(chro_f), .chldo(chldo_f), .chrdo(chrdo_f) );
 
-// Column G
-wire [53:0] cirddi_g, cilddi_g;
-wire [62:0] cirrdi_g, cirdi_g, cidi_g, cildi_g;
-wire [71:0] ciri_g, cili_g;
-wire [71:9] cirrui_g, cirui_g, ciui_g, cilui_g;
-wire [71:18] ciruui_g, ciluui_g;
-
-wire [53:0] coluuo_g, coruuo_g;
-wire [62:0] colluo_g, coluo_g, couo_g, coruo_g;
-wire [71:0] colo_g, coro_g;
-wire [71:9] colldo_g, coldo_g, codo_g, cordo_g;
-wire [71:18] colddo_g, corddo_g;
-
-wire [7:1] chluo_g, chruo_g;
-wire [8:1] chlo_g, chro_g;
-wire [8:2] chldo_g, chrdo_g;
-
-columnUnit colg (.clk(clk), .xpos(COLG), .done(done_cols[2]), .bstate(bstate), .reset(reset), .colstate(colstate_g),
+columnUnit colg (.clk(clk), .xpos(COLG), .done(done_cols[2]), .reset(reset), .colstate(colstate_g),
 	.chdiri(chdiri_g),  .fifoEmpty(colEmpty[1]),
 	.cirrdi(cirrdi_g), .cirrui(cirrui_g), 
 	.cirddi(cirddi_g), .cirdi(cirdi_g), .ciri(ciri_g), .cirui(cirui_g), .ciruui(ciruui_g),
@@ -689,24 +732,7 @@ columnUnit colg (.clk(clk), .xpos(COLG), .done(done_cols[2]), .bstate(bstate), .
 	.cordo(cordo_g), .corddo(corddo_g), .corruo(), .corrdo(),
 	.chluo(chluo_g), .chruo(chruo_g), .chlo(chlo_g), .chro(chro_g), .chldo(chldo_g), .chrdo(chrdo_g) );
 
-// Column H
-wire [53:0] cirddi_h;
-wire [62:0] cirrdi_h, cirdi_h, cidi_h;
-wire [71:0] ciri_h;
-wire [71:9] cirrui_h, cirui_h, ciui_h;
-wire [71:18] ciruui_h;
-
-wire [53:0] coluuo_h;
-wire [62:0] colluo_h, coluo_h, couo_h;
-wire [71:0] colo_h;
-wire [71:9] colldo_h, coldo_h, codo_h;
-wire [71:18] colddo_h;
-
-wire [7:1] chluo_h, chruo_h;
-wire [8:1] chlo_h, chro_h;
-wire [8:2] chldo_h, chrdo_h;
-
-columnUnit colh (.clk(clk), .xpos(COLH), .done(done_cols[1]), .bstate(bstate), .reset(reset), .colstate(colstate_h),
+columnUnit colh (.clk(clk), .xpos(COLH), .done(done_cols[1]), .reset(reset), .colstate(colstate_h),
 	.chdiri(chdiri_h),  .fifoEmpty(colEmpty[0]),
 	.cirrdi(cirrdi_h), .cirrui(cirrui_h), 
 	.cirddi(cirddi_h), .cirdi(cirdi_h), .ciri(ciri_h), .cirui(cirui_h), .ciruui(ciruui_h),

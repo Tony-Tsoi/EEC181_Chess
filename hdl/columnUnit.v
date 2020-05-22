@@ -11,6 +11,21 @@ fifoOut, fifoEmpty, rden
 // seven bit flag bits as follows:
 // [invalid][promote][pawn move][pawn 2 sq][en passant][castle][capture]
 
+// parameter declarations
+parameter PVOID = 9'h0; // it's just {3'o0, 3'o0, EMPTY} - denotes an empty space at xpos = 0, ypos = 0
+
+parameter ROW1 = 3'o0; parameter ROW2 = 3'o1; parameter ROW3 = 3'o2; parameter ROW4 = 3'o3;
+parameter ROW5 = 3'o4; parameter ROW6 = 3'o5; parameter ROW7 = 3'o6; parameter ROW8 = 3'o7;
+
+// parameter for states
+parameter WAIT = 2'b01;
+parameter GETM = 2'b11;
+parameter DONE = 2'b10;
+
+// state bit
+reg [1:0] state, state_c;
+
+
 input clk, reset;
 input [2:0] xpos;
 input [31:0] colstate; // column piece states
@@ -38,7 +53,8 @@ output [8:1] chlo, chro;
 output [8:2] chldo, chrdo;
 
 // done signal
-output done = (state == DONE);
+output done; // done signal
+assign done = (state == DONE);
 
 // output from fifo
 output [151:0] fifoOut;
@@ -49,21 +65,17 @@ output fifoEmpty;
 // column fifo read enable
 input rden;
 
-// parameter declarations
-parameter PVOID = 9'h0; // it's just {3'o0, 3'o0, EMPTY} - denotes an empty space at xpos = 0, ypos = 0
 
-parameter ROW1 = 3'o0; parameter ROW2 = 3'o1; parameter ROW3 = 3'o2; parameter ROW4 = 3'o3;
-parameter ROW5 = 3'o4; parameter ROW6 = 3'o5; parameter ROW7 = 3'o6; parameter ROW8 = 3'o7;
 
 // cpieces of each square
-wire cpiece_8 = colstate[31:28];
-wire cpiece_7 = colstate[27:24];
-wire cpiece_6 = colstate[23:20];
-wire cpiece_5 = colstate[19:16];
-wire cpiece_4 = colstate[15:12];
-wire cpiece_3 = colstate[11:8];
-wire cpiece_2 = colstate[7:4];
-wire cpiece_1 = colstate[3:0];
+wire [3:0] cpiece_8 = colstate[31:28];
+wire [3:0] cpiece_7 = colstate[27:24];
+wire [3:0] cpiece_6 = colstate[23:20];
+wire [3:0] cpiece_5 = colstate[19:16];
+wire [3:0] cpiece_4 = colstate[15:12];
+wire [3:0] cpiece_3 = colstate[11:8];
+wire [3:0] cpiece_2 = colstate[7:4];
+wire [3:0] cpiece_1 = colstate[3:0];
 
 // done signals from each squareUnit
 wire [8:1] done_sqs;
@@ -83,13 +95,6 @@ assign holds[3] = |{chuo[2:1], chdo[8:4], chdiri[3]};
 assign holds[2] = |{chuo[  1], chdo[8:3], chdiri[2]};
 assign holds[1] = |{           chdo[8:2], chdiri[1]};
 
-// parameter for states
-parameter WAIT = 2'b01;
-parameter GETM = 2'b11;
-parameter DONE = 2'b10;
-
-// state bit
-reg [1:0] state, state_c;
 
 // moves transferred to local fifo flag
 reg [8:1] sq_moved_flags, sq_moved_flags_c;
@@ -105,6 +110,22 @@ wire [7:0] sqEmpty;
 
 // pointed square fifo empty flag
 wire c_sq_empty = sqEmpty[sq_move_ptr];
+
+// Row fifo outs
+wire [47:0] fifoOut_sq8, fifoOut_sq7, fifoOut_sq6, fifoOut_sq5, fifoOut_sq4, fifoOut_sq3, fifoOut_sq2, fifoOut_sq1;
+
+// FIFO Module Declaration
+reg wren1, wren1_c;
+wire [151:0] wr1 = (sq_move_ptr == 3'd7)? fifoOut_sq8 :
+	(sq_move_ptr == 3'd6)? fifoOut_sq7 :
+	(sq_move_ptr == 3'd5)? fifoOut_sq6 :
+	(sq_move_ptr == 3'd4)? fifoOut_sq5 :
+	(sq_move_ptr == 3'd3)? fifoOut_sq4 :
+	(sq_move_ptr == 3'd2)? fifoOut_sq3 :
+	(sq_move_ptr == 3'd1)? fifoOut_sq2 : fifoOut_sq1;
+wire [159:152] fillwr = 8'd0; // white space to accomodate width of fifo
+My_FIFO F1F0 (.clock(clk), .data({fillwr,wr1}), .q(fifoOut), .wrreq(wren1), .rdreq(rden), .empty(fifoEmpty),
+	.usedw(), .full());
 
 // next state logic
 always @(*) begin
@@ -209,21 +230,9 @@ always @(posedge clk) begin
 	wren1 <= wren1_c;
 end
 
-// FIFO Module Declaration
-reg wren1, wren1_c;
-wire [151:0] wr1 = (sq_move_ptr == 3'd7)? fifoOut_sq8 :
-	(sq_move_ptr == 3'd6)? fifoOut_sq7 :
-	(sq_move_ptr == 3'd5)? fifoOut_sq6 :
-	(sq_move_ptr == 3'd4)? fifoOut_sq5 :
-	(sq_move_ptr == 3'd3)? fifoOut_sq4 :
-	(sq_move_ptr == 3'd2)? fifoOut_sq3 :
-	(sq_move_ptr == 3'd1)? fifoOut_sq2 : fifoOut_sq1;
-wire [159:152] fillwr = 8'd0; // white space to accomodate width of fifo
-My_FIFO F1F0 (.clock(clk), .data({fillwr,wr1}), .q(fifoOut), .wrreq(wren1), .rdreq(rden), .empty(fifoEmpty),
-	.usedw(), .full());
 
-// Row fifo outs
-wire [47:0] fifoOut_sq8, fifoOut_sq7, fifoOut_sq6, fifoOut_sq5, fifoOut_sq4, fifoOut_sq3, fifoOut_sq2, fifoOut_sq1;
+
+
 
 // Row 8
 squareUnit sq8 (.clk(clk), .xpos(xpos), .ypos(ROW8), .reset(reset), .done(done_sqs[8]), .hold(holds[8]), .rden(sq_rden[8]),
