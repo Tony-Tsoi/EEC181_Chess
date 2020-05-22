@@ -1,3 +1,5 @@
+`timescale 1 ps / 1 ps
+
 module control_tb;
 
 // Parameters
@@ -6,7 +8,7 @@ parameter ADDR_WIDTH = 15; // There are no "unused" addresses. Each slave addres
 
 // clock interface
 reg clk;
-reg reset;
+reg reset; // Not used
 
 // slave interface
 reg [ADDR_WIDTH-1:0] slave_address;
@@ -16,7 +18,7 @@ wire [DATA_WIDTH-1:0] slave_readdata;
 reg [DATA_WIDTH-1:0] slave_writedata;
 reg [(DATA_WIDTH/8)-1:0] slave_byteenable; //Not currently used
 
-
+reg readdata;
 
 control control_inst1(
 	// signals to connect to an Avalon clock source interface
@@ -33,8 +35,20 @@ control control_inst1(
 );
 
 initial begin
-
-
+	clk = 1'b0;
+	reset = 1'b0;
+	slave_address = 15'h0000;
+	slave_read = 1'b0;
+	slave_write = 1'b0;
+	slave_writedata = 32'h0000_0000;
+	slave_byteenable = 4'h0;
+	
+	repeat(10) begin
+		clk = 1'b1;
+		#100;
+		clk = 1'b0;
+		#100;
+	end
 
 end
 

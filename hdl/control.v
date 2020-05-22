@@ -37,7 +37,7 @@ parameter ADDR_WIDTH = 15; // There are no "unused" addresses. Each slave addres
 
 // clock interface
 input clk;
-input reset;
+input reset; // Not currently used
 
 // slave interface
 input [ADDR_WIDTH-1:0] slave_address;
