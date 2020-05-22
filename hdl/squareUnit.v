@@ -84,10 +84,6 @@ output fifoEmpty;
 My_FIFO F1F0 (.clock(clk), .data({fillwr,wrdata}), .q(fifoOut), .wrreq(wren), .rdreq(rden), .empty(fifoEmpty),
 	.usedw(), .full());
 
-
-
-
-
 always @(posedge clk) begin
 	state <= (reset == 1'b1) ? RSET : state_c;
 end
@@ -111,7 +107,6 @@ always @(posedge clk) begin
 	hr <= hr_c;
 	hrd <= hrd_c;
 end
-
 
 always @(posedge clk) begin
 	orrdo <= orrdo_c;
