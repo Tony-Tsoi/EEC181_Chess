@@ -32,7 +32,6 @@ My_FIFO F1F0 (.clock(clk), .data(wr1), .q(fifoOut), .wrreq(wrreq), .rdreq(rden),
 	.usedw(), .full() );
 
 // predefined moves to be written into FIFO
-7'b0000000, 6'o01, 6'o02, 
 parameter DMV1 = {8'd0, 
 	7'd0, 6'o01, 6'o02, 7'd0, 6'o11, 6'o12, 7'd0, 6'o21, 6'o22, 7'd0, 6'o31, 6'o32, 
 	7'd0, 6'o41, 6'o42, 7'd0, 6'o51, 6'o52, 7'd0, 6'o61, 6'o62, 7'd0, 6'o71, 6'o72}; // pawn mv 1
@@ -53,7 +52,7 @@ always @(*) begin
 	
 	case (state)
 		RSET: begin
-			state_c = WRFI;
+			state_c = WRW1;
 		end
 		WRW1: begin
 			wr1_c = DMV1;
