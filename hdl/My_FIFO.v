@@ -77,7 +77,7 @@ module My_FIFO (
 				.aclr (),
 				.almost_empty (),
 				.almost_full (),
-				.sclr ()
+				.sclr (),
 				.eccstatus());
 	defparam
 		scfifo_component.add_ram_output_register = "OFF",
