@@ -3,9 +3,9 @@ module dcounter (clk, reset, setval, done);
 input clk, reset;
 input [11:0] setval;
 output done;
-assign done = (count == 11'd0);
 
 reg [11:0] count, count_c;
+assign done = (count == 11'd0);
 
 always @(*) begin
 	count_c = count - 11'd1;
