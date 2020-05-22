@@ -301,6 +301,8 @@ always @(*) begin
 				wren1_c = 1'b0;
 			end
 		end
+		DONE: begin
+		end
 		default: begin
 			state_c = RSET; // in case stuck in states not defined
 		end
