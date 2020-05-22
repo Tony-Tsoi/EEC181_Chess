@@ -122,7 +122,7 @@ wire [159:0] wr1 = (state == GSPM) ? {fillwr,gcas_wr1} :
 	(col_move_ptr == 3'd2)? fifoOut_col3 :
 	(col_move_ptr == 3'd1)? fifoOut_col2 : fifoOut_col1;
 
-My_FIFO F1F0 (.clock(clk), .data(wr1), .q(fifoOut), .wrreq((wren1 | cas_wren)), .rdreq(rden), .empty(fifoEmpty),
+My_FIFO F1F0 (.clock(clk), .data(wr1), .q(fifoOut), .wrreq((wren1 | cas_wren)), .rdreq(rden), .empty(fifoEmpty), .clear(reset),
 	.usedw(), .full() );
 
 // countdown timer
