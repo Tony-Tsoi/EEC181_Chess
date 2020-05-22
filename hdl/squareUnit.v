@@ -73,13 +73,6 @@ wire [151:0] wrdata = (state == GKNI) ? wr2 : wr1;
 wire wren = ~&{wrdata[151], wrdata[132], wrdata[113], wrdata[94], wrdata[75], wrdata[56], wrdata[37], wrdata[18]};
 wire [159:152] fillwr = 8'd0; // white space to accomodate width of fifo
 
-// countdown timer
-parameter WDT_VAL = 12'd15;
-
-wire wdt_done;
-
-dcounter WDTimer (.clk(clk), .reset(reset), .setval(WDT_VAL), .done(wdt_done));
-
 // fifo read enable input
 input rden;
 
@@ -390,10 +383,6 @@ always @(*) begin
 		DONE: begin
 		end
 	endcase
-	
-	// if timer expires, force done
-	if (wdt_done == 1'b1)
-		state_c = DONE;
 	
 	// if output direction does not exist, simply not wire the output
 	// no extra logic should be used to clear that out
