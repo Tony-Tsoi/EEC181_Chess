@@ -395,6 +395,7 @@ begin
 				ram_in = 32'd0;
 				ram_wren = 1'b1;
 				control[1] = 1'b1; //set done = 1;
+				interface_data[0] = control;
 			end
 			
 		end //end lmgDone=1
