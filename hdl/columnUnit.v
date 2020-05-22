@@ -68,14 +68,14 @@ input rden;
 
 
 // cpieces of each square
-wire cpiece_8 = colstate[31:28];
-wire cpiece_7 = colstate[27:24];
-wire cpiece_6 = colstate[23:20];
-wire cpiece_5 = colstate[19:16];
-wire cpiece_4 = colstate[15:12];
-wire cpiece_3 = colstate[11:8];
-wire cpiece_2 = colstate[7:4];
-wire cpiece_1 = colstate[3:0];
+wire [3:0] cpiece_8 = colstate[31:28];
+wire [3:0] cpiece_7 = colstate[27:24];
+wire [3:0] cpiece_6 = colstate[23:20];
+wire [3:0] cpiece_5 = colstate[19:16];
+wire [3:0] cpiece_4 = colstate[15:12];
+wire [3:0] cpiece_3 = colstate[11:8];
+wire [3:0] cpiece_2 = colstate[7:4];
+wire [3:0] cpiece_1 = colstate[3:0];
 
 // done signals from each squareUnit
 wire [8:1] done_sqs;

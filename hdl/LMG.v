@@ -54,21 +54,21 @@ input [1:8] enp_flags; // en passant flags, high when opponent pawn just moved t
 
 
 // board state
-wire colstate_a = {bstate[227:224], bstate[195:192], bstate[163:160], bstate[131:128], 
+wire [31:0] colstate_a = {bstate[227:224], bstate[195:192], bstate[163:160], bstate[131:128], 
 	bstate[99:96], bstate[67:64], bstate[35:32], bstate[3:0]};
-wire colstate_b = {bstate[231:228], bstate[199:196], bstate[167:164], bstate[135:132], 
+wire [31:0] colstate_b = {bstate[231:228], bstate[199:196], bstate[167:164], bstate[135:132], 
 	bstate[103:100], bstate[71:68], bstate[39:36], bstate[7:4]};
-wire colstate_c = {bstate[235:232], bstate[203:200], bstate[171:168], bstate[139:136], 
+wire [31:0] colstate_c = {bstate[235:232], bstate[203:200], bstate[171:168], bstate[139:136], 
 	bstate[107:104], bstate[75:72], bstate[43:40], bstate[11:8]};
-wire colstate_d = {bstate[239:236], bstate[207:204], bstate[175:172], bstate[143:140], 
+wire [31:0] colstate_d = {bstate[239:236], bstate[207:204], bstate[175:172], bstate[143:140], 
 	bstate[111:108], bstate[79:76], bstate[47:44], bstate[15:12]};
-wire colstate_e = {bstate[243:240], bstate[211:208], bstate[179:176], bstate[147:144], 
+wire [31:0] colstate_e = {bstate[243:240], bstate[211:208], bstate[179:176], bstate[147:144], 
 	bstate[115:112], bstate[83:80], bstate[51:48], bstate[19:16]};
-wire colstate_f = {bstate[247:244], bstate[215:212], bstate[183:180], bstate[151:148], 
+wire [31:0] colstate_f = {bstate[247:244], bstate[215:212], bstate[183:180], bstate[151:148], 
 	bstate[119:116], bstate[87:84], bstate[55:52], bstate[23:20]};
-wire colstate_g = {bstate[251:248], bstate[219:216], bstate[187:184], bstate[155:152], 
+wire [31:0] colstate_g = {bstate[251:248], bstate[219:216], bstate[187:184], bstate[155:152], 
 	bstate[123:120], bstate[91:88], bstate[59:56], bstate[27:24]};
-wire colstate_h = {bstate[255:252], bstate[223:220], bstate[191:188], bstate[159:156], 
+wire [31:0] colstate_h = {bstate[255:252], bstate[223:220], bstate[191:188], bstate[159:156], 
 	bstate[127:124], bstate[95:92], bstate[63:60], bstate[31:28]};
 
 
