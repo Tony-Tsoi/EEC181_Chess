@@ -28,7 +28,7 @@ reg [159:0] wr1, wr1_c;
 reg wrreq, wrreq_c;
 
 // fifo
-My_FIFO F1F0 (.clock(clk), .data(wr1), .q(fifoOut), .wrreq(wrreq), .rdreq(rden), .empty(fifoEmpty), .clear(reset),
+My_FIFO F1F0 (.clock(clk), .data(wr1), .q(fifoOut), .wrreq(wrreq), .rdreq(rden), .empty(fifoEmpty), .sclr(reset),
 	.usedw(), .full() );
 
 // predefined moves to be written into FIFO

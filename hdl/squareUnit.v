@@ -80,7 +80,7 @@ input rden;
 output fifoEmpty;
 
 // FIFO Module Declaration
-My_FIFO F1F0 (.clock(clk), .data({fillwr,wrdata}), .q(fifoOut), .wrreq(wren), .rdreq(rden), .empty(fifoEmpty), .clear(reset),
+My_FIFO F1F0 (.clock(clk), .data({fillwr,wrdata}), .q(fifoOut), .wrreq(wren), .rdreq(rden), .empty(fifoEmpty), .sclr(reset),
 	.usedw(), .full());
 
 always @(posedge clk) begin

@@ -119,7 +119,7 @@ wire [159:0] wr1 = (sq_move_ptr == 3'd7)? fifoOut_sq8 :
 	(sq_move_ptr == 3'd3)? fifoOut_sq4 :
 	(sq_move_ptr == 3'd2)? fifoOut_sq3 :
 	(sq_move_ptr == 3'd1)? fifoOut_sq2 : fifoOut_sq1;
-My_FIFO F1F0 (.clock(clk), .data(wr1), .q(fifoOut), .wrreq(wren1), .rdreq(rden), .empty(fifoEmpty), .clear(reset),
+My_FIFO F1F0 (.clock(clk), .data(wr1), .q(fifoOut), .wrreq(wren1), .rdreq(rden), .empty(fifoEmpty), .sclr(reset),
 	.usedw(), .full());
 
 // next state logic
