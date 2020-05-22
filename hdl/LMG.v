@@ -126,7 +126,7 @@ My_FIFO F1F0 (.clock(clk), .data(wr1), .q(fifoOut), .wrreq((wren1 | cas_wren)), 
 	.usedw(), .full() );
 
 // countdown timer
-parameter WDT_VAL = 11'd620;
+parameter WDT_VAL = 12'd620;
 
 wire wdt_done;
 

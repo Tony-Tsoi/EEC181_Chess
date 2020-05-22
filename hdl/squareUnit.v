@@ -74,7 +74,7 @@ wire wren = ~&{wrdata[151], wrdata[132], wrdata[113], wrdata[94], wrdata[75], wr
 wire [159:152] fillwr = 8'd0; // white space to accomodate width of fifo
 
 // countdown timer
-parameter WDT_VAL = 11'd15;
+parameter WDT_VAL = 12'd15;
 
 wire wdt_done;
 

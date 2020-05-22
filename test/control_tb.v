@@ -54,7 +54,7 @@ initial begin
 	slave_address = 15'd0;
 	slave_read = 1'b0;
 	slave_write = 1'b1;
-	slave_writedata = 32'h0000_0000; // Edit this
+	slave_writedata = 32'h0000_0001; // Edit this
 	
 	repeat(4) begin
 		clk = 1'b1;
@@ -64,17 +64,19 @@ initial begin
 	end
 
 	slave_address = 15'd0; // These 4 are just place holder values, edit these to read/write something useful.
-	slave_read = 1'b0;
+	slave_read = 1'b1;
 	slave_write = 1'b0;
 	slave_writedata = 32'h0000_0000; // Edit this
 
 	
-	repeat(4) begin
+	repeat(1000) begin
 		clk = 1'b1;
 		#100;
 		clk = 1'b0;
 		#100;
 	end
+	
+
 
 end
 
