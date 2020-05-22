@@ -41,6 +41,7 @@ module My_FIFO (
 	clock,
 	data,
 	rdreq,
+	sclr,
 	wrreq,
 	empty,
 	full,
@@ -50,6 +51,7 @@ module My_FIFO (
 	input	  clock;
 	input	[159:0]  data;
 	input	  rdreq;
+	input	  sclr;
 	input	  wrreq;
 	output	  empty;
 	output	  full;
@@ -69,6 +71,7 @@ module My_FIFO (
 				.clock (clock),
 				.data (data),
 				.rdreq (rdreq),
+				.sclr (sclr),
 				.wrreq (wrreq),
 				.empty (sub_wire0),
 				.full (sub_wire1),
@@ -76,9 +79,7 @@ module My_FIFO (
 				.usedw (sub_wire3),
 				.aclr (),
 				.almost_empty (),
-				.almost_full (),
-				.sclr (),
-				.eccstatus());
+				.almost_full ());
 	defparam
 		scfifo_component.add_ram_output_register = "OFF",
 		scfifo_component.intended_device_family = "Cyclone V",
@@ -125,7 +126,7 @@ endmodule
 // Retrieval info: PRIVATE: rsFull NUMERIC "0"
 // Retrieval info: PRIVATE: rsUsedW NUMERIC "0"
 // Retrieval info: PRIVATE: sc_aclr NUMERIC "0"
-// Retrieval info: PRIVATE: sc_sclr NUMERIC "0"
+// Retrieval info: PRIVATE: sc_sclr NUMERIC "1"
 // Retrieval info: PRIVATE: wsEmpty NUMERIC "0"
 // Retrieval info: PRIVATE: wsFull NUMERIC "1"
 // Retrieval info: PRIVATE: wsUsedW NUMERIC "0"
@@ -146,11 +147,13 @@ endmodule
 // Retrieval info: USED_PORT: full 0 0 0 0 OUTPUT NODEFVAL "full"
 // Retrieval info: USED_PORT: q 0 0 160 0 OUTPUT NODEFVAL "q[159..0]"
 // Retrieval info: USED_PORT: rdreq 0 0 0 0 INPUT NODEFVAL "rdreq"
+// Retrieval info: USED_PORT: sclr 0 0 0 0 INPUT NODEFVAL "sclr"
 // Retrieval info: USED_PORT: usedw 0 0 10 0 OUTPUT NODEFVAL "usedw[9..0]"
 // Retrieval info: USED_PORT: wrreq 0 0 0 0 INPUT NODEFVAL "wrreq"
 // Retrieval info: CONNECT: @clock 0 0 0 0 clock 0 0 0 0
 // Retrieval info: CONNECT: @data 0 0 160 0 data 0 0 160 0
 // Retrieval info: CONNECT: @rdreq 0 0 0 0 rdreq 0 0 0 0
+// Retrieval info: CONNECT: @sclr 0 0 0 0 sclr 0 0 0 0
 // Retrieval info: CONNECT: @wrreq 0 0 0 0 wrreq 0 0 0 0
 // Retrieval info: CONNECT: empty 0 0 0 0 @empty 0 0 0 0
 // Retrieval info: CONNECT: full 0 0 0 0 @full 0 0 0 0
