@@ -25,7 +25,7 @@ parameter ROOK = 3'o4;
 parameter QUEEN = 3'o5;
 parameter KING = 3'o6;
 parameter NOTUSED = 3'o7;
-parameter INVM = {1'b1, 6'b000000, 6'o00, 6'o00}; // invalid move
+parameter IMOV = {1'b1, 6'b000000, 6'o00, 6'o00}; // invalid move
 
 // parameter for states
 parameter RSET = 3'b000; // reset stage
@@ -44,7 +44,7 @@ input [255:0] bstate; // board state
 output done; // done signal
 assign done = (state == DONE);
 
-output [151:0] fifoOut;
+output [159:0] fifoOut;
 input rden;
 output fifoEmpty;
 
@@ -70,7 +70,7 @@ wire [31:0] colstate_h = {bstate[255:252], bstate[223:220], bstate[191:188], bst
 	bstate[127:124], bstate[95:92], bstate[63:60], bstate[31:28]};
 
 
-wire [151:0] gcas_wr1;// MOVED THIS UP
+wire [151:0] gcas_wr1;
 reg [151:0] genp_wr1, genp_wr1_c;
 
 // done signals from columns
@@ -104,15 +104,15 @@ wire cas_wren = cas_l | cas_r;
 
 assign gcas_wr1[151:133] = (cas_r) ? {7'b0000010, 6'o40, 6'o10} : 19'd0;
 assign gcas_wr1[132:114] = (cas_l) ? {7'b0000010, 6'o40, 6'o60} : 19'd0;
-assign gcas_wr1[113:0] = 134'd0;
+assign gcas_wr1[113:0] = {6{IMOV}};
 
 // FIFO Module Declaration
-wire [151:0] fifoOut_col8, fifoOut_col7, fifoOut_col6, fifoOut_col5, 
+wire [159:0] fifoOut_col8, fifoOut_col7, fifoOut_col6, fifoOut_col5, 
 	fifoOut_col4, fifoOut_col3, fifoOut_col2, fifoOut_col1;
 
 reg wren1, wren1_c;
-wire [151:0] wr1 = (state == GSPM) ? gcas_wr1 :
-	(state == GSPD) ? genp_wr1 :
+wire [159:0] wr1 = (state == GSPM) ? {fillwr,gcas_wr1} :
+	(state == GSPD) ? {fillwr,genp_wr1} :
 	(col_move_ptr == 3'd7)? fifoOut_col8 :
 	(col_move_ptr == 3'd6)? fifoOut_col7 :
 	(col_move_ptr == 3'd5)? fifoOut_col6 :
@@ -121,7 +121,7 @@ wire [151:0] wr1 = (state == GSPM) ? gcas_wr1 :
 	(col_move_ptr == 3'd2)? fifoOut_col3 :
 	(col_move_ptr == 3'd1)? fifoOut_col2 : fifoOut_col1;
 wire [159:152] fillwr = 8'd0; // white space to accomodate width of fifo
-My_FIFO F1F0 (.clock(clk), .data({fillwr,wr1}), .q(fifoOut), .wrreq((wren1 | cas_wren)), .rdreq(rden), .empty(fifoEmpty),
+My_FIFO F1F0 (.clock(clk), .data(wr1), .q(fifoOut), .wrreq((wren1 | cas_wren)), .rdreq(rden), .empty(fifoEmpty),
 	.usedw(), .full() );
 
 // for en passant
@@ -133,7 +133,7 @@ always @(*) begin
 	col_rden_c = 8'h00;
 	col_moved_flags_c = col_moved_flags;
 	wren1_c = 1'b0;
-	genp_wr1_c = {8{INVM}}; // default 8 invalid moves
+	genp_wr1_c = {8{IMOV}}; // default 8 invalid moves
 	
 	case (state)
 		RSET: begin

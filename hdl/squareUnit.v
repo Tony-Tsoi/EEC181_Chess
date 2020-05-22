@@ -44,7 +44,7 @@ input hold; // to hold the done signal from being flagged mistakenly
 
 output done; // done signal
 assign done = (state == DONE);
-output [151:0] fifoOut; // output of FIFO
+output [159:0] fifoOut; // output of FIFO
 
 // inputs and outputs to neighbor cells
 // 9 bits of the format of [6 bits origin pos][3 bits of piece info]

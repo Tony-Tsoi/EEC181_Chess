@@ -56,7 +56,7 @@ output done; // done signal
 assign done = (state == DONE);
 
 // output from fifo
-output [151:0] fifoOut;
+output [159:0] fifoOut;
 
 // column fifo empty flag
 output fifoEmpty;
@@ -108,19 +108,18 @@ wire [7:0] sqEmpty;
 wire c_sq_empty = sqEmpty[sq_move_ptr];
 
 // Row fifo outs
-wire [47:0] fifoOut_sq8, fifoOut_sq7, fifoOut_sq6, fifoOut_sq5, fifoOut_sq4, fifoOut_sq3, fifoOut_sq2, fifoOut_sq1;
+wire [159:0] fifoOut_sq8, fifoOut_sq7, fifoOut_sq6, fifoOut_sq5, fifoOut_sq4, fifoOut_sq3, fifoOut_sq2, fifoOut_sq1;
 
 // FIFO Module Declaration
 reg wren1, wren1_c;
-wire [151:0] wr1 = (sq_move_ptr == 3'd7)? fifoOut_sq8 :
+wire [159:0] wr1 = (sq_move_ptr == 3'd7)? fifoOut_sq8 :
 	(sq_move_ptr == 3'd6)? fifoOut_sq7 :
 	(sq_move_ptr == 3'd5)? fifoOut_sq6 :
 	(sq_move_ptr == 3'd4)? fifoOut_sq5 :
 	(sq_move_ptr == 3'd3)? fifoOut_sq4 :
 	(sq_move_ptr == 3'd2)? fifoOut_sq3 :
 	(sq_move_ptr == 3'd1)? fifoOut_sq2 : fifoOut_sq1;
-wire [159:152] fillwr = 8'd0; // white space to accomodate width of fifo
-My_FIFO F1F0 (.clock(clk), .data({fillwr,wr1}), .q(fifoOut), .wrreq(wren1), .rdreq(rden), .empty(fifoEmpty),
+My_FIFO F1F0 (.clock(clk), .data(wr1), .q(fifoOut), .wrreq(wren1), .rdreq(rden), .empty(fifoEmpty),
 	.usedw(), .full());
 
 // next state logic
