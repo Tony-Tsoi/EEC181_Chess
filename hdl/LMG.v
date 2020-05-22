@@ -125,6 +125,13 @@ wire [159:0] wr1 = (state == GSPM) ? {fillwr,gcas_wr1} :
 My_FIFO F1F0 (.clock(clk), .data(wr1), .q(fifoOut), .wrreq((wren1 | cas_wren)), .rdreq(rden), .empty(fifoEmpty),
 	.usedw(), .full() );
 
+// countdown timer
+parameter WDT_VAL = 11'd620;
+
+wire wdt_done;
+
+dcounter WDTimer (.clk(clk), .reset(reset), .setval(WDT_VAL), .done(wdt_done));
+
 // for en passant
 parameter ENP_HEAD = 7'b0010101;
 
@@ -301,6 +308,10 @@ always @(*) begin
 	
 	if (reset == 1'b1)
 		col_moved_flags_c = 8'h00;
+	
+	// if timer expires, force done
+	if (wdt_done == 1'b1)
+		state_c = DONE;
 end
 
 // state FF

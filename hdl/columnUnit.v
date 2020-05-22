@@ -122,6 +122,13 @@ wire [159:0] wr1 = (sq_move_ptr == 3'd7)? fifoOut_sq8 :
 My_FIFO F1F0 (.clock(clk), .data(wr1), .q(fifoOut), .wrreq(wren1), .rdreq(rden), .empty(fifoEmpty),
 	.usedw(), .full());
 
+// countdown timer
+parameter WDT_VAL = 11'd85;
+
+wire wdt_done;
+
+dcounter WDTimer (.clk(clk), .reset(reset), .setval(WDT_VAL), .done(wdt_done));
+
 // next state logic
 always @(*) begin
 	state_c = state;
@@ -214,6 +221,10 @@ always @(*) begin
 	
 	if (reset == 1'b1)
 		sq_moved_flags_c = 8'h00;
+	
+	// if timer expires, force done
+	if (wdt_done == 1'b1)
+		state_c = DONE;
 end
 
 // FF for next state
