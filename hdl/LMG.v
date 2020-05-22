@@ -111,6 +111,7 @@ wire [159:0] fifoOut_col8, fifoOut_col7, fifoOut_col6, fifoOut_col5,
 	fifoOut_col4, fifoOut_col3, fifoOut_col2, fifoOut_col1;
 
 reg wren1, wren1_c;
+wire [159:152] fillwr = 8'd0; // white space to accomodate width of fifo
 wire [159:0] wr1 = (state == GSPM) ? {fillwr,gcas_wr1} :
 	(state == GSPD) ? {fillwr,genp_wr1} :
 	(col_move_ptr == 3'd7)? fifoOut_col8 :
@@ -120,7 +121,7 @@ wire [159:0] wr1 = (state == GSPM) ? {fillwr,gcas_wr1} :
 	(col_move_ptr == 3'd3)? fifoOut_col4 :
 	(col_move_ptr == 3'd2)? fifoOut_col3 :
 	(col_move_ptr == 3'd1)? fifoOut_col2 : fifoOut_col1;
-wire [159:152] fillwr = 8'd0; // white space to accomodate width of fifo
+
 My_FIFO F1F0 (.clock(clk), .data(wr1), .q(fifoOut), .wrreq((wren1 | cas_wren)), .rdreq(rden), .empty(fifoEmpty),
 	.usedw(), .full() );
 
