@@ -41,9 +41,35 @@ initial begin
 	slave_read = 1'b0;
 	slave_write = 1'b0;
 	slave_writedata = 32'h0000_0000;
-	slave_byteenable = 4'h0;
+	slave_byteenable = 4'hF;
 	
-	repeat(10) begin
+	clk = 1'b1;
+	#100;
+	clk = 1'b0;
+	#100;
+
+	// To make things easy, assign all 4 values whenever you want to read/write something.
+	// Normally, slave_read should only be high for 3 cycles, and slave_write should be high for 1 cycle,
+	// For simulation purposes, just do 4 cycles minimum between read/writes.
+	slave_address = 15'd0;
+	slave_read = 1'b0;
+	slave_write = 1'b1;
+	slave_writedata = 32'h0000_0000; // Edit this
+	
+	repeat(4) begin
+		clk = 1'b1;
+		#100;
+		clk = 1'b0;
+		#100;
+	end
+
+	slave_address = 15'd0; // These 4 are just place holder values, edit these to read/write something useful.
+	slave_read = 1'b0;
+	slave_write = 1'b0;
+	slave_writedata = 32'h0000_0000; // Edit this
+
+	
+	repeat(4) begin
 		clk = 1'b1;
 		#100;
 		clk = 1'b0;
