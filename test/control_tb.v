@@ -18,8 +18,10 @@ wire [DATA_WIDTH-1:0] slave_readdata;
 reg [DATA_WIDTH-1:0] slave_writedata;
 reg [(DATA_WIDTH/8)-1:0] slave_byteenable; //Not currently used
 
-reg readdata;
 wire lmgdone;
+wire [255:0] boardState;
+wire [151:0] lmgFifoOut;
+wire lmgReset;
 
 control_TestOnly control_inst1(
 	// signals to connect to an Avalon clock source interface
@@ -33,7 +35,10 @@ control_TestOnly control_inst1(
 	.slave_readdata (slave_readdata),
 	.slave_writedata (slave_writedata),
 	.slave_byteenable (slave_byteenable),
-	.lmgdone(lmgdone)
+	.lmgdone(lmgdone),
+	.boardState(boardState),
+	.lmgReset(lmgReset),
+	.lmgFifoOut(lmgFifoOut)
 );
 
 initial begin
@@ -151,6 +156,18 @@ initial begin
 		#100;
 	end
 	//====================== END WRITING BOARD STATE =====================
+	
+	slave_address = 15'd0;
+	slave_read = 1'b1;
+	slave_write = 1'b1;
+	slave_writedata = 32'h0000_0000; 
+	
+	repeat(4) begin
+		clk = 1'b1;
+		#100;
+		clk = 1'b0;
+		#100;
+	end
 	
 	slave_address = 15'd0;
 	slave_read = 1'b1;

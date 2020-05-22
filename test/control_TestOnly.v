@@ -10,7 +10,10 @@ slave_write,
 slave_readdata,
 slave_writedata,
 slave_byteenable,
-lmgdone
+lmgdone,
+boardState,
+lmgReset,
+lmgFifoOut
 );
 
 // should contain a block RAM for the move list/tree
@@ -77,11 +80,11 @@ reg [31:0] control_p1;
 //reg [4:0] counter_p1;
 
 //lmg interface
-reg [255:0] boardState;
-reg lmgReset;
+output reg [255:0] boardState;
+output reg lmgReset;
 reg lmgReadEnable;
 reg lmgReadEnable_c;
-wire [151:0] lmgFifoOut;
+output wire [151:0] lmgFifoOut;
 //wire lmgDone;
 reg lmgDone_p1;
 
