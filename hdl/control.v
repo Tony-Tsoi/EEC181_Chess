@@ -52,6 +52,7 @@ input [(DATA_WIDTH/8)-1:0] slave_byteenable; //Not currently used
 //==================================
 wire [DATA_WIDTH-1:0] ram_out;
 reg [DATA_WIDTH-1:0] ram_in;
+reg [DATA_WIDTH-1:0] ram_in_p1;
 
 reg ram_wren;
 reg ram_wren_p1; // currently not used
@@ -195,11 +196,25 @@ begin
 	ram_wren = ram_wren_p1;
 	//counter = counter_p1;
 	slave_readdata = 0;
-	//ram_in = slave_writedata; I don't think we need this default, but maybe we do
+	ram_in = ram_in_p1;
 	lmgReset = 1'b0;
 	lmgReadEnable_c = 1'b0;
 	writeFromLmgDone_c = 1'b0;
 	allMovesDone_c = 1'b0;
+	writeCount_c = writeCount;
+	
+	lmgResetState_c = lmgResetState;
+	preDone_c = preDone;
+	
+	preRead_c = preRead;
+	readWord1_c = readWord1;
+	readWord2_c = readWord2;
+	readWord3_c = readWord3;
+	readWord4_c = readWord4;
+	readWord5_c = readWord5;
+	readWord6_c = readWord6;
+	readWord7_c = readWord7;
+	readWord8_c = readWord8;
 
 	boardState[255:224] = interface_data_p1[9]; //The order of bits here could be off
 	boardState[223:192] = interface_data_p1[8];
@@ -536,6 +551,8 @@ always @ (posedge clk) begin
 	interface_data_p1[13] <= interface_data[13]; 
 	interface_data_p1[14] <= interface_data[14]; 
 	interface_data_p1[15] <= interface_data[15]; 
+	
+	ram_in_p1 <= ram_in;
 	
 end // always @ (posedge clk)
    

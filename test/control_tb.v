@@ -28,7 +28,7 @@ reg [10:0] i;
 wire fifoEmpty;
 wire [7:0] writeCount;
 
-
+/*
 control_TestOnly control_TestOnly_inst1(
 	// signals to connect to an Avalon clock source interface
 	.clk (clk),
@@ -48,9 +48,9 @@ control_TestOnly control_TestOnly_inst1(
 	.fifoEmpty(fifoEmpty),
 	.writeCount(writeCount)
 );
+*/
 
 
-/*
 control control_inst1(
 	// signals to connect to an Avalon clock source interface
 	.clk (clk),
@@ -64,9 +64,10 @@ control control_inst1(
 	.slave_writedata (slave_writedata),
 	.slave_byteenable (slave_byteenable)
 );
-*/
 
 
+// Read is high for 3 cycles
+// Write is high for 1 cycle
 
 initial begin
 	clk = 1'b0;
@@ -88,108 +89,54 @@ initial begin
 	
 	//====================== WRITING BOARD STATE =====================
 	slave_address = 15'd2;
-	slave_read = 1'b1;
+	slave_read = 1'b0;
 	slave_write = 1'b1;
 	slave_writedata = 32'h2346_5432; 
 	
-	repeat(4) begin
+	repeat(1) begin
 		clk = 1'b1;
 		#100;
 		clk = 1'b0;
 		#100;
 	end
 	
-	slave_address = 15'd3;
-	slave_read = 1'b1;
-	slave_write = 1'b1;
-	slave_writedata = 32'h0000_0000; 
+	for (i = 0; i < 7; i = i + 1) begin // Write 0 to 0x3-0x9
+      	slave_address = 15'd3 + i;
+		slave_read = 1'b0;
+		slave_write = 1'b1;
+		slave_writedata = 32'h0000_0000; 
+		
+		repeat(1) begin
+			clk = 1'b1;
+			#100;
+			clk = 1'b0;
+			#100;
+		end
+    end
 	
-	repeat(4) begin
-		clk = 1'b1;
-		#100;
-		clk = 1'b0;
-		#100;
-	end
+		
+	for (i = 0; i < 8; i = i + 1) begin // Read 0x2-0x9
+      	slave_address = 15'd2 + i;
+		slave_read = 1'b1;
+		slave_write = 1'b0;
+		slave_writedata = 32'h0000_0000; 
+		
+		repeat(3) begin
+			clk = 1'b1;
+			#100;
+			clk = 1'b0;
+			#100;
+		end
+    end
 	
-	slave_address = 15'd4;
-	slave_read = 1'b1;
-	slave_write = 1'b1;
-	slave_writedata = 32'h0000_0000; 
-	
-	repeat(4) begin
-		clk = 1'b1;
-		#100;
-		clk = 1'b0;
-		#100;
-	end
-	
-	slave_address = 15'd5;
-	slave_read = 1'b1;
-	slave_write = 1'b1;
-	slave_writedata = 32'h0000_0000; 
-	
-	repeat(4) begin
-		clk = 1'b1;
-		#100;
-		clk = 1'b0;
-		#100;
-	end
-	
-	slave_address = 15'd6;
-	slave_read = 1'b1;
-	slave_write = 1'b1;
-	slave_writedata = 32'h0000_0000; 
-	
-	repeat(4) begin
-		clk = 1'b1;
-		#100;
-		clk = 1'b0;
-		#100;
-	end
-	
-	slave_address = 15'd7;
-	slave_read = 1'b1;
-	slave_write = 1'b1;
-	slave_writedata = 32'h0000_0000; 
-	
-	repeat(4) begin
-		clk = 1'b1;
-		#100;
-		clk = 1'b0;
-		#100;
-	end
-	
-	slave_address = 15'd8;
-	slave_read = 1'b1;
-	slave_write = 1'b1;
-	slave_writedata = 32'h0000_0000; 
-	
-	repeat(4) begin
-		clk = 1'b1;
-		#100;
-		clk = 1'b0;
-		#100;
-	end
-	
-	slave_address = 15'd9;
-	slave_read = 1'b1;
-	slave_write = 1'b1;
-	slave_writedata = 32'h0000_0000; 
-	
-	repeat(4) begin
-		clk = 1'b1;
-		#100;
-		clk = 1'b0;
-		#100;
-	end
 	//====================== END WRITING BOARD STATE =====================
 	
 	slave_address = 15'd0;
-	slave_read = 1'b1;
+	slave_read = 1'b0;
 	slave_write = 1'b1;
-	slave_writedata = 32'h0000_0000; 
+	slave_writedata = 32'h0000_0000; // Control = 0
 	
-	repeat(4) begin
+	repeat(1) begin
 		clk = 1'b1;
 		#100;
 		clk = 1'b0;
@@ -197,11 +144,11 @@ initial begin
 	end
 	
 	slave_address = 15'd0;
-	slave_read = 1'b1;
+	slave_read = 1'b0;
 	slave_write = 1'b1;
 	slave_writedata = 32'h0000_0001;  // Start = 1
 	
-	repeat(4) begin
+	repeat(1) begin
 		clk = 1'b1;
 		#100;
 		clk = 1'b0;
@@ -228,7 +175,7 @@ initial begin
 		slave_write = 1'b0;
 		slave_writedata = 32'h0000_0000; 
 		
-		repeat(4) begin
+		repeat(3) begin
 			clk = 1'b1;
 			#100;
 			clk = 1'b0;
@@ -242,7 +189,7 @@ initial begin
 		slave_write = 1'b0;
 		slave_writedata = 32'h0000_0000; 
 		
-		repeat(4) begin
+		repeat(3) begin
 			clk = 1'b1;
 			#100;
 			clk = 1'b0;
@@ -257,13 +204,61 @@ initial begin
 	slave_write = 1'b0;
 	slave_writedata = 32'h0000_0000; 
 
-	repeat(10) begin
+	repeat(4) begin
 	clk = 1'b1;
 	#100;
 	clk = 1'b0;
 	#100;
 	end
 	
+	slave_address = 15'd0;
+	slave_read = 1'b1;
+	slave_write = 1'b1;
+	slave_writedata = 32'h0000_0002; // Start = 0
+
+	repeat(4) begin
+	clk = 1'b1;
+	#100;
+	clk = 1'b0;
+	#100;
+	end
+	
+	slave_address = 15'd0;
+	slave_read = 1'b1;
+	slave_write = 1'b0;
+	slave_writedata = 32'h0000_0000; 
+
+	repeat(4) begin
+	clk = 1'b1;
+	#100;
+	clk = 1'b0;
+	#100;
+	end
+	
+	slave_address = 15'd0;
+	slave_read = 1'b1;
+	slave_write = 1'b1;
+	slave_writedata = 32'h0000_0001; // Start = 1
+
+	repeat(4) begin
+	clk = 1'b1;
+	#100;
+	clk = 1'b0;
+	#100;
+	end
+	
+	repeat(2000) begin
+		slave_address = 15'd0; 
+		slave_read = 1'b1;
+		slave_write = 1'b0;
+		slave_writedata = 32'h0000_0000; // Edit this
+
+	
+		clk = 1'b1;
+		#100;
+		clk = 1'b0;
+		#100;
+	end
 
 
 end
