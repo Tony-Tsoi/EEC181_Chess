@@ -136,7 +136,7 @@ One_Mib_RAM	RAM_A(
 );
 
 
-lmg_dummy LMG(
+lmg_dummy lmg_dummy_inst1(
 	.clk(clk),
 	.reset(lmgReset),
 	.bstate(boardState),
@@ -148,6 +148,22 @@ lmg_dummy LMG(
 	.rcas_flag(1'b0),
 	.enp_flags(8'd0)
 );
+
+
+/*
+LMG LMG_inst1(
+	.clk(clk),
+	.reset(lmgReset),
+	.bstate(boardState),
+	.done(lmgDone),
+	.fifoOut(lmgFifoOut),
+	.rden(lmgReadEnable),
+	.fifoEmpty(fifoEmpty),
+	.lcas_flag(1'b0), // change these flags to generate in HW
+	.rcas_flag(1'b0),
+	.enp_flags(8'd0)
+);
+*/
 
 //===================================
 //				Main

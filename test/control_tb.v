@@ -28,7 +28,7 @@ reg [10:0] i;
 wire fifoEmpty;
 wire [7:0] writeCount;
 
-/*
+
 control_TestOnly control_TestOnly_inst1(
 	// signals to connect to an Avalon clock source interface
 	.clk (clk),
@@ -48,9 +48,9 @@ control_TestOnly control_TestOnly_inst1(
 	.fifoEmpty(fifoEmpty),
 	.writeCount(writeCount)
 );
-*/
 
 
+/*
 control control_inst1(
 	// signals to connect to an Avalon clock source interface
 	.clk (clk),
@@ -64,6 +64,7 @@ control control_inst1(
 	.slave_writedata (slave_writedata),
 	.slave_byteenable (slave_byteenable)
 );
+*/
 
 
 
@@ -198,7 +199,7 @@ initial begin
 	slave_address = 15'd0;
 	slave_read = 1'b1;
 	slave_write = 1'b1;
-	slave_writedata = 32'h0000_0001; 
+	slave_writedata = 32'h0000_0001;  // Start = 1
 	
 	repeat(4) begin
 		clk = 1'b1;
@@ -207,7 +208,7 @@ initial begin
 		#100;
 	end
 	
-	repeat(200) begin
+	repeat(2000) begin
 		slave_address = 15'd0; 
 		slave_read = 1'b1;
 		slave_write = 1'b0;
@@ -221,7 +222,7 @@ initial begin
 	end
 	
 	//================ CHECK MEMORY VALUES ================
-    for (i = 0; i < 500; i = i + 1) begin
+    for (i = 0; i < 50; i = i + 1) begin
       	slave_address = 15'd16 + i;
 		slave_read = 1'b1;
 		slave_write = 1'b0;
@@ -235,7 +236,7 @@ initial begin
 		end
     end
 	
-	for (i = 0; i < 500; i = i + 1) begin
+	for (i = 0; i < 50; i = i + 1) begin
       	slave_address = 15'd16 + i;
 		slave_read = 1'b1;
 		slave_write = 1'b0;

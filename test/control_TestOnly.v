@@ -18,6 +18,13 @@ fifoEmpty,
 writeCount
 );
 
+output [151:0] lmgFifoOut;
+output lmgDone;
+output reg [255:0] boardState;
+output reg lmgReset;
+output fifoEmpty;
+output reg [7:0] writeCount; //8 bit size is completely arbitrary
+
 // should contain a block RAM for the move list/tree
 // 1. wait for Avalon bus to feed in current board state
 // 2. feeds move(s) into LMG, waits, get moves from LMG fifo and write into block RAM
@@ -81,12 +88,11 @@ reg [31:0] control_p1;
 //reg [4:0] counter_p1;
 
 //lmg interface
-output reg [255:0] boardState;
-output reg lmgReset;
+
+
 reg lmgReadEnable;
 reg lmgReadEnable_c;
-output [151:0] lmgFifoOut;
-output lmgDone;
+
 reg lmgDone_p1;
 reg lmgResetState, lmgResetState_c;
 
@@ -111,7 +117,7 @@ reg readWord8_c;
 reg writeFromLmgDone;
 reg writeFromLmgDone_c;
 
-output reg [7:0] writeCount; //8 bit size is completely arbitrary
+
 reg [7:0] writeCount_c;
 
 reg allMovesDone;
@@ -119,7 +125,6 @@ reg allMovesDone_c;
 reg preDone;
 reg preDone_c;
 
-output fifoEmpty;
 
 
 //===================================
@@ -141,8 +146,22 @@ One_Mib_RAM	RAM_A(
    .q			(ram_out)
 );
 
-
+/*
 lmg_dummy LMG(
+	.clk(clk),
+	.reset(lmgReset),
+	.bstate(boardState),
+	.done(lmgDone),
+	.fifoOut(lmgFifoOut),
+	.rden(lmgReadEnable),
+	.fifoEmpty(fifoEmpty),
+	.lcas_flag(1'b0), // change these flags to generate in HW
+	.rcas_flag(1'b0),
+	.enp_flags(8'd0)
+);
+*/
+
+LMG LMG_inst1(
 	.clk(clk),
 	.reset(lmgReset),
 	.bstate(boardState),
@@ -419,8 +438,6 @@ begin
 					allMovesDone_c = 1'b1;
 				end 
 			end
-			
-
 			
 			//Write information to 0x16 for software and set done = 1
 			if(allMovesDone == 1'b1) begin

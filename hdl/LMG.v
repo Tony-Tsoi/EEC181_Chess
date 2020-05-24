@@ -1,4 +1,4 @@
-module lmg (clk, reset, bstate, done, fifoOut, rden, fifoEmpty,
+module LMG (clk, reset, bstate, done, fifoOut, rden, fifoEmpty,
 	lcas_flag, rcas_flag, enp_flags);
 
 // 19 bit output per move from fifoOut has the following format:
@@ -126,10 +126,8 @@ My_FIFO F1F0 (.clock(clk), .data(wr1), .q(fifoOut), .wrreq((wren1 | cas_wren)), 
 	.usedw(), .full() );
 
 // countdown timer
-parameter WDT_VAL = 12'd620;
-
+parameter WDT_VAL = 12'd620; // 620 originally
 wire wdt_done;
-
 dcounter WDTimer (.clk(clk), .reset(reset), .setval(WDT_VAL), .done(wdt_done));
 
 // for en passant
