@@ -49,6 +49,7 @@ assign done = (state == DONE);
 always @(*) begin
 	state_c = state;
 	wr1_c = {8'd0, {8{IMOV}}};
+	wr_req_c = 1'b0;
 	
 	case (state)
 		RSET: begin
