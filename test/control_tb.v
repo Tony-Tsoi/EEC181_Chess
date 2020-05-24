@@ -18,12 +18,13 @@ wire [DATA_WIDTH-1:0] slave_readdata;
 reg [DATA_WIDTH-1:0] slave_writedata;
 reg [(DATA_WIDTH/8)-1:0] slave_byteenable; //Not currently used
 
-wire lmgdone;
+wire lmgDone;
 wire [255:0] boardState;
 wire [151:0] lmgFifoOut;
 wire lmgReset;
 
-control_TestOnly control_inst1(
+
+control_TestOnly control_TestOnly_inst1(
 	// signals to connect to an Avalon clock source interface
 	.clk (clk),
 	.reset (reset),
@@ -35,11 +36,29 @@ control_TestOnly control_inst1(
 	.slave_readdata (slave_readdata),
 	.slave_writedata (slave_writedata),
 	.slave_byteenable (slave_byteenable),
-	.lmgdone(lmgdone),
+	.lmgDone(lmgDone),
 	.boardState(boardState),
 	.lmgReset(lmgReset),
 	.lmgFifoOut(lmgFifoOut)
 );
+
+
+/*
+control control_inst1(
+	// signals to connect to an Avalon clock source interface
+	.clk (clk),
+	.reset (reset),
+
+	// signals to connect to an Avalon-MM slave interface
+	.slave_address (slave_address),
+	.slave_read (slave_read),
+	.slave_write (slave_write),
+	.slave_readdata (slave_readdata),
+	.slave_writedata (slave_writedata),
+	.slave_byteenable (slave_byteenable)
+);
+*/
+
 
 initial begin
 	clk = 1'b0;
@@ -181,8 +200,8 @@ initial begin
 		#100;
 	end
 	
-	repeat(10000) begin
-		slave_address = 15'd0; // These 4 are just place holder values, edit these to read/write something useful.
+	repeat(200) begin
+		slave_address = 15'd0; 
 		slave_read = 1'b1;
 		slave_write = 1'b0;
 		slave_writedata = 32'h0000_0000; // Edit this
@@ -194,7 +213,42 @@ initial begin
 		#100;
 	end
 	
+	// CHECK MEMORY VALUES
+	slave_address = 15'd16;
+	slave_read = 1'b1;
+	slave_write = 1'b0;
+	slave_writedata = 32'h0000_0000; 
 	
+	repeat(4) begin
+		clk = 1'b1;
+		#100;
+		clk = 1'b0;
+		#100;
+	end
+	
+	slave_address = 15'd17;
+	slave_read = 1'b1;
+	slave_write = 1'b0;
+	slave_writedata = 32'h0000_0000; 
+	
+	repeat(4) begin
+		clk = 1'b1;
+		#100;
+		clk = 1'b0;
+		#100;
+	end
+	
+	slave_address = 15'd18;
+	slave_read = 1'b1;
+	slave_write = 1'b0;
+	slave_writedata = 32'h0000_0000; 
+	
+	repeat(4) begin
+		clk = 1'b1;
+		#100;
+		clk = 1'b0;
+		#100;
+	end
 	
 
 

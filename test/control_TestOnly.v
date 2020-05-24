@@ -10,7 +10,7 @@ slave_write,
 slave_readdata,
 slave_writedata,
 slave_byteenable,
-lmgdone,
+lmgDone,
 boardState,
 lmgReset,
 lmgFifoOut
@@ -50,7 +50,6 @@ input slave_write;
 output reg [DATA_WIDTH-1:0] slave_readdata;
 input [DATA_WIDTH-1:0] slave_writedata;
 input [(DATA_WIDTH/8)-1:0] slave_byteenable; //Not currently used
-output lmgdone;
 
 //==================================
 //          WIRES / REGS
@@ -84,10 +83,12 @@ output reg [255:0] boardState;
 output reg lmgReset;
 reg lmgReadEnable;
 reg lmgReadEnable_c;
-output wire [151:0] lmgFifoOut;
-//wire lmgDone;
+output [151:0] lmgFifoOut;
+output lmgDone;
 reg lmgDone_p1;
+reg lmgResetState, lmgResetState_c;
 
+reg preRead, preRead_c;
 reg readWord1;
 reg readWord2;
 reg readWord3;
@@ -137,7 +138,7 @@ One_Mib_RAM	RAM_A(
 );
 
 
-lmg LMG(
+lmg_dummy LMG(
 	.clk(clk),
 	.reset(lmgReset),
 	.bstate(boardState),
@@ -257,6 +258,12 @@ begin
 			writeFromLmgDone_c = 1'b0;
 			allMovesDone_c = 1'b0;
 			lmgReadEnable_c = 1'b0;
+			lmgResetState_c = 1'b1;
+		end
+		
+		if (lmgResetState == 1'b1) begin
+			lmgReset = 1'b1;
+			lmgResetState_c = 1'b0;
 		end
 		
 		//Wait for lmg done signal, then read from lmg fifo and write into block ram
@@ -265,11 +272,17 @@ begin
 			if (lmgDone_p1 == 1'b0 || writeFromLmgDone == 1'b1) begin //start when lmgDone first gets turned on or when the last word is done being processed
 				 //trying to toggle the lmg read on/off here because i'm guessing the lmg gives me a new set of moves everytime I press read
 				lmgReadEnable_c = 1'b1;
+				preRead_c = 1'b1;
+			end
+			
+			if (preRead == 1'b1) begin
 				readWord1_c = 1'b1;
+				lmgReadEnable_c = 1'b0;
+				preRead_c = 1'b0;
+				ram_wren = 1'b1;
 			end
 			
 			if (readWord1 == 1'b1) begin
-				lmgReadEnable_c = 1'b0;
 				if (lmgFifoOut[18] == 1'b0) begin //write the first word if valid, otherwise look at the second word
 					ram_in = lmgFifoOut[17:0]; //This isn't exact yet
 					ram_wren = 1'b1;
@@ -451,7 +464,6 @@ begin
 
 end
 
-
 always @ (posedge clk) begin
 	rd_addr_p1 <= rd_addr;
 	wr_addr_p1 <= wr_addr;
@@ -459,6 +471,7 @@ always @ (posedge clk) begin
 	ram_wren_p1 <= ram_wren; 
 	control_p1 <= control;
 	
+	lmgResetState <= lmgResetState_c;
 	lmgReadEnable <= lmgReadEnable_c;
 	lmgDone_p1 <= lmgDone;
 	writeCount <= writeCount_c;	
@@ -466,6 +479,7 @@ always @ (posedge clk) begin
 	allMovesDone <= allMovesDone_c;
 	preDone <= preDone_c;
 	
+	preRead <= preRead_c;
 	readWord1 <= readWord1_c;
 	readWord2 <= readWord2_c;
 	readWord3 <= readWord3_c;
