@@ -23,7 +23,12 @@ wire [255:0] boardState;
 wire [151:0] lmgFifoOut;
 wire lmgReset;
 
+reg [10:0] i;
 
+wire fifoEmpty;
+wire [7:0] writeCount;
+
+/*
 control_TestOnly control_TestOnly_inst1(
 	// signals to connect to an Avalon clock source interface
 	.clk (clk),
@@ -39,11 +44,13 @@ control_TestOnly control_TestOnly_inst1(
 	.lmgDone(lmgDone),
 	.boardState(boardState),
 	.lmgReset(lmgReset),
-	.lmgFifoOut(lmgFifoOut)
+	.lmgFifoOut(lmgFifoOut),
+	.fifoEmpty(fifoEmpty),
+	.writeCount(writeCount)
 );
+*/
 
 
-/*
 control control_inst1(
 	// signals to connect to an Avalon clock source interface
 	.clk (clk),
@@ -57,7 +64,7 @@ control control_inst1(
 	.slave_writedata (slave_writedata),
 	.slave_byteenable (slave_byteenable)
 );
-*/
+
 
 
 initial begin
@@ -213,41 +220,47 @@ initial begin
 		#100;
 	end
 	
-	// CHECK MEMORY VALUES
-	slave_address = 15'd16;
+	//================ CHECK MEMORY VALUES ================
+    for (i = 0; i < 500; i = i + 1) begin
+      	slave_address = 15'd16 + i;
+		slave_read = 1'b1;
+		slave_write = 1'b0;
+		slave_writedata = 32'h0000_0000; 
+		
+		repeat(4) begin
+			clk = 1'b1;
+			#100;
+			clk = 1'b0;
+			#100;
+		end
+    end
+	
+	for (i = 0; i < 500; i = i + 1) begin
+      	slave_address = 15'd16 + i;
+		slave_read = 1'b1;
+		slave_write = 1'b0;
+		slave_writedata = 32'h0000_0000; 
+		
+		repeat(4) begin
+			clk = 1'b1;
+			#100;
+			clk = 1'b0;
+			#100;
+		end
+    end
+	
+	
+	//================ CHECKING CONTROL =========================
+	slave_address = 15'd0;
 	slave_read = 1'b1;
 	slave_write = 1'b0;
 	slave_writedata = 32'h0000_0000; 
-	
-	repeat(4) begin
-		clk = 1'b1;
-		#100;
-		clk = 1'b0;
-		#100;
-	end
-	
-	slave_address = 15'd17;
-	slave_read = 1'b1;
-	slave_write = 1'b0;
-	slave_writedata = 32'h0000_0000; 
-	
-	repeat(4) begin
-		clk = 1'b1;
-		#100;
-		clk = 1'b0;
-		#100;
-	end
-	
-	slave_address = 15'd18;
-	slave_read = 1'b1;
-	slave_write = 1'b0;
-	slave_writedata = 32'h0000_0000; 
-	
-	repeat(4) begin
-		clk = 1'b1;
-		#100;
-		clk = 1'b0;
-		#100;
+
+	repeat(10) begin
+	clk = 1'b1;
+	#100;
+	clk = 1'b0;
+	#100;
 	end
 	
 

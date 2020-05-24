@@ -13,7 +13,9 @@ slave_byteenable,
 lmgDone,
 boardState,
 lmgReset,
-lmgFifoOut
+lmgFifoOut,
+fifoEmpty,
+writeCount
 );
 
 // should contain a block RAM for the move list/tree
@@ -109,13 +111,15 @@ reg readWord8_c;
 reg writeFromLmgDone;
 reg writeFromLmgDone_c;
 
-reg [7:0] writeCount; //8 bit size is completely arbitrary
+output reg [7:0] writeCount; //8 bit size is completely arbitrary
 reg [7:0] writeCount_c;
 
 reg allMovesDone;
 reg allMovesDone_c;
 reg preDone;
 reg preDone_c;
+
+output fifoEmpty;
 
 
 //===================================
@@ -145,7 +149,7 @@ lmg_dummy LMG(
 	.done(lmgDone),
 	.fifoOut(lmgFifoOut),
 	.rden(lmgReadEnable),
-	.fifoEmpty(),
+	.fifoEmpty(fifoEmpty),
 	.lcas_flag(1'b0), // change these flags to generate in HW
 	.rcas_flag(1'b0),
 	.enp_flags(8'd0)
@@ -291,6 +295,8 @@ begin
 					readWord1_c = 1'b0;
 					readWord2_c = 1'b1;
 				end else begin
+						ram_wren = 1'b0;
+						writeCount_c = writeCount;
 						readWord1_c = 1'b0;
 						readWord2_c = 1'b1; //This might need to be pipelined but I think it saves a ton of time if it works
 					end
@@ -305,6 +311,8 @@ begin
 					readWord2_c = 1'b0;
 					readWord3_c = 1'b1;
 				end else begin
+						ram_wren = 1'b0;
+						writeCount_c = writeCount;
 						readWord2_c = 1'b0;
 						readWord3_c = 1'b1; //This might need to be pipelined
 					end
@@ -319,6 +327,8 @@ begin
 					readWord3_c = 1'b0;
 					readWord4_c = 1'b1;
 				end else begin
+						ram_wren = 1'b0;
+						writeCount_c = writeCount;
 						readWord3_c = 1'b0;
 						readWord4_c = 1'b1; //This might need to be pipelined
 					end
@@ -333,6 +343,8 @@ begin
 					readWord4_c = 1'b0;
 					readWord5_c = 1'b1;
 				end else begin
+						ram_wren = 1'b0;
+						writeCount_c = writeCount;
 						readWord4_c = 1'b0;
 						readWord5_c = 1'b1; //This might need to be pipelined
 					end
@@ -347,6 +359,8 @@ begin
 					readWord5_c = 1'b0;
 					readWord6_c = 1'b1;
 				end else begin
+						ram_wren = 1'b0;
+						writeCount_c = writeCount;
 						readWord5_c = 1'b0;
 						readWord6_c = 1'b1; //This might need to be pipelined
 					end
@@ -361,6 +375,8 @@ begin
 					readWord6_c = 1'b0;
 					readWord7_c = 1'b1;
 				end else begin
+						ram_wren = 1'b0;
+						writeCount_c = writeCount;
 						readWord6_c = 1'b0;
 						readWord7_c = 1'b1; //This might need to be pipelined
 					end
@@ -375,6 +391,8 @@ begin
 					readWord7_c = 1'b0;
 					readWord8_c = 1'b1;
 				end else begin
+						ram_wren = 1'b0;
+						writeCount_c = writeCount;
 						readWord7_c = 1'b0;
 						readWord8_c = 1'b1; //This might need to be pipelined
 					end
@@ -389,15 +407,20 @@ begin
 					writeCount_c = writeCount + 1;
 					writeFromLmgDone_c = 1'b1;
 				end else begin 
-						//if the entire word consists of invalid moves, end the process
-						if((lmgFifoOut[151] == 1) && (lmgFifoOut[132] == 1) && (lmgFifoOut[113] == 1) && (lmgFifoOut[94] == 1) && (lmgFifoOut[75] == 1) && (lmgFifoOut[56] == 1) && (lmgFifoOut[37] == 1) && (lmgFifoOut[18] == 1)) begin
-							writeFromLmgDone_c = 1'b0;
-							allMovesDone_c = 1'b1;
-						end else begin
-								writeFromLmgDone_c = 1'b1;
-							end
+						ram_wren = 1'b0;
+						writeCount_c = writeCount;
+						writeFromLmgDone_c = 1'b1;
+
 					end
+					
+				//if the entire word consists of invalid moves, end the process
+				if(fifoEmpty == 1'b1) begin
+					writeFromLmgDone_c = 1'b0;
+					allMovesDone_c = 1'b1;
+				end 
 			end
+			
+
 			
 			//Write information to 0x16 for software and set done = 1
 			if(allMovesDone == 1'b1) begin
