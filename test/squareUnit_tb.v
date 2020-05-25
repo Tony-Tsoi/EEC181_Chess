@@ -3,6 +3,23 @@
 module squareUnit_tb (
 );
 
+// === Parameter declarations ===
+parameter WHITE = 1'b0;
+parameter BLACK = 1'b1;
+parameter EMPTY = 3'o0;
+parameter PAWN = 3'o1;
+parameter KNIGHT = 3'o2;
+parameter BISHOP = 3'o3;
+parameter ROOK = 3'o4;
+parameter QUEEN = 3'o5;
+parameter KING = 3'o6;
+
+parameter ROW1 = 3'o0; parameter ROW2 = 3'o1; parameter ROW3 = 3'o2; parameter ROW4 = 3'o3;
+parameter ROW5 = 3'o4; parameter ROW6 = 3'o5; parameter ROW7 = 3'o6; parameter ROW8 = 3'o7;
+
+parameter COLA = 3'o0; parameter COLB = 3'o1; parameter COLC = 3'o2; parameter COLD = 3'o3;
+parameter COLE = 3'o4; parameter COLF = 3'o5; parameter COLG = 3'o6; parameter COLH = 3'o7;
+
 //reg/wire
 reg clk;
 reg reset;
@@ -14,6 +31,8 @@ reg [8:0] irrdi, irrui, irddi, irdi, iri, irui, iruui, idi, iui,
 wire [8:0] orrdo, orruo, orddo, ordo, oro, oruo, oruuo, odo, ouo, 
 	olddo, oldo, olo, oluo, oluuo, olldo, olluo;
 wire hlu, hl, hld, hu, hd, hru, hr, hrd, done;
+
+wire [8:0] PVOID = {xpos, ypos, EMPTY}; // denotes an empty space at self
 	
 //module
 squareUnit DUT(
@@ -72,26 +91,26 @@ initial begin
 	clk = 1'b0;
 	reset = 1'b0;
 	hold = 1'b0;
-	xpos = 3'b100;
-	ypos = 3'b100;
-	cpiece = 4'b0100; //set the piece
+	xpos = COLE;
+	ypos = ROW5;
+	cpiece = {WHITE,ROOK}; //set the piece
 	
-	irrdi = 9'd0;
-	irrui = 9'd0;
-	irddi = 9'd0;
-	irdi = 9'd0;
-	iri = 9'd0;
-	irui = 9'd0;
-	iruui = 9'd0;
-	idi = 9'd0;
-	iui = 9'd0; 
-	ilddi = 9'd0;
-	ildi = 9'd0;
-	ili = 9'd0;
-	ilui = 9'd0;
-	iluui = 9'd0;
-	illdi = 9'd0;
-	illui = 9'd0;
+	irrdi = PVOID;
+	irrui = PVOID;
+	irddi = PVOID;
+	irdi = PVOID;
+	iri = PVOID;
+	irui = PVOID;
+	iruui = PVOID;
+	idi = PVOID;
+	iui = PVOID; 
+	ilddi = PVOID;
+	ildi = PVOID;
+	ili = PVOID;
+	ilui = PVOID;
+	iluui = PVOID;
+	illdi = PVOID;
+	illui = PVOID;
 	
 	#20;
 	reset = 1'b1;

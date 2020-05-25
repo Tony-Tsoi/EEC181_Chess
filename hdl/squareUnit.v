@@ -10,7 +10,11 @@ clk, xpos, ypos, cpiece, reset, done, fifoOut, fifoEmpty, hold, rden);
 // seven bit flag bits as follows:
 // [invalid][promote][pawn move][pawn 2 sq][en passant][castle][capture]
 
-// parameter declarations
+// inputs and outputs to neighbor cells
+// 9 bits of the format of [6 bits origin pos][3 bits of piece info]
+// 1 bit of color is omitted since only white pieces can propagate
+
+// === Parameter declarations ===
 parameter WHITE = 1'b0;
 parameter BLACK = 1'b1;
 parameter EMPTY = 3'o0;
@@ -36,58 +40,27 @@ parameter DONE = 3'b110; // done
 
 reg [2:0] state, state_c;
 
-input clk; // clock input
-input reset; // if is new board, put self at the outgoing positions
+// === Input declarations ===
+input clk, reset, hold, rden;
 input [2:0] xpos, ypos; // specifies the position of the unit on the board
 input [3:0] cpiece; // current piece occupied at this spot
-input hold; // to hold the done signal from being flagged mistakenly
-
-output done; // done signal
-assign done = (state == DONE);
-output [159:0] fifoOut; // output of FIFO
-
-// inputs and outputs to neighbor cells
-// 9 bits of the format of [6 bits origin pos][3 bits of piece info]
-// 1 bit of color is omitted since only white pieces can propagate
 input [8:0] irrdi, irrui, irddi, irdi, iri, irui, iruui, idi, iui, 
 	ilddi, ildi, ili, ilui, iluui, illdi, illui;
+
+// === Output declarations ===
+output done, fifoEmpty;
+output [159:0] fifoOut; // output of FIFO
+output reg hlu, hl, hld, hu, hd, hru, hr, hrd; // output hold signal
 output reg [8:0] orrdo, orruo, orddo, ordo, oro, oruo, oruuo, odo, ouo, 
 	olddo, oldo, olo, oluo, oluuo, olldo, olluo;
-	
-// output hold signal
-output reg hlu, hl, hld, hu, hd, hru, hr, hrd;
 
-// outgoing output variables combinational
-reg [8:0] orrdo_c, orruo_c, orddo_c, ordo_c, oro_c, oruo_c, oruuo_c, odo_c, 
-	ouo_c, olddo_c, oldo_c, olo_c, oluo_c, oluuo_c, olldo_c, olluo_c;
-
-// pseudo-constant "parameters"
+// === Wire declarations ===
 wire [8:0] PVOID = {xpos, ypos, EMPTY}; // denotes an empty space at self
-
-// Moves Output
-reg [18:0] mvrrd, mvrru, mvrdd, mvruu, mvldd, mvluu, mvlld, mvllu;
-reg [18:0] mvrd, mvr, mvru, mvd, mvu, mvld, mvl, mvlu;
 wire [151:0] wr1 = {mvrd, mvr, mvru, mvd, mvu, mvld, mvl, mvlu};
 wire [151:0] wr2 = {mvrrd, mvrru, mvrdd, mvruu, mvldd, mvluu, mvlld, mvllu};
 wire [151:0] wrdata = (state == GKNI) ? wr2 : wr1;
 wire wren = ~&{wrdata[151], wrdata[132], wrdata[113], wrdata[94], wrdata[75], wrdata[56], wrdata[37], wrdata[18]};
 wire [159:152] fillwr = 8'd0; // white space to accomodate width of fifo
-
-// fifo read enable input
-input rden;
-
-// fifo empty output
-output fifoEmpty;
-
-// FIFO Module Declaration
-My_FIFO F1F0 (.clock(clk), .data({fillwr,wrdata}), .q(fifoOut), .wrreq(wren), .rdreq(rden), .empty(fifoEmpty), .sclr(reset),
-	.usedw(), .full());
-
-always @(posedge clk) begin
-	state <= (reset == 1'b1) ? RSET : state_c;
-end
-
-// hold signal combinational
 wire hlu_c = (oluo_c != PVOID);
 wire hl_c = (olo_c != PVOID);
 wire hld_c = (oldo_c != PVOID);
@@ -96,38 +69,23 @@ wire hd_c = (odo_c != PVOID);
 wire hru_c = (oruo_c != PVOID);
 wire hr_c = (oro_c != PVOID);
 wire hrd_c = (ordo_c != PVOID);
-always @(posedge clk) begin
-	hlu <= hlu_c;
-	hl <= hl_c;
-	hld <= hld_c;
-	hu <= hu_c;
-	hd <= hd_c;
-	hru <= hru_c;
-	hr <= hr_c;
-	hrd <= hrd_c;
-end
+wire capb = (cpiece[3] == BLACK); // propagated piece can capture current square piece
 
-always @(posedge clk) begin
-	orrdo <= orrdo_c;
-	orruo <= orruo_c;
-	orddo <= orddo_c;
-	ordo <= ordo_c;
-	oro <= oro_c;
-	oruo <= oruo_c;
-	oruuo <= orddo_c;
-	odo <= odo_c;
-	ouo <= ouo_c;
-	olddo <= olddo_c;
-	oldo <= oldo_c;
-	olo <= olo_c;
-	oluo <= oluo_c;
-	oluuo <= oluuo_c;
-	olldo <= olldo_c;
-	olluo <= olluo_c;
-end
+// === Reg declarations ===
+// outgoing output variables combinational
+reg [8:0] orrdo_c, orruo_c, orddo_c, ordo_c, oro_c, oruo_c, oruuo_c, odo_c, 
+	ouo_c, olddo_c, oldo_c, olo_c, oluo_c, oluuo_c, olldo_c, olluo_c;
 
-// propagated piece can capture current square piece
-wire capb = (cpiece[3] == BLACK);
+// Moves Output
+reg [18:0] mvrrd, mvrru, mvrdd, mvruu, mvldd, mvluu, mvlld, mvllu;
+reg [18:0] mvrd, mvr, mvru, mvd, mvu, mvld, mvl, mvlu;
+
+// === Assignment statements ===
+assign done = (state == DONE);
+
+// FIFO Module Declaration
+My_FIFO F1F0 (.clock(clk), .data({fillwr,wrdata}), .q(fifoOut), .wrreq(wren), .rdreq(rden), .empty(fifoEmpty), .sclr(reset),
+	.usedw(), .full());
 
 // output logic
 always @(*) begin
@@ -386,6 +344,35 @@ always @(*) begin
 	
 	// if output direction does not exist, simply not wire the output
 	// no extra logic should be used to clear that out
+end
+
+// FF
+always @(posedge clk) begin
+	state <= (reset == 1'b1) ? RSET : state_c;
+	hlu <= hlu_c;
+	hl <= hl_c;
+	hld <= hld_c;
+	hu <= hu_c;
+	hd <= hd_c;
+	hru <= hru_c;
+	hr <= hr_c;
+	hrd <= hrd_c;
+	orrdo <= orrdo_c;
+	orruo <= orruo_c;
+	orddo <= orddo_c;
+	ordo <= ordo_c;
+	oro <= oro_c;
+	oruo <= oruo_c;
+	oruuo <= orddo_c;
+	odo <= odo_c;
+	ouo <= ouo_c;
+	olddo <= olddo_c;
+	oldo <= oldo_c;
+	olo <= olo_c;
+	oluo <= oluo_c;
+	oluuo <= oluuo_c;
+	olldo <= olldo_c;
+	olluo <= olluo_c;
 end
 
 endmodule
