@@ -313,7 +313,8 @@ begin
 			
 			if (readWord1 == 1'b1) begin
 				if (lmgFifoOut[18] == 1'b0) begin //write the first word if valid, otherwise look at the second word
-					ram_in = lmgFifoOut[17:0]; //This isn't exact yet
+					//ram_in = lmgFifoOut[17:0]; //This isn't exact yet
+					ram_in = {lmgFifoOut[17:12], lmgFifoOut[8:6], lmgFifoOut[11:9], lmgFifoOut[2:0], lmgFifoOut[5:3]};
 					ram_wren = 1'b1;
 					wr_addr = 15'd17 + writeCount;
 					writeCount_c = writeCount + 1;
@@ -329,7 +330,8 @@ begin
 			
 			if (readWord2 == 1'b1) begin
 				if (lmgFifoOut[37] == 1'b0) begin  //write the second word if valid, otherwise look at the third word
-					ram_in = lmgFifoOut[36:19]; //This isn't exact yet
+					//ram_in = lmgFifoOut[36:19]; //This isn't exact yet
+					ram_in = {lmgFifoOut[36:31], lmgFifoOut[27:25], lmgFifoOut[30:28], lmgFifoOut[21:19], lmgFifoOut[24:22]};
 					ram_wren = 1'b1;
 					wr_addr = 15'd17 + writeCount;
 					writeCount_c = writeCount + 1;
@@ -345,7 +347,8 @@ begin
 			
 			if (readWord3 == 1'b1) begin
 				if (lmgFifoOut[56] == 1'b0) begin  //write the third word if valid, otherwise look at the fourth word
-					ram_in = lmgFifoOut[55:38]; //This isn't exact yet
+					//ram_in = lmgFifoOut[55:38]; //This isn't exact yet
+					ram_in = {lmgFifoOut[55:50], lmgFifoOut[46:44], lmgFifoOut[49:47], lmgFifoOut[40:38], lmgFifoOut[43:41]};
 					ram_wren = 1'b1;
 					wr_addr = 15'd17 + writeCount;
 					writeCount_c = writeCount + 1;
@@ -361,7 +364,9 @@ begin
 			
 			if (readWord4 == 1'b1) begin
 				if (lmgFifoOut[75] == 1'b0) begin  //write the fourth word if valid, otherwise look at the fifth word
-					ram_in = lmgFifoOut[74:57]; //This isn't exact yet
+					//ram_in = lmgFifoOut[74:57]; //This isn't exact yet
+					ram_in = {lmgFifoOut[74:69], lmgFifoOut[65:63], lmgFifoOut[68:66], lmgFifoOut[59:57], lmgFifoOut[62:60]};
+
 					ram_wren = 1'b1;
 					wr_addr = 15'd17 + writeCount;
 					writeCount_c = writeCount + 1;
@@ -377,7 +382,9 @@ begin
 			
 			if (readWord5 == 1'b1) begin
 				if (lmgFifoOut[94] == 1'b0) begin  //write the fifth word if valid, otherwise look at the sixth word
-					ram_in = lmgFifoOut[93:76]; //This isn't exact yet
+					//ram_in = lmgFifoOut[93:76]; //This isn't exact yet
+					ram_in = {lmgFifoOut[93:88], lmgFifoOut[84:82], lmgFifoOut[87:85], lmgFifoOut[78:76], lmgFifoOut[81:79]};
+
 					ram_wren = 1'b1;
 					wr_addr = 15'd17 + writeCount;
 					writeCount_c = writeCount + 1;
@@ -393,7 +400,9 @@ begin
 			
 			if (readWord6 == 1'b1) begin
 				if (lmgFifoOut[113] == 1'b0) begin  //write the sixth word if valid, otherwise look at the seventh word
-					ram_in = lmgFifoOut[112:95]; //This isn't exact yet
+					//ram_in = lmgFifoOut[112:95]; //This isn't exact yet
+					ram_in = {lmgFifoOut[112:107], lmgFifoOut[103:101], lmgFifoOut[106:104], lmgFifoOut[97:95], lmgFifoOut[100:98]};
+
 					ram_wren = 1'b1;
 					wr_addr = 15'd17 + writeCount;
 					writeCount_c = writeCount + 1;
@@ -409,7 +418,9 @@ begin
 			
 			if (readWord7 == 1'b1) begin
 				if (lmgFifoOut[132] == 1'b0) begin  //write the seventh word if valid, otherwise look at the last word
-					ram_in = lmgFifoOut[131:114]; //This isn't exact yet
+					//ram_in = lmgFifoOut[131:114]; //This isn't exact yet
+					ram_in = {lmgFifoOut[131:126], lmgFifoOut[122:120], lmgFifoOut[125:123], lmgFifoOut[116:114], lmgFifoOut[119:117]};
+
 					ram_wren = 1'b1;
 					wr_addr = 15'd17 + writeCount;
 					writeCount_c = writeCount + 1;
@@ -426,7 +437,9 @@ begin
 			if (readWord8 == 1'b1) begin
 				readWord8_c = 1'b0;
 				if (lmgFifoOut[151] == 1'b0) begin  //write the last word if valid, otherwise 
-					ram_in = lmgFifoOut[150:133]; //This isn't exact yet
+					//ram_in = lmgFifoOut[150:133]; //This isn't exact yet
+					ram_in = {lmgFifoOut[150:145], lmgFifoOut[141:139], lmgFifoOut[144:142], lmgFifoOut[135:133], lmgFifoOut[138:136]};
+
 					ram_wren = 1'b1;
 					wr_addr = 15'd17 + writeCount;
 					writeCount_c = writeCount + 1;
