@@ -54,6 +54,16 @@ output reg hlu, hl, hld, hu, hd, hru, hr, hrd; // output hold signal
 output reg [8:0] orrdo, orruo, orddo, ordo, oro, oruo, oruuo, odo, ouo, 
 	olddo, oldo, olo, oluo, oluuo, olldo, olluo;
 
+// === Reg declarations ===
+// outgoing output variables combinational
+reg [8:0] orrdo_c, orruo_c, orddo_c, ordo_c, oro_c, oruo_c, oruuo_c, odo_c, 
+	ouo_c, olddo_c, oldo_c, olo_c, oluo_c, oluuo_c, olldo_c, olluo_c;
+
+// Moves Output
+reg [18:0] mvrrd, mvrru, mvrdd, mvruu, mvldd, mvluu, mvlld, mvllu;
+reg [18:0] mvrd, mvr, mvru, mvd, mvu, mvld, mvl, mvlu;
+
+
 // === Wire declarations ===
 wire [8:0] PVOID = {xpos, ypos, EMPTY}; // denotes an empty space at self
 wire [151:0] wr1 = {mvrd, mvr, mvru, mvd, mvu, mvld, mvl, mvlu};
@@ -70,15 +80,6 @@ wire hru_c = (oruo_c != PVOID);
 wire hr_c = (oro_c != PVOID);
 wire hrd_c = (ordo_c != PVOID);
 wire capb = (cpiece[3] == BLACK); // propagated piece can capture current square piece
-
-// === Reg declarations ===
-// outgoing output variables combinational
-reg [8:0] orrdo_c, orruo_c, orddo_c, ordo_c, oro_c, oruo_c, oruuo_c, odo_c, 
-	ouo_c, olddo_c, oldo_c, olo_c, oluo_c, oluuo_c, olldo_c, olluo_c;
-
-// Moves Output
-reg [18:0] mvrrd, mvrru, mvrdd, mvruu, mvldd, mvluu, mvlld, mvllu;
-reg [18:0] mvrd, mvr, mvru, mvd, mvu, mvld, mvl, mvlu;
 
 // === Assignment statements ===
 assign done = (state == DONE);
