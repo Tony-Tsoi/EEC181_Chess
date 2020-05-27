@@ -111,7 +111,7 @@ always @(*) begin
 	
 	case (state)
 		RSET: begin
-			state_c = GKNI;
+			state_c = GENC;
 			
 			olluo_c = PVOID; olldo_c = PVOID;
 			oluuo_c = PVOID; olddo_c = PVOID;
