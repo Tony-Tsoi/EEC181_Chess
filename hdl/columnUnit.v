@@ -22,10 +22,7 @@ parameter WAIT = 2'b01;
 parameter GETM = 2'b11;
 parameter DONE = 2'b10;
 
-// state bit
-reg [1:0] state, state_c;
-
-input clk, reset;
+input clk, reset, rden;
 input [2:0] xpos;
 input [31:0] colstate; // column piece states
 
@@ -36,15 +33,15 @@ input [71:0] ciri, cili;
 input [71:9] cirrui, cirui, ciui, cilui, cillui;
 input [71:18] ciruui, ciluui;
 
+// input signals to hold the done flags
+input [8:1] chdiri;
+
 // output signals to neightboring columns
 output [53:0] coluuo, coruuo;
 output [62:0] colluo, coluo, couo, coruo, corruo;
 output [71:0] colo, coro;
 output [71:9] colldo, coldo, codo, cordo, corrdo;
 output [71:18] colddo, corddo;
-
-// input signals to hold the done flags
-input [8:1] chdiri;
 
 // output signals to hold from done flags
 output [7:1] chluo, chruo;
@@ -53,16 +50,12 @@ output [8:2] chldo, chrdo;
 
 // done signal
 output done; // done signal
-assign done = (state == DONE);
 
 // output from fifo
 output [159:0] fifoOut;
 
 // column fifo empty flag
 output fifoEmpty;
-
-// column fifo read enable
-input rden;
 
 // cpieces of each square
 wire [3:0] cpiece_8 = colstate[31:28];
@@ -100,6 +93,12 @@ reg [2:0] sq_move_ptr, sq_move_ptr_c;
 
 // read enable for square fifo
 reg [8:1] sq_rden, sq_rden_c;
+
+// state bit
+reg [1:0] state, state_c;
+
+// assign done signal
+assign done = (state == DONE);
 
 // fifo empty for square fifo
 wire [7:0] sqEmpty;
