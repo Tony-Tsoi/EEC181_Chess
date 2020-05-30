@@ -1,3 +1,5 @@
+`timescale 1ps / 1ps
+
 module columnUnit_tb;
 
 parameter NCIO = 60; // number of cycles from input to output
@@ -54,15 +56,22 @@ wire [159:0] fifoOut;
 // column fifo empty flag
 wire fifoEmpty;
 
-reg clk_rst;
-
 columnUnit DUT (.clk(clk), .colstate(colstate), .xpos(xpos), .reset(reset), .done(done), .chdiri(chdiri),
-.cirrdi(cirrdi), .cirrui(cirrui), .cirddi(cirddi), .cirdi(cirdi), .ciri(ciri), .cirui(cirui), .ciruui(ciruui), 
-.cidi(cidi), .ciui(ciui), .cilddi(cilddi), .cildi(cildi), .cili(cili), .cilui(cilui), .ciluui(ciluui), .cilldi(cilldi), 
-.cillui(cillui), .colluo(colluo), .colldo(colldo), .coluuo(coluuo), .coluo(coluo), .colo(colo), .coldo(coldo), 
-.colddo(colddo), .couo(couo), .codo(codo), .coruuo(coruuo), .coruo(coruo), .coro(coro), .cordo(cordo), .corddo(corddo), 
-.corruo(corruo), .corrdo(corrdo), .chluo(chluo), .chruo(chruo), .chlo(chlo), .chro(chro), .chldo(chldo), .chrdo(chrdo),
-.fifoOut(fifoOut), .fifoEmpty(fifoEmpty), .rden(rden) );
+	.cirrdi(cirrdi), .cirrui(cirrui), .cirddi(cirddi), .cirdi(cirdi), .ciri(ciri), .cirui(cirui), .ciruui(ciruui), 
+	.cilddi(cilddi), .cildi(cildi), .cili(cili), .cilui(cilui), .ciluui(ciluui), .cilldi(cilldi), 
+	.cillui(cillui), .colluo(colluo), .colldo(colldo), .coluuo(coluuo), .coluo(coluo), .colo(colo), .coldo(coldo), 
+	.colddo(colddo), .coruuo(coruuo), .coruo(coruo), .coro(coro), .cordo(cordo), .corddo(corddo), 
+	.corruo(corruo), .corrdo(corrdo), .chluo(chluo), .chruo(chruo), .chlo(chlo), .chro(chro), .chldo(chldo), .chrdo(chrdo),
+	.fifoOut(fifoOut), .fifoEmpty(fifoEmpty), .rden(rden) );
+
+// clock period: #100
+reg clk_rst;
+always begin
+   if (clk_rst == 1'b1)
+      clk = #1 1'b0;
+   else
+      #50 clk = ~clk;
+end
 
 initial begin
 	// initialize clock
@@ -92,14 +101,12 @@ initial begin
 	cilddi = {6{PVOID}};
 	cirrdi= {7{PVOID}}; 
 	cirdi= {7{PVOID}}; 
-	cidi= {7{PVOID}}; 
 	cildi= {7{PVOID}}; 
 	cilldi= {7{PVOID}};
 	ciri= {8{PVOID}}; 
 	cili= {8{PVOID}};
 	cirrui= {7{PVOID}}; 
 	cirui= {7{PVOID}}; 
-	ciui= {7{PVOID}}; 
 	cilui= {7{PVOID}}; 
 	cillui= {7{PVOID}};
 	ciruui= {6{PVOID}}; 
@@ -107,6 +114,10 @@ initial begin
 	
 	// no hold
 	chdiri = 8'd0;
+	
+	// wait for one cycle and set reset to 0
+	@(posedge clk) #10;
+	reset = 1'b0;
 	
 	// wait for output
 	repeat (NCIO) @(posedge clk); #10 

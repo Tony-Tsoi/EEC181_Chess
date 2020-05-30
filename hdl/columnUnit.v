@@ -1,7 +1,7 @@
 module columnUnit (clk, colstate, xpos, reset, done, chdiri,
-cirrdi, cirrui, cirddi, cirdi, ciri, cirui, ciruui, cidi, ciui, cilddi, cildi, 
+cirrdi, cirrui, cirddi, cirdi, ciri, cirui, ciruui, cilddi, cildi, 
 cili, cilui, ciluui, cilldi, cillui,
-colluo, colldo, coluuo, coluo, colo, coldo, colddo, couo, codo, coruuo, coruo, 
+colluo, colldo, coluuo, coluo, colo, coldo, colddo, coruuo, coruo, 
 coro, cordo, corddo, corruo, corrdo,
 chluo, chruo, chlo, chro, chldo, chrdo,
 fifoOut, fifoEmpty, rden
@@ -28,9 +28,9 @@ input [31:0] colstate; // column piece states
 
 // input signals from neightboring columns
 input [53:0] cirddi, cilddi;
-input [62:0] cirrdi, cirdi, cidi, cildi, cilldi;
+input [62:0] cirrdi, cirdi, cildi, cilldi;
 input [71:0] ciri, cili;
-input [71:9] cirrui, cirui, ciui, cilui, cillui;
+input [71:9] cirrui, cirui, cilui, cillui;
 input [71:18] ciruui, ciluui;
 
 // input signals to hold the done flags
@@ -38,9 +38,9 @@ input [8:1] chdiri;
 
 // output signals to neightboring columns
 output [53:0] coluuo, coruuo;
-output [62:0] colluo, coluo, couo, coruo, corruo;
+output [62:0] colluo, coluo, coruo, corruo;
 output [71:0] colo, coro;
-output [71:9] colldo, coldo, codo, cordo, corrdo;
+output [71:9] colldo, coldo, cordo, corrdo;
 output [71:18] colddo, corddo;
 
 // output signals to hold from done flags
@@ -56,6 +56,10 @@ output [159:0] fifoOut;
 
 // column fifo empty flag
 output fifoEmpty;
+
+// internal wiring
+wire [62:0] couo, cidi;
+wire [71:9] codo, ciui;
 
 // cpieces of each square
 wire [3:0] cpiece_8 = colstate[31:28];
@@ -120,6 +124,10 @@ wire [159:0] wr1 = (sq_move_ptr == 3'd7)? fifoOut_sq8 :
 	(sq_move_ptr == 3'd1)? fifoOut_sq2 : fifoOut_sq1;
 My_FIFO F1F0 (.clock(clk), .data(wr1), .q(fifoOut), .wrreq(wren1), .rdreq(rden), .empty(fifoEmpty), .sclr(reset),
 	.usedw(), .full());
+	
+// up down wiring
+assign ciui[71:9] = couo[62:0];
+assign cidi[62:0] = codo[71:9];
 
 // next state logic
 always @(*) begin
@@ -137,6 +145,13 @@ always @(*) begin
 					sq_rden_c = 8'h80;
 					wren1_c = 1'b1;
 				end
+				
+				// if it's done but it's also empty, just skip polling it
+				if (sqEmpty[7]) begin
+					sq_moved_flags_c[8] = 1'b1;
+					wren1_c = 1'b0;
+					state_c = WAIT;
+				end
 			
 			if (done_sqs[7])
 				if (~sq_moved_flags[7]) begin
@@ -144,6 +159,12 @@ always @(*) begin
 					sq_move_ptr_c = 3'd6;
 					sq_rden_c = 8'h40;
 					wren1_c = 1'b1;
+				end
+				
+				if (sqEmpty[6]) begin
+					sq_moved_flags_c[7] = 1'b1;
+					wren1_c = 1'b0;
+					state_c = WAIT;
 				end
 			
 			if (done_sqs[6])
@@ -153,6 +174,12 @@ always @(*) begin
 					sq_rden_c = 8'h20;
 					wren1_c = 1'b1;
 				end
+				
+				if (sqEmpty[5]) begin
+					sq_moved_flags_c[6] = 1'b1;
+					wren1_c = 1'b0;
+					state_c = WAIT;
+				end
 			
 			if (done_sqs[5])
 				if (~sq_moved_flags[5]) begin
@@ -160,6 +187,12 @@ always @(*) begin
 					sq_move_ptr_c = 3'd4;
 					sq_rden_c = 8'h10;
 					wren1_c = 1'b1;
+				end
+				
+				if (sqEmpty[4]) begin
+					sq_moved_flags_c[5] = 1'b1;
+					wren1_c = 1'b0;
+					state_c = WAIT;
 				end
 			
 			if (done_sqs[4])
@@ -169,6 +202,12 @@ always @(*) begin
 					sq_rden_c = 8'h08;
 					wren1_c = 1'b1;
 				end
+				
+				if (sqEmpty[3]) begin
+					sq_moved_flags_c[4] = 1'b1;
+					wren1_c = 1'b0;
+					state_c = WAIT;
+				end
 			
 			if (done_sqs[3])
 				if (~sq_moved_flags[3]) begin
@@ -176,6 +215,12 @@ always @(*) begin
 					sq_move_ptr_c = 3'd2;
 					sq_rden_c = 8'h04;
 					wren1_c = 1'b1;
+				end
+				
+				if (sqEmpty[2]) begin
+					sq_moved_flags_c[3] = 1'b1;
+					wren1_c = 1'b0;
+					state_c = WAIT;
 				end
 			
 			if (done_sqs[2])
@@ -185,6 +230,12 @@ always @(*) begin
 					sq_rden_c = 8'h02;
 					wren1_c = 1'b1;
 				end
+				
+				if (sqEmpty[1]) begin
+					sq_moved_flags_c[2] = 1'b1;
+					wren1_c = 1'b0;
+					state_c = WAIT;
+				end
 			
 			if (done_sqs[1])
 				if (~sq_moved_flags[1]) begin
@@ -192,6 +243,12 @@ always @(*) begin
 					sq_move_ptr_c = 3'd0;
 					sq_rden_c = 8'h01;
 					wren1_c = 1'b1;
+				end
+				
+				if (sqEmpty[0]) begin
+					sq_moved_flags_c[1] = 1'b1;
+					wren1_c = 1'b0;
+					state_c = WAIT;
 				end
 			
 			if (&{sq_moved_flags}) // if all squares grabbed move
@@ -217,7 +274,7 @@ end
 
 // FF for next state
 always @(posedge clk) begin
-	state <= reset? WAIT : state_c;
+	state <= reset ? WAIT : state_c;
 	sq_rden <= sq_rden_c;
 	sq_move_ptr <= sq_move_ptr_c;
 	sq_moved_flags <= sq_moved_flags_c;
