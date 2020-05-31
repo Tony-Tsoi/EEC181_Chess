@@ -26,6 +26,9 @@ LMG DUT (.clk(clk), .reset(reset), .bstate(bstate), .done(done), .fifoOut(fifoOu
 
 // to read from file
 integer inFile;
+
+// count number of moves
+integer tMoves;
 	
 // clock period: #100
 reg clk_rst;
@@ -57,6 +60,9 @@ initial begin
 	$fscanf(inFile, "%b", bstate);
 	$fclose(inFile);
 	
+	// set number of moves to zero
+	tMoves = 0;
+	
 	// wait for one cycle and set reset to 0
 	@(posedge clk) #10;
 	reset = 1'b0;
@@ -70,9 +76,44 @@ initial begin
 	rden = 1'b1; #10
 	while (!fifoEmpty) begin
 		@(posedge clk) #10;
+		
+		// display valid moves to console
+		if (~fifoMv1[18]) begin
+			$write("From %o to %o\n", fifoMv1[11:6], fifoMv1[5:0]);
+			tMoves = tMoves + 1;
+		end
+		if (~fifoMv2[18]) begin
+			$write("From %o to %o\n", fifoMv2[11:6], fifoMv2[5:0]);
+			tMoves = tMoves + 1;
+		end
+		if (~fifoMv3[18]) begin
+			$write("From %o to %o\n", fifoMv3[11:6], fifoMv3[5:0]);
+			tMoves = tMoves + 1;
+		end
+		if (~fifoMv4[18]) begin
+			$write("From %o to %o\n", fifoMv4[11:6], fifoMv4[5:0]);
+			tMoves = tMoves + 1;
+		end
+		if (~fifoMv5[18]) begin
+			$write("From %o to %o\n", fifoMv5[11:6], fifoMv5[5:0]);
+			tMoves = tMoves + 1;
+		end
+		if (~fifoMv6[18]) begin
+			$write("From %o to %o\n", fifoMv6[11:6], fifoMv6[5:0]);
+			tMoves = tMoves + 1;
+		end
+		if (~fifoMv7[18]) begin
+			$write("From %o to %o\n", fifoMv7[11:6], fifoMv7[5:0]);
+			tMoves = tMoves + 1;
+		end
+		if (~fifoMv8[18]) begin
+			$write("From %o to %o\n", fifoMv8[11:6], fifoMv8[5:0]);
+			tMoves = tMoves + 1;
+		end
 	end
 	
 	// end simulation
+	$write("Total number of moves = %d\n", tMoves);
 	$stop; // For ModelSim
 end
 
