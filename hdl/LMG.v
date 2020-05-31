@@ -70,7 +70,6 @@ wire [31:0] colstate_g = {bstate[251:248], bstate[219:216], bstate[187:184], bst
 wire [31:0] colstate_h = {bstate[255:252], bstate[223:220], bstate[191:188], bstate[159:156], 
 	bstate[127:124], bstate[95:92], bstate[63:60], bstate[31:28]};
 
-
 wire [151:0] gcas_wr1;
 reg [151:0] genp_wr1, genp_wr1_c;
 
@@ -221,69 +220,118 @@ always @(*) begin
 		end
 		WAIT: begin
 			// if a done signal is up and is not grabbed to FIFO
-			if (done_cols[8])
+			if (done_cols[8]) begin
 				if (~col_moved_flags[8]) begin
 					state_c = GETM;
 					col_move_ptr_c = 3'd7;
 					col_rden_c = 8'h80;
 					wren1_c = 1'b1;
 				end
+				
+				// if it's done but it's also empty, just skip polling it
+				if (colEmpty[7] == 1'b1) begin
+					col_moved_flags_c[8] = 1'b1;
+					wren1_c = 1'b0;
+				end
+			end
 			
-			if (done_cols[7])
+			if (done_cols[7]) begin
 				if (~col_moved_flags[7]) begin
 					state_c = GETM;
 					col_move_ptr_c = 3'd6;
 					col_rden_c = 8'h40;
 					wren1_c = 1'b1;
 				end
+				
+				if (colEmpty[6] == 1'b1) begin
+					col_moved_flags_c[7] = 1'b1;
+					wren1_c = 1'b0;
+				end
+			end
 			
-			if (done_cols[6])
+			if (done_cols[6]) begin
 				if (~col_moved_flags[6]) begin
 					state_c = GETM;
 					col_move_ptr_c = 3'd5;
 					col_rden_c = 8'h20;
 					wren1_c = 1'b1;
 				end
+				
+				if (colEmpty[5] == 1'b1) begin
+					col_moved_flags_c[6] = 1'b1;
+					wren1_c = 1'b0;
+				end
+			end
 			
-			if (done_cols[5])
+			if (done_cols[5]) begin
 				if (~col_moved_flags[5]) begin
 					state_c = GETM;
 					col_move_ptr_c = 3'd4;
 					col_rden_c = 8'h10;
 					wren1_c = 1'b1;
 				end
+				
+				if (colEmpty[4] == 1'b1) begin
+					col_moved_flags_c[5] = 1'b1;
+					wren1_c = 1'b0;
+				end
+			end
 			
-			if (done_cols[4])
+			if (done_cols[4]) begin
 				if (~col_moved_flags[4]) begin
 					state_c = GETM;
 					col_move_ptr_c = 3'd3;
 					col_rden_c = 8'h08;
 					wren1_c = 1'b1;
 				end
+				
+				if (colEmpty[3] == 1'b1) begin
+					col_moved_flags_c[4] = 1'b1;
+					wren1_c = 1'b0;
+				end
+			end
 			
-			if (done_cols[3])
+			if (done_cols[3]) begin
 				if (~col_moved_flags[3]) begin
 					state_c = GETM;
 					col_move_ptr_c = 3'd2;
 					col_rden_c = 8'h04;
 					wren1_c = 1'b1;
 				end
+				
+				if (colEmpty[2] == 1'b1) begin
+					col_moved_flags_c[3] = 1'b1;
+					wren1_c = 1'b0;
+				end
+			end
 			
-			if (done_cols[2])
+			if (done_cols[2]) begin
 				if (~col_moved_flags[2]) begin
 					state_c = GETM;
 					col_move_ptr_c = 3'd1;
 					col_rden_c = 8'h02;
 					wren1_c = 1'b1;
 				end
+				
+				if (colEmpty[1] == 1'b1) begin
+					col_moved_flags_c[2] = 1'b1;
+					wren1_c = 1'b0;
+				end
+			end
 			
-			if (done_cols[1])
+			if (done_cols[1]) begin
 				if (~col_moved_flags[1]) begin
 					state_c = GETM;
 					col_move_ptr_c = 3'd0;
 					col_rden_c = 8'h01;
 					wren1_c = 1'b1;
 				end
+				
+				if (colEmpty[0] == 1'b1) begin
+					col_moved_flags_c[1] = 1'b1;
+					wren1_c = 1'b0;
+				end
+			end
 			
 			if (&{col_moved_flags}) // if all columns grabbed move
 				state_c = DONE;
@@ -454,6 +502,115 @@ wire [71:18] colddo_h;
 wire [7:1] chluo_h, chruo_h;
 wire [8:1] chlo_h, chro_h;
 wire [8:2] chldo_h, chrdo_h;
+
+// I to O wiring
+assign cillui_a = colluo_c;
+assign cillui_b = colluo_d;
+assign cillui_c = colluo_e;
+assign cillui_d = colluo_f;
+assign cillui_e = colluo_g;
+assign cillui_f = colluo_h;
+
+assign cilldi_a = colldo_c;
+assign cilldi_b = colldo_d;
+assign cilldi_c = colldo_e;
+assign cilldi_d = colldo_f;
+assign cilldi_e = colldo_g;
+assign cilldi_f = colldo_h;
+
+assign ciluui_a = coluuo_b;
+assign ciluui_b = coluuo_c;
+assign ciluui_c = coluuo_d;
+assign ciluui_d = coluuo_e;
+assign ciluui_e = coluuo_f;
+assign ciluui_f = coluuo_g;
+assign ciluui_g = coluuo_h;
+
+assign cilui_a = coluo_b;
+assign cilui_b = coluo_c;
+assign cilui_c = coluo_d;
+assign cilui_d = coluo_e;
+assign cilui_e = coluo_f;
+assign cilui_f = coluo_g;
+assign cilui_g = coluo_h;
+
+assign cili_a = colo_b;
+assign cili_b = colo_c;
+assign cili_c = colo_d;
+assign cili_d = colo_e;
+assign cili_e = colo_f;
+assign cili_f = colo_g;
+assign cili_g = colo_h;
+
+assign cildi_a = coldo_b;
+assign cildi_b = coldo_c;
+assign cildi_c = coldo_d;
+assign cildi_d = coldo_e;
+assign cildi_e = coldo_f;
+assign cildi_f = coldo_g;
+assign cildi_g = coldo_h;
+
+assign cilddi_a = colddo_b;
+assign cilddi_b = colddo_c;
+assign cilddi_c = colddo_d;
+assign cilddi_d = colddo_e;
+assign cilddi_e = colddo_f;
+assign cilddi_f = colddo_g;
+assign cilddi_g = colddo_h;
+
+assign ciruui_b = coruuo_a;
+assign ciruui_c = coruuo_b;
+assign ciruui_d = coruuo_c;
+assign ciruui_e = coruuo_d;
+assign ciruui_f = coruuo_e;
+assign ciruui_g = coruuo_f;
+assign ciruui_h = coruuo_g;
+
+assign cirui_b = coruo_a;
+assign cirui_c = coruo_b;
+assign cirui_d = coruo_c;
+assign cirui_e = coruo_d;
+assign cirui_f = coruo_e;
+assign cirui_g = coruo_f;
+assign cirui_h = coruo_g;
+
+assign ciri_b = coro_a;
+assign ciri_c = coro_b;
+assign ciri_d = coro_c;
+assign ciri_e = coro_d;
+assign ciri_f = coro_e;
+assign ciri_g = coro_f;
+assign ciri_h = coro_g;
+
+assign cirdi_b = cordo_a;
+assign cirdi_c = cordo_b;
+assign cirdi_d = cordo_c;
+assign cirdi_e = cordo_d;
+assign cirdi_f = cordo_e;
+assign cirdi_g = cordo_f;
+assign cirdi_h = cordo_g;
+
+assign cirddi_b = corddo_a;
+assign cirddi_c = corddo_b;
+assign cirddi_d = corddo_c;
+assign cirddi_e = corddo_d;
+assign cirddi_f = corddo_e;
+assign cirddi_g = corddo_f;
+assign cirddi_h = corddo_g;
+
+assign cirrui_c = coruuo_a;
+assign cirrui_d = coruuo_b;
+assign cirrui_e = coruuo_c;
+assign cirrui_f = coruuo_d;
+assign cirrui_g = coruuo_e;
+assign cirrui_h = coruuo_f;
+
+assign cirrdi_c = corrdo_a;
+assign cirrdi_d = corrdo_b;
+assign cirrdi_e = corrdo_c;
+assign cirrdi_f = corrdo_d;
+assign cirrdi_g = corrdo_e;
+assign cirrdi_h = corrdo_f;
 
 // only to top left or bottom right holds
 wire [8:1] chlurdi_a, chlurdi_b, chlurdi_c, chlurdi_d, chlurdi_e, chlurdi_f, chlurdi_g, chlurdi_h;

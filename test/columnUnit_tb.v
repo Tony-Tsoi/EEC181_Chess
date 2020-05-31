@@ -56,6 +56,16 @@ wire [159:0] fifoOut;
 // column fifo empty flag
 wire fifoEmpty;
 
+// for clarity
+wire [18:0] fifoMv1 = fifoOut[151:133];
+wire [18:0] fifoMv2 = fifoOut[132:114];
+wire [18:0] fifoMv3 = fifoOut[113:95];
+wire [18:0] fifoMv4 = fifoOut[94:76];
+wire [18:0] fifoMv5 = fifoOut[75:57];
+wire [18:0] fifoMv6 = fifoOut[56:38];
+wire [18:0] fifoMv7 = fifoOut[37:19];
+wire [18:0] fifoMv8 = fifoOut[18:0];
+
 columnUnit DUT (.clk(clk), .colstate(colstate), .xpos(xpos), .reset(reset), .done(done), .chdiri(chdiri),
 	.cirrdi(cirrdi), .cirrui(cirrui), .cirddi(cirddi), .cirdi(cirdi), .ciri(ciri), .cirui(cirui), .ciruui(ciruui), 
 	.cilddi(cilddi), .cildi(cildi), .cili(cili), .cilui(cilui), .ciluui(ciluui), .cilldi(cilldi), 
