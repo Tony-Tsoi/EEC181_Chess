@@ -90,7 +90,7 @@ assign holds[2] = |{chuo[  1], chdo[8:3], chdiri[2]};
 assign holds[1] = |{           chdo[8:2], chdiri[1]};
 
 // moves transferred to local fifo flag
-reg [8:1] sq_moved_flags, sq_moved_flags_c;
+reg [7:0] sq_moved_flags, sq_moved_flags_c;
 
 // pointer for GETM state
 reg [2:0] sq_move_ptr, sq_move_ptr_c;
@@ -140,7 +140,7 @@ always @(*) begin
 		WAIT: begin
 			// if a done signal is up and is not grabbed to FIFO
 			if (done_sqs[8] == 1'b1) begin
-				if (sq_moved_flags[8] == 1'b0) begin
+				if (sq_moved_flags[7] == 1'b0) begin
 					state_c = GETM;
 					sq_move_ptr_c = 3'd7;
 					sq_rden_c = 8'h80;
@@ -149,13 +149,13 @@ always @(*) begin
 				
 				// if it's done but it's also empty, just skip polling it
 				if (sqEmpty[7] == 1'b1) begin
-					sq_moved_flags_c[8] = 1'b1;
+					sq_moved_flags_c[7] = 1'b1;
 					wren1_c = 1'b0;
 				end
 			end
 			
 			if (done_sqs[7] == 1'b1) begin
-				if (sq_moved_flags[7] == 1'b0) begin
+				if (sq_moved_flags[6] == 1'b0) begin
 					state_c = GETM;
 					sq_move_ptr_c = 3'd6;
 					sq_rden_c = 8'h40;
@@ -163,13 +163,13 @@ always @(*) begin
 				end
 				
 				if (sqEmpty[6] == 1'b1) begin
-					sq_moved_flags_c[7] = 1'b1;
+					sq_moved_flags_c[6] = 1'b1;
 					wren1_c = 1'b0;
 				end
 			end
 			
 			if (done_sqs[6] == 1'b1) begin
-				if (sq_moved_flags[6] == 1'b0) begin
+				if (sq_moved_flags[5] == 1'b0) begin
 					state_c = GETM;
 					sq_move_ptr_c = 3'd5;
 					sq_rden_c = 8'h20;
@@ -177,13 +177,13 @@ always @(*) begin
 				end
 				
 				if (sqEmpty[5] == 1'b1) begin
-					sq_moved_flags_c[6] = 1'b1;
+					sq_moved_flags_c[5] = 1'b1;
 					wren1_c = 1'b0;
 				end
 			end
 			
 			if (done_sqs[5] == 1'b1) begin
-				if (sq_moved_flags[5] == 1'b0) begin
+				if (sq_moved_flags[4] == 1'b0) begin
 					state_c = GETM;
 					sq_move_ptr_c = 3'd4;
 					sq_rden_c = 8'h10;
@@ -191,13 +191,13 @@ always @(*) begin
 				end
 				
 				if (sqEmpty[4] == 1'b1) begin
-					sq_moved_flags_c[5] = 1'b1;
+					sq_moved_flags_c[4] = 1'b1;
 					wren1_c = 1'b0;
 				end
 			end
 			
 			if (done_sqs[4] == 1'b1) begin
-				if (sq_moved_flags[4] == 1'b0) begin
+				if (sq_moved_flags[3] == 1'b0) begin
 					state_c = GETM;
 					sq_move_ptr_c = 3'd3;
 					sq_rden_c = 8'h08;
@@ -205,13 +205,13 @@ always @(*) begin
 				end
 				
 				if (sqEmpty[3] == 1'b1) begin
-					sq_moved_flags_c[4] = 1'b1;
+					sq_moved_flags_c[3] = 1'b1;
 					wren1_c = 1'b0;
 				end
 			end
 			
 			if (done_sqs[3] == 1'b1) begin
-				if (~sq_moved_flags[3] == 1'b1) begin
+				if (~sq_moved_flags[2] == 1'b1) begin
 					state_c = GETM;
 					sq_move_ptr_c = 3'd2;
 					sq_rden_c = 8'h04;
@@ -219,13 +219,13 @@ always @(*) begin
 				end
 				
 				if (sqEmpty[2] == 1'b1) begin
-					sq_moved_flags_c[3] = 1'b1;
+					sq_moved_flags_c[2] = 1'b1;
 					wren1_c = 1'b0;
 				end
 			end
 			
 			if (done_sqs[2] == 1'b1) begin
-				if (~sq_moved_flags[2] == 1'b1) begin
+				if (~sq_moved_flags[1] == 1'b1) begin
 					state_c = GETM;
 					sq_move_ptr_c = 3'd1;
 					sq_rden_c = 8'h02;
@@ -233,13 +233,13 @@ always @(*) begin
 				end
 				
 				if (sqEmpty[1] == 1'b1) begin
-					sq_moved_flags_c[2] = 1'b1;
+					sq_moved_flags_c[1] = 1'b1;
 					wren1_c = 1'b0;
 				end
 			end
 			
 			if (done_sqs[1] == 1'b1) begin
-				if (~sq_moved_flags[1] == 1'b1) begin
+				if (~sq_moved_flags[0] == 1'b1) begin
 					state_c = GETM;
 					sq_move_ptr_c = 3'd0;
 					sq_rden_c = 8'h01;
@@ -247,7 +247,7 @@ always @(*) begin
 				end
 				
 				if (sqEmpty[0] == 1'b1) begin
-					sq_moved_flags_c[1] = 1'b1;
+					sq_moved_flags_c[0] = 1'b1;
 					wren1_c = 1'b0;
 				end
 			end
