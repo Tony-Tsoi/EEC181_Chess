@@ -2,8 +2,6 @@
 
 module lmg_tb();
 
-parameter NCIO = 650; // number of cycles from input to output
-
 // IO of module
 reg clk, reset, rden, lcas_flag, rcas_flag;
 reg [255:0] bstate; // board state
@@ -25,6 +23,9 @@ wire [18:0] fifoMv8 = fifoOut[18:0];
 LMG DUT (.clk(clk), .reset(reset), .bstate(bstate), .done(done), .fifoOut(fifoOut), 
 	.rden(rden), .fifoEmpty(fifoEmpty), .lcas_flag(lcas_flag), .rcas_flag(rcas_flag), 
 	.enp_flags(enp_flags) );
+
+// to read from file
+integer inFile;
 	
 // clock period: #100
 reg clk_rst;
@@ -51,15 +52,19 @@ initial begin
 	rcas_flag = 1'b0;
 	enp_flags = 8'd0;
 	
-	// board state = empty
-	bstate = 256'd0;
+	// read board state from file
+	inFile = $fopen("./bstate.txt", "r");
+	$fscanf(inFile, "%b", bstate);
+	$fclose(inFile);
 	
 	// wait for one cycle and set reset to 0
 	@(posedge clk) #10;
 	reset = 1'b0;
 	
 	// wait for output
-	repeat (NCIO) @(posedge clk); #10 
+	while (!done) begin
+		@(posedge clk) #10;
+	end
 	
 	// stream output
 	rden = 1'b1; #10
