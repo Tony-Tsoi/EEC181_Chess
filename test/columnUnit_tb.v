@@ -29,17 +29,17 @@ reg [31:0] colstate; // column piece states
 
 // input signals from neightboring columns
 reg [53:0] cirddi, cilddi;
-reg [62:0] cirrdi, cirdi, cidi, cildi, cilldi;
+reg [62:0] cirrdi, cirdi, cildi, cilldi;
 reg [71:0] ciri, cili;
-reg [71:9] cirrui, cirui, ciui, cilui, cillui;
+reg [71:9] cirrui, cirui, cilui, cillui;
 reg [71:18] ciruui, ciluui;
 reg [8:1] chdiri;
 
 // output signals to neightboring columns
 wire [53:0] coluuo, coruuo;
-wire [62:0] colluo, coluo, couo, coruo, corruo;
+wire [62:0] colluo, coluo, coruo, corruo;
 wire [71:0] colo, coro;
-wire [71:9] colldo, coldo, codo, cordo, corrdo;
+wire [71:9] colldo, coldo, cordo, corrdo;
 wire [71:18] colddo, corddo;
 
 // output signals to hold from done flags
@@ -123,7 +123,7 @@ initial begin
 	repeat (NCIO) @(posedge clk); #10 
 	
 	// stream output
-	rden = 1'b1;
+	rden = 1'b1; #10
 	while (!fifoEmpty) begin
 		@(posedge clk) #10;
 	end
