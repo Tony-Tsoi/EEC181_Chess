@@ -155,14 +155,14 @@ always @(*) begin
 					oro_c = {xpos, ypos, ROOK};
 				end
 				QUEEN, KING: begin
-					oluo_c = {xpos, ypos, QUEEN};
-					olo_c = {xpos, ypos, QUEEN};
-					oldo_c = {xpos, ypos, QUEEN};
-					ouo_c = {xpos, ypos, QUEEN};
-					odo_c = {xpos, ypos, QUEEN};
-					oruo_c = {xpos, ypos, QUEEN};
-					oro_c = {xpos, ypos, QUEEN};
-					ordo_c = {xpos, ypos, QUEEN};
+					oluo_c = {xpos, ypos, cpiece[2:0]};
+					olo_c = {xpos, ypos, cpiece[2:0]};
+					oldo_c = {xpos, ypos, cpiece[2:0]};
+					ouo_c = {xpos, ypos, cpiece[2:0]};
+					odo_c = {xpos, ypos, cpiece[2:0]};
+					oruo_c = {xpos, ypos, cpiece[2:0]};
+					oro_c = {xpos, ypos, cpiece[2:0]};
+					ordo_c = {xpos, ypos, cpiece[2:0]};
 				end
 				default: begin end // EMPTY, NOTUSED case
 				endcase
@@ -173,12 +173,10 @@ always @(*) begin
 			if ((hold == 1'b0) && (wren == 1'b0))
 				state_c = GKNI;
 			
-			// PAWN case
 			if (cpiece[2:0] == EMPTY) begin
-				// if current place is empty, pawn can move up
+				// if current place is empty, can move up
 				if (iui[2:0] != EMPTY) begin
 					mvu = {7'b0010000, iui[8:3], xpos, ypos};
-					
 					
 					if (ypos == ROW4)
 						mvu = {7'b0011000, iui[8:3], xpos, ypos};
@@ -191,7 +189,7 @@ always @(*) begin
 				end 
 			end else begin
 				if (cpiece[3] == BLACK) begin
-					// if current place isn't empty and is of opposite, pawn en passant capture
+					// if current place isn't empty and is of opposite, pawn capture
 					if (irui[2:0] == PAWN) begin
 						mvru = {7'b0010001, irui[8:3], xpos, ypos};
 					end
@@ -201,16 +199,16 @@ always @(*) begin
 				end
 			end
 			
-			// RU and LU is available for pawn, if can take current piece
+			// RU and LU is available for non pawn to move in
 			if (irui[2:0] != EMPTY) begin
 				if ((cpiece[2:0] == EMPTY) && (irui[2:0] != PAWN)) begin
 					mvru = {6'o00, capb, irui[8:3], xpos, ypos};
 					
-					if ((irui[2:0] == BISHOP) && (irui[2:0] == QUEEN))
+					if ((irui[2:0] == BISHOP) || (irui[2:0] == QUEEN))
 						// if bishop or queen, propagate diag
 						oruo_c = irui;
 				end
-				if (capb) begin
+				if ((capb) && (cpiece[2:0] != EMPTY) && (irui[2:0] != PAWN)) begin
 					mvru = {6'o00, capb, irui[8:3], xpos, ypos};
 				end
 			end
@@ -219,11 +217,11 @@ always @(*) begin
 				if ((cpiece[2:0] == EMPTY) && (ilui[2:0] != PAWN)) begin
 					mvlu = {6'o00, capb, ilui[8:3], xpos, ypos};
 					
-					if ((ilui[2:0] == BISHOP) && (ilui[2:0] == QUEEN))
+					if ((ilui[2:0] == BISHOP) || (ilui[2:0] == QUEEN))
 						// if bishop or queen, propagate diag
 						oruo_c = ilui;
 				end
-				if (capb) begin
+				if ((capb) && (cpiece[2:0] != EMPTY) && (ilui[2:0] != PAWN)) begin
 					mvlu = {6'o00, capb, ilui[8:3], xpos, ypos};
 				end
 			end
@@ -233,11 +231,11 @@ always @(*) begin
 				if (cpiece[2:0] == EMPTY) begin
 					mvu = {2'b00, (iui[2:0] == PAWN), 3'o0, capb, iui[8:3], xpos, ypos};
 					
-					if ((iui[2:0] == BISHOP) && (iui[2:0] == QUEEN))
-						// if bishop or queen, propagate diag
+					if ((iui[2:0] == BISHOP) || (iui[2:0] == QUEEN) || (iui[2:0] == ROOK))
+						// if bishop, queen or rook, propagate left right
 						oruo_c = irui;
 				end
-				if ((capb) && (iui[2:0] != PAWN)) begin
+				if ((capb) && (cpiece[2:0] != EMPTY) && (iui[2:0] != PAWN)) begin
 					mvu = {6'o00, capb, iui[8:3], xpos, ypos};
 				end
 			end
@@ -247,7 +245,7 @@ always @(*) begin
 				if (cpiece[2:0] == EMPTY) begin
 					mvrd = {6'o00, capb, irdi[8:3], xpos, ypos};
 					
-					if ((irdi[2:0] == BISHOP) && (irdi[2:0] == QUEEN))
+					if ((irdi[2:0] == BISHOP) || (irdi[2:0] == QUEEN))
 						// if bishop or queen, propagate diag
 						ordo_c = irdi;
 				end
@@ -260,7 +258,7 @@ always @(*) begin
 				if (cpiece[2:0] == EMPTY) begin
 					mvld = {6'o00, capb, ildi[8:3], xpos, ypos};
 					
-					if ((ildi[2:0] == BISHOP) && (ildi[2:0] == QUEEN))
+					if ((ildi[2:0] == BISHOP) || (ildi[2:0] == QUEEN))
 						// if bishop or queen, propagate diag
 						oldo_c = ildi;
 				end
@@ -273,8 +271,8 @@ always @(*) begin
 				if (cpiece[2:0] == EMPTY) begin
 					mvd = {6'o00, capb, idi[8:3], xpos, ypos};
 					
-					if ((idi[2:0] == BISHOP) && (idi[2:0] == QUEEN))
-						// if bishop or queen, propagate diag
+					if ((idi[2:0] == BISHOP) || (idi[2:0] == QUEEN) || (idi[2:0] == ROOK))
+						// if bishop, queen or rook, propagate up down
 						odo_c = idi;
 				end
 				if (capb) begin
@@ -286,8 +284,8 @@ always @(*) begin
 				if (cpiece[2:0] == EMPTY) begin
 					mvr = {6'o00, capb, iri[8:3], xpos, ypos};
 
-					if ((iri[2:0] == BISHOP) && (iri[2:0] == QUEEN))
-						// if bishop or queen, propagate diag
+					if ((iri[2:0] == BISHOP) || (iri[2:0] == QUEEN) || (iri[2:0] == ROOK))
+						// if bishop, queen or rook, propagate left right
 						oro_c = iri;
 				end
 				if (capb) begin
@@ -299,8 +297,8 @@ always @(*) begin
 				if (cpiece[2:0] == EMPTY) begin
 					mvl = {6'o00, capb, ili[8:3], xpos, ypos};
 					
-					if ((ili[2:0] == BISHOP) && (ili[2:0] == QUEEN))
-						// if bishop or queen, propagate diag
+					if ((ili[2:0] == BISHOP) || (ili[2:0] == QUEEN) || (ili[2:0] == ROOK))
+						// if bishop, queen or rook, propagate left right
 						olo_c = ili;
 				end
 				if (capb) begin

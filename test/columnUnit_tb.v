@@ -97,14 +97,14 @@ initial begin
 	
 	// column state
 	colstate = {
-		BLACK, QUEEN,
-		BLACK, PAWN,
+		BLACK, EMPTY,
+		BLACK, EMPTY,
 		WHITE, EMPTY,
 		WHITE, EMPTY,
 		WHITE, EMPTY,
 		WHITE, EMPTY,
-		WHITE, PAWN,
-		WHITE, BISHOP };
+		WHITE, EMPTY,
+		BLACK, EMPTY };
 	
 	// no neighbor inputs
 	cirddi = {6{PVOID}}; 
@@ -114,7 +114,7 @@ initial begin
 	cildi= {7{PVOID}}; 
 	cilldi= {7{PVOID}};
 	ciri= {8{PVOID}}; 
-	cili= {8{PVOID}};
+	cili= {8{PVOID}}; //
 	cirrui= {7{PVOID}}; 
 	cirui= {7{PVOID}}; 
 	cilui= {7{PVOID}}; 

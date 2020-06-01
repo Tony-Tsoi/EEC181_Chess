@@ -50,10 +50,10 @@ initial begin
 	reset = 1'b1;
 	rden = 1'b0;
 	
-	// disable flags
+	// enable all flags
 	lcas_flag = 1'b0;
 	rcas_flag = 1'b0;
-	enp_flags = 8'd0;
+	enp_flags = 8'hff;
 	
 	// read board state from file
 	inFile = $fopen("./bstate.txt", "r");

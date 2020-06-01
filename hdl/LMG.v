@@ -1,6 +1,6 @@
 module LMG (clk, reset, bstate, done, fifoOut, rden, fifoEmpty,
 	lcas_flag, rcas_flag, enp_flags);
-// TODO: potential neighbor wiring not connected
+// TODO: castling does not work, possible deprecation
 
 // 19 bit output per move from fifoOut has the following format:
 // [7b flag][6b from][6b to]
