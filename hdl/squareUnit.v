@@ -219,7 +219,7 @@ always @(*) begin
 					
 					if ((ilui[2:0] == BISHOP) || (ilui[2:0] == QUEEN))
 						// if bishop or queen, propagate diag
-						oruo_c = ilui;
+						oluo_c = ilui;
 				end
 				if ((capb) && (cpiece[2:0] != EMPTY) && (ilui[2:0] != PAWN)) begin
 					mvlu = {6'o00, capb, ilui[8:3], xpos, ypos};
@@ -233,7 +233,7 @@ always @(*) begin
 					
 					if ((iui[2:0] == BISHOP) || (iui[2:0] == QUEEN) || (iui[2:0] == ROOK))
 						// if bishop, queen or rook, propagate left right
-						oruo_c = irui;
+						ouo_c = iui;
 				end
 				if ((capb) && (cpiece[2:0] != EMPTY) && (iui[2:0] != PAWN)) begin
 					mvu = {6'o00, capb, iui[8:3], xpos, ypos};

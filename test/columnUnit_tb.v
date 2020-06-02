@@ -66,6 +66,9 @@ wire [18:0] fifoMv6 = fifoOut[56:38];
 wire [18:0] fifoMv7 = fifoOut[37:19];
 wire [18:0] fifoMv8 = fifoOut[18:0];
 
+// count number of moves
+integer tMoves;
+
 columnUnit DUT (.clk(clk), .colstate(colstate), .xpos(xpos), .reset(reset), .done(done), .chdiri(chdiri),
 	.cirrdi(cirrdi), .cirrui(cirrui), .cirddi(cirddi), .cirdi(cirdi), .ciri(ciri), .cirui(cirui), .ciruui(ciruui), 
 	.cilddi(cilddi), .cildi(cildi), .cili(cili), .cilui(cilui), .ciluui(ciluui), .cilldi(cilldi), 
@@ -114,7 +117,7 @@ initial begin
 	cildi= {7{PVOID}}; 
 	cilldi= {7{PVOID}};
 	ciri= {8{PVOID}}; 
-	cili= {8{PVOID}}; //
+	cili= {{7{PVOID}}, 6'o70, ROOK};
 	cirrui= {7{PVOID}}; 
 	cirui= {7{PVOID}}; 
 	cilui= {7{PVOID}}; 
@@ -124,21 +127,65 @@ initial begin
 	
 	// no hold
 	chdiri = 8'd0;
+
+	// set number of moves to zero
+	tMoves = 0;
 	
 	// wait for one cycle and set reset to 0
 	@(posedge clk) #10;
 	reset = 1'b0;
 	
+	// wait for 5 cycles and set cili to 8*PVOID
+	repeat (5) @(posedge clk) #10;
+	cili = {8{PVOID}}; #10
+	
 	// wait for output
-	repeat (NCIO) @(posedge clk); #10 
+	while (!done) begin
+		@(posedge clk) #10;
+	end
 	
 	// stream output
 	rden = 1'b1; #10
 	while (!fifoEmpty) begin
 		@(posedge clk) #10;
+		
+		// display valid moves to console
+		if (~fifoMv1[18]) begin
+			$write("From %o to %o\n", fifoMv1[11:6], fifoMv1[5:0]);
+			tMoves = tMoves + 1;
+		end
+		if (~fifoMv2[18]) begin
+			$write("From %o to %o\n", fifoMv2[11:6], fifoMv2[5:0]);
+			tMoves = tMoves + 1;
+		end
+		if (~fifoMv3[18]) begin
+			$write("From %o to %o\n", fifoMv3[11:6], fifoMv3[5:0]);
+			tMoves = tMoves + 1;
+		end
+		if (~fifoMv4[18]) begin
+			$write("From %o to %o\n", fifoMv4[11:6], fifoMv4[5:0]);
+			tMoves = tMoves + 1;
+		end
+		if (~fifoMv5[18]) begin
+			$write("From %o to %o\n", fifoMv5[11:6], fifoMv5[5:0]);
+			tMoves = tMoves + 1;
+		end
+		if (~fifoMv6[18]) begin
+			$write("From %o to %o\n", fifoMv6[11:6], fifoMv6[5:0]);
+			tMoves = tMoves + 1;
+		end
+		if (~fifoMv7[18]) begin
+			$write("From %o to %o\n", fifoMv7[11:6], fifoMv7[5:0]);
+			tMoves = tMoves + 1;
+		end
+		if (~fifoMv8[18]) begin
+			$write("From %o to %o\n", fifoMv8[11:6], fifoMv8[5:0]);
+			tMoves = tMoves + 1;
+		end
 	end
 	
 	// end simulation
+	$write("Total number of moves = %d\n", tMoves);
 	$stop; // For ModelSim
 end
 
