@@ -18,37 +18,7 @@ wire [DATA_WIDTH-1:0] slave_readdata;
 reg [DATA_WIDTH-1:0] slave_writedata;
 reg [(DATA_WIDTH/8)-1:0] slave_byteenable; //Not currently used
 
-wire lmgDone;
-wire [255:0] boardState;
-wire [151:0] lmgFifoOut;
-wire lmgReset;
-
 reg [10:0] i;
-
-wire fifoEmpty;
-wire [7:0] writeCount;
-
-/*
-control_TestOnly control_TestOnly_inst1(
-	// signals to connect to an Avalon clock source interface
-	.clk (clk),
-	.reset (reset),
-
-	// signals to connect to an Avalon-MM slave interface
-	.slave_address (slave_address),
-	.slave_read (slave_read),
-	.slave_write (slave_write),
-	.slave_readdata (slave_readdata),
-	.slave_writedata (slave_writedata),
-	.slave_byteenable (slave_byteenable),
-	.lmgDone(lmgDone),
-	.boardState(boardState),
-	.lmgReset(lmgReset),
-	.lmgFifoOut(lmgFifoOut),
-	.fifoEmpty(fifoEmpty),
-	.writeCount(writeCount)
-);
-*/
 
 
 control control_inst1(
@@ -91,7 +61,7 @@ initial begin
 	slave_address = 15'd2;
 	slave_read = 1'b0;
 	slave_write = 1'b1;
-	slave_writedata = 32'h2346_5432; 
+	slave_writedata = 32'h4236_5324; 
 	
 	repeat(1) begin
 		clk = 1'b1;
@@ -169,7 +139,7 @@ initial begin
 	end
 	
 	//================ CHECK MEMORY VALUES ================
-    for (i = 0; i < 50; i = i + 1) begin
+    for (i = 0; i < 70; i = i + 1) begin
       	slave_address = 15'd16 + i;
 		slave_read = 1'b1;
 		slave_write = 1'b0;
