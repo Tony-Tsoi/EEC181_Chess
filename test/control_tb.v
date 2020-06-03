@@ -4,7 +4,7 @@ module control_tb;
 
 // Parameters
 parameter DATA_WIDTH = 32; // Using localparam generates errors in qsys, just use parameter
-parameter ADDR_WIDTH = 15; // There are no "unused" addresses. Each slave address has a spot in RAM.
+parameter ADDR_WIDTH = 13; // There are no "unused" addresses. Each slave address has a spot in RAM.
 
 // clock interface
 reg clk;
@@ -85,6 +85,20 @@ initial begin
 		clk = 1'b0;
 		#100;
 	end
+	
+	slave_address = 15'd3;
+	slave_read = 1'b0;
+	slave_write = 1'b1;						
+	slave_writedata = 32'h1111_1111;	// Line of pawns in row 1
+	//slave_writedata = 32'h4236_5324;	// Default row 0
+	
+	repeat(1) begin
+		clk = 1'b1;
+		#100;
+		clk = 1'b0;
+		#100;
+	end
+	
 	
 		
 	for (i = 0; i < 8; i = i + 1) begin // Read 0x2-0x9

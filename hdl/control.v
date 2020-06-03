@@ -33,7 +33,7 @@ slave_byteenable
 
 // Parameters
 parameter DATA_WIDTH = 32; // Using localparam generates errors in qsys, just use parameter
-parameter ADDR_WIDTH = 15; // There are no "unused" addresses. Each slave address has a spot in RAM.
+parameter ADDR_WIDTH = 13; // There are no "unused" addresses. Each slave address has a spot in RAM.
 
 // clock interface
 input clk;
@@ -67,10 +67,10 @@ reg [ADDR_WIDTH-1:0] wr_addr_p1;
 // 512 bits for control/interface data.
 // I always update control or interface_data[0] at the same time so they are consistent.
 // control bits at 0x0: {other[28:0], reset, done, start}
-reg [31:0] interface_data [0:15];
-reg [31:0] interface_data_p1 [0:15];
-reg [31:0] control; // control = interface_data[0]
-reg [31:0] control_p1;
+reg [DATA_WIDTH-1:0] interface_data [0:15];
+reg [DATA_WIDTH-1:0] interface_data_p1 [0:15];
+reg [DATA_WIDTH-1:0] control; // control = interface_data[0]
+reg [DATA_WIDTH-1:0] control_p1;
 	
 //reg [4:0] counter; // For incrementing through test data
 //reg [4:0] counter_p1;
@@ -122,13 +122,13 @@ wire fifoEmpty;
 //		Module Instantiations
 //==================================
 
-// 32 bits wide, 32768 entries
+// 32 bits wide, 8192 entries
 // Entry 0 is 0x0 for slave address, 1 is 0x1,  etc.
 // 0x0 - 0x1 are the control bits (only 0x0 is used currently)
 // 0x2 - 0x9 are for SW to HW data
 // 0x10 - 0x15 are unused
-// 0x16 - 0x32767 are HW to SW data
-One_Mib_RAM	RAM_A(
+// 0x16 - 0x8191 are HW to SW data
+RAM_256Kib	RAM_A(
    .clock		(clk),
    .data		(ram_in),
    .rdaddress	(rd_addr),
@@ -205,7 +205,7 @@ begin
 	allMovesDone_c = 1'b0;
 	writeCount_c = writeCount;
 	
-	lmgResetState_c = lmgResetState;
+	//lmgResetState_c = lmgResetState;
 	preDone_c = preDone;
 	
 	preRead_c = preRead;
@@ -289,7 +289,7 @@ begin
 			writeFromLmgDone_c = 1'b0;
 			allMovesDone_c = 1'b0;
 			lmgReadEnable_c = 1'b0;
-			lmgResetState_c = 1'b1;
+			//lmgResetState_c = 1'b1;
 		end
 		
 		//if (lmgResetState == 1'b1) begin
