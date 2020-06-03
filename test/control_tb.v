@@ -73,10 +73,11 @@ initial begin
 		end
     end
 	
-	slave_address = 15'd3;
+	slave_address = 15'd2;
 	slave_read = 1'b0;
 	slave_write = 1'b1;						
-	slave_writedata = 32'h1111_1111;	// Line of pawns in row 1
+	//slave_writedata = 32'h1111_1111;	// Line of pawns in row 1
+	slave_writedata = 32'h4236_5324;	// Default row 0
 	
 	repeat(1) begin
 		clk = 1'b1;
@@ -140,7 +141,7 @@ initial begin
 	end
 	
 	//================ CHECK MEMORY VALUES ================
-    for (i = 0; i < 70; i = i + 1) begin
+    for (i = 0; i < 100; i = i + 1) begin
       	slave_address = 15'd16 + i;
 		slave_read = 1'b1;
 		slave_write = 1'b0;
@@ -153,21 +154,6 @@ initial begin
 			#100;
 		end
     end
-	
-	for (i = 0; i < 50; i = i + 1) begin
-      	slave_address = 15'd16 + i;
-		slave_read = 1'b1;
-		slave_write = 1'b0;
-		slave_writedata = 32'h0000_0000; 
-		
-		repeat(3) begin
-			clk = 1'b1;
-			#100;
-			clk = 1'b0;
-			#100;
-		end
-    end
-	
 	
 	//================ CHECKING CONTROL =========================
 	slave_address = 15'd0;
@@ -218,7 +204,8 @@ initial begin
 	#100;
 	end
 	
-	repeat(2000) begin
+	// ================= LMG DOING WORK =================
+	repeat(1000) begin
 		slave_address = 15'd0; 
 		slave_read = 1'b1;
 		slave_write = 1'b0;
@@ -230,6 +217,21 @@ initial begin
 		clk = 1'b0;
 		#100;
 	end
+	
+	//================ CHECK MEMORY VALUES ================
+    for (i = 0; i < 100; i = i + 1) begin
+      	slave_address = 15'd16 + i;
+		slave_read = 1'b1;
+		slave_write = 1'b0;
+		slave_writedata = 32'h0000_0000; 
+		
+		repeat(3) begin
+			clk = 1'b1;
+			#100;
+			clk = 1'b0;
+			#100;
+		end
+    end
 
 
 end

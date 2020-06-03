@@ -85,7 +85,7 @@ wire capb = (cpiece[3] == BLACK); // propagated piece can capture current square
 assign done = (state == DONE);
 
 // FIFO Module Declaration
-My_FIFO F1F0 (.clock(clk), .data({fillwr,wrdata}), .q(fifoOut), .wrreq(wren), .rdreq(rden), .empty(fifoEmpty), .sclr(reset),
+Square_FIFO F1F0 (.clock(clk), .data({fillwr,wrdata}), .q(fifoOut), .wrreq(wren), .rdreq(rden), .empty(fifoEmpty), .sclr(reset),
 	.usedw(), .full());
 
 // output logic
