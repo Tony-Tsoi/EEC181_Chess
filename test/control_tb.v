@@ -58,20 +58,9 @@ initial begin
 	// For simulation purposes, just do 4 cycles minimum between read/writes.
 	
 	//====================== WRITING BOARD STATE =====================
-	slave_address = 15'd2;
-	slave_read = 1'b0;
-	slave_write = 1'b1;
-	slave_writedata = 32'h4236_5324; 
 	
-	repeat(1) begin
-		clk = 1'b1;
-		#100;
-		clk = 1'b0;
-		#100;
-	end
-	
-	for (i = 0; i < 7; i = i + 1) begin // Write 0 to 0x3-0x9
-      	slave_address = 15'd3 + i;
+	for (i = 0; i < 10; i = i + 1) begin // Write 0 to 0x0-0x9
+      	slave_address = 15'd0 + i;
 		slave_read = 1'b0;
 		slave_write = 1'b1;
 		slave_writedata = 32'h0000_0000; 
@@ -83,6 +72,18 @@ initial begin
 			#100;
 		end
     end
+	
+	slave_address = 15'd3;
+	slave_read = 1'b0;
+	slave_write = 1'b1;						
+	slave_writedata = 32'h1111_1111;	// Line of pawns in row 1
+	
+	repeat(1) begin
+		clk = 1'b1;
+		#100;
+		clk = 1'b0;
+		#100;
+	end
 	
 		
 	for (i = 0; i < 8; i = i + 1) begin // Read 0x2-0x9
