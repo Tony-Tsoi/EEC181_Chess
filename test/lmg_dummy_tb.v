@@ -1,6 +1,6 @@
 `timescale 1ps / 1ps
 
-module lmg_tb();
+module lmg_dummy_tb();
 
 // IO of module
 reg clk, reset, rden, lcas_flag, rcas_flag;
@@ -20,7 +20,7 @@ wire [18:0] fifoMv6 = fifoOut[56:38];
 wire [18:0] fifoMv7 = fifoOut[37:19];
 wire [18:0] fifoMv8 = fifoOut[18:0];
 
-LMG DUT (.clk(clk), .reset(reset), .bstate(bstate), .done(done), .fifoOut(fifoOut), 
+lmg_dummy DUT (.clk(clk), .reset(reset), .bstate(bstate), .done(done), .fifoOut(fifoOut), 
 	.rden(rden), .fifoEmpty(fifoEmpty), .lcas_flag(lcas_flag), .rcas_flag(rcas_flag), 
 	.enp_flags(enp_flags) );
 
@@ -59,9 +59,6 @@ initial begin
 	inFile = $fopen("./bstate.txt", "r");
 	$fscanf(inFile, "%b", bstate);
 	$fclose(inFile);
-	
-	// print board state to console
-	$write("bstate=%h\n", bstate);
 	
 	// set number of moves to zero
 	tMoves = 0;

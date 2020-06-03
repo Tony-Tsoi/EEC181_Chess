@@ -80,7 +80,7 @@ reg [255:0] boardState;
 reg lmgReset;
 reg lmgReadEnable;
 reg lmgReadEnable_c;
-wire [151:0] lmgFifoOut;
+wire [159:0] lmgFifoOut;
 wire lmgDone;
 reg lmgDone_p1;
 reg lmgResetState, lmgResetState_c;
