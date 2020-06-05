@@ -79,8 +79,7 @@ module LMG_FIFO (
 				.usedw (sub_wire3),
 				.aclr (),
 				.almost_empty (),
-				.almost_full (),
-				.eccstatus());
+				.almost_full ());
 	defparam
 		scfifo_component.add_ram_output_register = "OFF",
 		scfifo_component.intended_device_family = "Cyclone V",
