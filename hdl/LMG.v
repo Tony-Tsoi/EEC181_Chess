@@ -1,6 +1,6 @@
 module LMG (clk, reset, bstate, done, fifoOut, rden, fifoEmpty,
 	lcas_flag, rcas_flag, enp_flags);
-// TODO: castling does not work, possible deprecation
+// TODO: verify whether castling work or not (currently unused)
 
 // 19 bit output per move from fifoOut has the following format:
 // [7b flag][6b from][6b to]
@@ -70,7 +70,7 @@ wire [151:0] gcas_wr1;
 reg [151:0] genp_wr1, genp_wr1_c;
 
 // done signals from columns
-wire [8:1] done_cols;
+wire [7:0] done_cols;
 
 // moves transferred to local fifo flag
 reg [7:0] col_moved_flags, col_moved_flags_c;
@@ -133,6 +133,7 @@ parameter ENP_HEAD = 7'b0010101;
 always @(*) begin
 	state_c = state;
 	col_rden_c = 8'h00;
+	col_move_ptr_c = col_move_ptr;
 	col_moved_flags_c = col_moved_flags;
 	wren1_c = 1'b0;
 	genp_wr1_c = {8{IMOV}}; // default 8 invalid moves
@@ -140,6 +141,7 @@ always @(*) begin
 	case (state)
 		RSET: begin
 			state_c = GSPM;
+			col_move_ptr_c = 3'o0;
 		end
 		GSPM: begin
 			state_c = GSPD;
@@ -216,12 +218,11 @@ always @(*) begin
 		end
 		WAIT: begin
 			// if a done signal is up and is not grabbed to FIFO
-			if (done_cols[8]) begin
+			if (done_cols[7]) begin
 				if (~col_moved_flags[7]) begin
 					state_c = GETM;
 					col_move_ptr_c = 3'd7;
 					col_rden_c = 8'h80;
-					wren1_c = 1'b1;
 				end
 				
 				// if it's done but it's also empty, just skip polling it
@@ -231,12 +232,11 @@ always @(*) begin
 				end
 			end
 			
-			if (done_cols[7]) begin
+			if (done_cols[6]) begin
 				if (~col_moved_flags[6]) begin
 					state_c = GETM;
 					col_move_ptr_c = 3'd6;
 					col_rden_c = 8'h40;
-					wren1_c = 1'b1;
 				end
 				
 				if (colEmpty[6] == 1'b1) begin
@@ -245,12 +245,11 @@ always @(*) begin
 				end
 			end
 			
-			if (done_cols[6]) begin
+			if (done_cols[5]) begin
 				if (~col_moved_flags[5]) begin
 					state_c = GETM;
 					col_move_ptr_c = 3'd5;
 					col_rden_c = 8'h20;
-					wren1_c = 1'b1;
 				end
 				
 				if (colEmpty[5] == 1'b1) begin
@@ -259,12 +258,11 @@ always @(*) begin
 				end
 			end
 			
-			if (done_cols[5]) begin
+			if (done_cols[4]) begin
 				if (~col_moved_flags[4]) begin
 					state_c = GETM;
 					col_move_ptr_c = 3'd4;
 					col_rden_c = 8'h10;
-					wren1_c = 1'b1;
 				end
 				
 				if (colEmpty[4] == 1'b1) begin
@@ -273,12 +271,11 @@ always @(*) begin
 				end
 			end
 			
-			if (done_cols[4]) begin
+			if (done_cols[3]) begin
 				if (~col_moved_flags[3]) begin
 					state_c = GETM;
 					col_move_ptr_c = 3'd3;
 					col_rden_c = 8'h08;
-					wren1_c = 1'b1;
 				end
 				
 				if (colEmpty[3] == 1'b1) begin
@@ -287,12 +284,11 @@ always @(*) begin
 				end
 			end
 			
-			if (done_cols[3]) begin
+			if (done_cols[2]) begin
 				if (~col_moved_flags[2]) begin
 					state_c = GETM;
 					col_move_ptr_c = 3'd2;
 					col_rden_c = 8'h04;
-					wren1_c = 1'b1;
 				end
 				
 				if (colEmpty[2] == 1'b1) begin
@@ -301,12 +297,11 @@ always @(*) begin
 				end
 			end
 			
-			if (done_cols[2]) begin
+			if (done_cols[1]) begin
 				if (~col_moved_flags[1]) begin
 					state_c = GETM;
 					col_move_ptr_c = 3'd1;
 					col_rden_c = 8'h02;
-					wren1_c = 1'b1;
 				end
 				
 				if (colEmpty[1] == 1'b1) begin
@@ -315,12 +310,11 @@ always @(*) begin
 				end
 			end
 			
-			if (done_cols[1]) begin
+			if (done_cols[0]) begin
 				if (~col_moved_flags[0]) begin
 					state_c = GETM;
 					col_move_ptr_c = 3'd0;
 					col_rden_c = 8'h01;
-					wren1_c = 1'b1;
 				end
 				
 				if (colEmpty[0] == 1'b1) begin
@@ -792,7 +786,7 @@ wire [8:1] chdiri_f = chlri_f | chlurdi_f | chldrui_f;
 wire [8:1] chdiri_g = chlri_g | chlurdi_g | chldrui_g;
 wire [8:1] chdiri_h = chlri_h | chlurdi_h | chldrui_h;
 
-columnUnit cola (.clk(clk), .xpos(COLA), .done(done_cols[8]), .reset(reset), .colstate(colstate_a),
+columnUnit cola (.clk(clk), .xpos(COLA), .done(done_cols[7]), .reset(reset), .colstate(colstate_a),
 	.chdiri(chdiri_a),  .fifoEmpty(colEmpty[7]), .fifoOut(fifoOut_cola), .rden(col_rden[8]),
 	.cirrdi(PVOID7), .cirrui(PVOID7), .cirddi(PVOID6), .cirdi(PVOID7), .ciri(PVOID8), 
 	.cirui(PVOID7), .ciruui(PVOID6),
@@ -803,7 +797,7 @@ columnUnit cola (.clk(clk), .xpos(COLA), .done(done_cols[8]), .reset(reset), .co
 	.cordo(cordo_a), .corddo(corddo_a), .corruo(corruo_a), .corrdo(corrdo_a),
 	.chluo(chluo_a), .chruo(chruo_a), .chlo(chlo_a), .chro(chro_a), .chldo(chldo_a), .chrdo(chrdo_a));
 
-columnUnit colb (.clk(clk), .xpos(COLB), .done(done_cols[7]), .reset(reset), .colstate(colstate_b),
+columnUnit colb (.clk(clk), .xpos(COLB), .done(done_cols[6]), .reset(reset), .colstate(colstate_b),
 	.chdiri(chdiri_b), .fifoEmpty(colEmpty[6]), .fifoOut(fifoOut_colb), .rden(col_rden[7]),
 	.cirrdi(PVOID7), .cirrui(PVOID7), 
 	.cirddi(cirddi_b), .cirdi(cirdi_b), .ciri(ciri_b), .cirui(cirui_b), .ciruui(ciruui_b),
@@ -815,7 +809,7 @@ columnUnit colb (.clk(clk), .xpos(COLB), .done(done_cols[7]), .reset(reset), .co
 	.cordo(cordo_b), .corddo(corddo_b), .corruo(corruo_b), .corrdo(corrdo_b),
 	.chluo(chluo_b), .chruo(chruo_b), .chlo(chlo_b), .chro(chro_b), .chldo(chldo_b), .chrdo(chrdo_b) );
 
-columnUnit colc (.clk(clk), .xpos(COLC), .done(done_cols[6]), .reset(reset), .colstate(colstate_c),
+columnUnit colc (.clk(clk), .xpos(COLC), .done(done_cols[5]), .reset(reset), .colstate(colstate_c),
 	.chdiri(chdiri_c),  .fifoEmpty(colEmpty[5]), .fifoOut(fifoOut_colc), .rden(col_rden[6]),
 	.cirrdi(cirrdi_c), .cirrui(cirrui_c), 
 	.cirddi(cirddi_c), .cirdi(cirdi_c), .ciri(ciri_c), .cirui(cirui_c), .ciruui(ciruui_c),
@@ -827,7 +821,7 @@ columnUnit colc (.clk(clk), .xpos(COLC), .done(done_cols[6]), .reset(reset), .co
 	.cordo(cordo_c), .corddo(corddo_c), .corruo(corruo_c), .corrdo(corrdo_c),
 	.chluo(chluo_c), .chruo(chruo_c), .chlo(chlo_c), .chro(chro_c), .chldo(chldo_c), .chrdo(chrdo_c) );
 
-columnUnit cold (.clk(clk), .xpos(COLD), .done(done_cols[5]), .reset(reset), .colstate(colstate_d),
+columnUnit cold (.clk(clk), .xpos(COLD), .done(done_cols[4]), .reset(reset), .colstate(colstate_d),
 	.chdiri(chdiri_d),  .fifoEmpty(colEmpty[4]), .fifoOut(fifoOut_cold), .rden(col_rden[5]),
 	.cirrdi(cirrdi_d), .cirrui(cirrui_d), 
 	.cirddi(cirddi_d), .cirdi(cirdi_d), .ciri(ciri_d), .cirui(cirui_d), .ciruui(ciruui_d),
@@ -839,7 +833,7 @@ columnUnit cold (.clk(clk), .xpos(COLD), .done(done_cols[5]), .reset(reset), .co
 	.cordo(cordo_d), .corddo(corddo_d), .corruo(corruo_d), .corrdo(corrdo_d),
 	.chluo(chluo_d), .chruo(chruo_d), .chlo(chlo_d), .chro(chro_d), .chldo(chldo_d), .chrdo(chrdo_d) );
 
-columnUnit cole (.clk(clk), .xpos(COLE), .done(done_cols[4]), .reset(reset), .colstate(colstate_e),
+columnUnit cole (.clk(clk), .xpos(COLE), .done(done_cols[3]), .reset(reset), .colstate(colstate_e),
 	.chdiri(chdiri_e),  .fifoEmpty(colEmpty[3]), .fifoOut(fifoOut_cole), .rden(col_rden[4]),
 	.cirrdi(cirrdi_e), .cirrui(cirrui_e), 
 	.cirddi(cirddi_e), .cirdi(cirdi_e), .ciri(ciri_e), .cirui(cirui_e), .ciruui(ciruui_e),
@@ -851,7 +845,7 @@ columnUnit cole (.clk(clk), .xpos(COLE), .done(done_cols[4]), .reset(reset), .co
 	.cordo(cordo_e), .corddo(corddo_e), .corruo(corruo_e), .corrdo(corrdo_e),
 	.chluo(chluo_e), .chruo(chruo_e), .chlo(chlo_e), .chro(chro_e), .chldo(chldo_e), .chrdo(chrdo_e) );
 
-columnUnit colf (.clk(clk), .xpos(COLF), .done(done_cols[3]), .reset(reset), .colstate(colstate_f),
+columnUnit colf (.clk(clk), .xpos(COLF), .done(done_cols[2]), .reset(reset), .colstate(colstate_f),
 	.chdiri(chdiri_f),  .fifoEmpty(colEmpty[2]), .fifoOut(fifoOut_colf), .rden(col_rden[3]),
 	.cirrdi(cirrdi_f), .cirrui(cirrui_f), 
 	.cirddi(cirddi_f), .cirdi(cirdi_f), .ciri(ciri_f), .cirui(cirui_f), .ciruui(ciruui_f),
@@ -863,7 +857,7 @@ columnUnit colf (.clk(clk), .xpos(COLF), .done(done_cols[3]), .reset(reset), .co
 	.cordo(cordo_f), .corddo(corddo_f), .corruo(corruo_f), .corrdo(corrdo_f),
 	.chluo(chluo_f), .chruo(chruo_f), .chlo(chlo_f), .chro(chro_f), .chldo(chldo_f), .chrdo(chrdo_f) );
 
-columnUnit colg (.clk(clk), .xpos(COLG), .done(done_cols[2]), .reset(reset), .colstate(colstate_g),
+columnUnit colg (.clk(clk), .xpos(COLG), .done(done_cols[1]), .reset(reset), .colstate(colstate_g),
 	.chdiri(chdiri_g),  .fifoEmpty(colEmpty[1]), .fifoOut(fifoOut_colg), .rden(col_rden[2]),
 	.cirrdi(cirrdi_g), .cirrui(cirrui_g), 
 	.cirddi(cirddi_g), .cirdi(cirdi_g), .ciri(ciri_g), .cirui(cirui_g), .ciruui(ciruui_g),
@@ -875,7 +869,7 @@ columnUnit colg (.clk(clk), .xpos(COLG), .done(done_cols[2]), .reset(reset), .co
 	.cordo(cordo_g), .corddo(corddo_g), .corruo(), .corrdo(),
 	.chluo(chluo_g), .chruo(chruo_g), .chlo(chlo_g), .chro(chro_g), .chldo(chldo_g), .chrdo(chrdo_g) );
 
-columnUnit colh (.clk(clk), .xpos(COLH), .done(done_cols[1]), .reset(reset), .colstate(colstate_h),
+columnUnit colh (.clk(clk), .xpos(COLH), .done(done_cols[0]), .reset(reset), .colstate(colstate_h),
 	.chdiri(chdiri_h),  .fifoEmpty(colEmpty[0]), .fifoOut(fifoOut_colh), .rden(col_rden[1]),
 	.cirrdi(cirrdi_h), .cirrui(cirrui_h), 
 	.cirddi(cirddi_h), .cirdi(cirdi_h), .ciri(ciri_h), .cirui(cirui_h), .ciruui(ciruui_h),

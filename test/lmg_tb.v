@@ -83,35 +83,35 @@ initial begin
 		
 		// display valid moves to console
 		if (~fifoMv1[18]) begin
-			$write("From %o to %o\n", fifoMv1[11:6], fifoMv1[5:0]);
+			$write("From %o%o to %o%o\n", fifoMv1[8:6], fifoMv1[11:9], fifoMv1[2:0], fifoMv1[5:3]);
 			tMoves = tMoves + 1;
 		end
 		if (~fifoMv2[18]) begin
-			$write("From %o to %o\n", fifoMv2[11:6], fifoMv2[5:0]);
+			$write("From %o%o to %o%o\n", fifoMv2[8:6], fifoMv2[11:9], fifoMv2[2:0], fifoMv2[5:3]);
 			tMoves = tMoves + 1;
 		end
 		if (~fifoMv3[18]) begin
-			$write("From %o to %o\n", fifoMv3[11:6], fifoMv3[5:0]);
+			$write("From %o%o to %o%o\n", fifoMv3[8:6], fifoMv3[11:9], fifoMv3[2:0], fifoMv3[5:3]);
 			tMoves = tMoves + 1;
 		end
 		if (~fifoMv4[18]) begin
-			$write("From %o to %o\n", fifoMv4[11:6], fifoMv4[5:0]);
+			$write("From %o%o to %o%o\n", fifoMv4[8:6], fifoMv4[11:9], fifoMv4[2:0], fifoMv4[5:3]);
 			tMoves = tMoves + 1;
 		end
 		if (~fifoMv5[18]) begin
-			$write("From %o to %o\n", fifoMv5[11:6], fifoMv5[5:0]);
+			$write("From %o%o to %o%o\n", fifoMv5[8:6], fifoMv5[11:9], fifoMv5[2:0], fifoMv5[5:3]);
 			tMoves = tMoves + 1;
 		end
 		if (~fifoMv6[18]) begin
-			$write("From %o to %o\n", fifoMv6[11:6], fifoMv6[5:0]);
+			$write("From %o%o to %o%o\n", fifoMv6[8:6], fifoMv6[11:9], fifoMv6[2:0], fifoMv6[5:3]);
 			tMoves = tMoves + 1;
 		end
 		if (~fifoMv7[18]) begin
-			$write("From %o to %o\n", fifoMv7[11:6], fifoMv7[5:0]);
+			$write("From %o%o to %o%o\n", fifoMv7[8:6], fifoMv7[11:9], fifoMv7[2:0], fifoMv7[5:3]);
 			tMoves = tMoves + 1;
 		end
 		if (~fifoMv8[18]) begin
-			$write("From %o to %o\n", fifoMv8[11:6], fifoMv8[5:0]);
+			$write("From %o%o to %o%o\n", fifoMv8[8:6], fifoMv8[11:9], fifoMv8[2:0], fifoMv8[5:3]);
 			tMoves = tMoves + 1;
 		end
 	end

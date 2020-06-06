@@ -144,7 +144,6 @@ always @(*) begin
 					state_c = GETM;
 					sq_move_ptr_c = 3'd7;
 					sq_rden_c = 8'h80;
-					wren1_c = 1'b1;
 				end
 				
 				// if it's done but it's also empty, just skip polling it
@@ -159,7 +158,6 @@ always @(*) begin
 					state_c = GETM;
 					sq_move_ptr_c = 3'd6;
 					sq_rden_c = 8'h40;
-					wren1_c = 1'b1;
 				end
 				
 				if (sqEmpty[6] == 1'b1) begin
@@ -173,7 +171,6 @@ always @(*) begin
 					state_c = GETM;
 					sq_move_ptr_c = 3'd5;
 					sq_rden_c = 8'h20;
-					wren1_c = 1'b1;
 				end
 				
 				if (sqEmpty[5] == 1'b1) begin
@@ -187,7 +184,6 @@ always @(*) begin
 					state_c = GETM;
 					sq_move_ptr_c = 3'd4;
 					sq_rden_c = 8'h10;
-					wren1_c = 1'b1;
 				end
 				
 				if (sqEmpty[4] == 1'b1) begin
@@ -201,7 +197,6 @@ always @(*) begin
 					state_c = GETM;
 					sq_move_ptr_c = 3'd3;
 					sq_rden_c = 8'h08;
-					wren1_c = 1'b1;
 				end
 				
 				if (sqEmpty[3] == 1'b1) begin
@@ -215,7 +210,6 @@ always @(*) begin
 					state_c = GETM;
 					sq_move_ptr_c = 3'd2;
 					sq_rden_c = 8'h04;
-					wren1_c = 1'b1;
 				end
 				
 				if (sqEmpty[2] == 1'b1) begin
@@ -229,7 +223,6 @@ always @(*) begin
 					state_c = GETM;
 					sq_move_ptr_c = 3'd1;
 					sq_rden_c = 8'h02;
-					wren1_c = 1'b1;
 				end
 				
 				if (sqEmpty[1] == 1'b1) begin
@@ -243,7 +236,6 @@ always @(*) begin
 					state_c = GETM;
 					sq_move_ptr_c = 3'd0;
 					sq_rden_c = 8'h01;
-					wren1_c = 1'b1;
 				end
 				
 				if (sqEmpty[0] == 1'b1) begin
