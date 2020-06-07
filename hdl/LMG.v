@@ -38,7 +38,7 @@ parameter DONE = 3'b100; // done
 
 // for castling, en passant
 parameter CAS_HEAD = 7'b0000010;
-parameter ENP_HEAD = 7'b0011101;
+parameter ENP_HEAD = 7'b0010101;
 
 input clk, reset, rden, lcas_flag, rcas_flag;
 input [1:8] enp_flags; // en passant flags
