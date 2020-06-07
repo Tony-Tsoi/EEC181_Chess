@@ -36,6 +36,10 @@ parameter WAIT = 3'b111; // wait for columns
 parameter GETM = 3'b110; // get moves from columns
 parameter DONE = 3'b100; // done
 
+// for castling, en passant
+parameter CAS_HEAD = 7'b0000010;
+parameter ENP_HEAD = 7'b0011101;
+
 input clk, reset, rden, lcas_flag, rcas_flag;
 input [1:8] enp_flags; // en passant flags
 input [255:0] bstate; // board state
@@ -66,8 +70,26 @@ wire [31:0] colstate_g = {bstate[251:248], bstate[219:216], bstate[187:184], bst
 wire [31:0] colstate_h = {bstate[255:252], bstate[223:220], bstate[191:188], bstate[159:156], 
 	bstate[127:124], bstate[95:92], bstate[63:60], bstate[31:28]};
 
+// for castling and en passant
 wire [151:0] gcas_wr1;
 reg [151:0] genp_wr1, genp_wr1_c;
+wire [3:0] sq_a1 = bstate[3:0];
+wire [3:0] sq_b1 = bstate[7:4];
+wire [3:0] sq_c1 = bstate[11:8];
+wire [3:0] sq_d1 = bstate[15:12];
+wire [3:0] sq_e1 = bstate[19:16];
+wire [3:0] sq_f1 = bstate[23:20];
+wire [3:0] sq_g1 = bstate[27:24];
+wire [3:0] sq_h1 = bstate[31:28];
+
+wire [3:0] sq_a5 = bstate[131:128];
+wire [3:0] sq_b5 = bstate[135:132];
+wire [3:0] sq_c5 = bstate[139:136];
+wire [3:0] sq_d5 = bstate[143:140];
+wire [3:0] sq_e5 = bstate[147:144];
+wire [3:0] sq_f5 = bstate[151:148];
+wire [3:0] sq_g5 = bstate[155:152];
+wire [3:0] sq_h5 = bstate[159:156];
 
 // done signals from columns
 wire [7:0] done_cols;
@@ -92,14 +114,14 @@ wire c_col_empty = colEmpty[col_move_ptr];
 // King not currently in check
 // King doesn't pass thru square attacked by enemy piece
 // if castling applies, enable write, put 1 or 2 moves
-wire cas_l = &{(bstate[3:0] == {WHITE,ROOK}), (bstate[6:4] == EMPTY), (bstate[10:8] == EMPTY), 
-	(bstate[14:12] == EMPTY), (bstate[19:16] == {WHITE,KING}), lcas_flag};
-wire cas_r = &{(bstate[19:16] == {WHITE,KING}), (bstate[22:20] == EMPTY), (bstate[26:24] == EMPTY),
-	(bstate[31:28] == {WHITE,ROOK}), rcas_flag};
-wire cas_wren = cas_l | cas_r;
+wire cas_l = &{(sq_a1 == {WHITE,ROOK}), (sq_b1[2:0] == EMPTY), (sq_c1[2:0] == EMPTY), 
+	(sq_d1[2:0] == EMPTY), (sq_e1 == {WHITE,KING}), lcas_flag};
+wire cas_r = &{(sq_e1 == {WHITE,KING}), (sq_f1[2:0] == EMPTY), (sq_g1[2:0] == EMPTY),
+	(sq_h1 == {WHITE,ROOK}), rcas_flag};
+wire cas_wren = ((cas_l | cas_r) & (state == GSPM));
 
-assign gcas_wr1[151:133] = (cas_r) ? {7'b0000010, 6'o40, 6'o10} : 19'd0;
-assign gcas_wr1[132:114] = (cas_l) ? {7'b0000010, 6'o40, 6'o60} : 19'd0;
+assign gcas_wr1[151:133] = (cas_r) ? {CAS_HEAD, 6'o40, 6'o10} : IMOV;
+assign gcas_wr1[132:114] = (cas_l) ? {CAS_HEAD, 6'o40, 6'o60} : IMOV;
 assign gcas_wr1[113:0] = {6{IMOV}};
 
 // FIFO Module Declaration
@@ -126,9 +148,6 @@ parameter WDT_VAL = 12'd620; // 620 originally
 wire wdt_done;
 dcounter WDTimer (.clk(clk), .reset(reset), .setval(WDT_VAL), .done(wdt_done));
 
-// for en passant
-parameter ENP_HEAD = 7'b0010101;
-
 // next state logic
 always @(*) begin
 	state_c = state;
@@ -148,68 +167,82 @@ always @(*) begin
 			
 			// en passant logic			
 			// a5/b5 case
-			if (enp_flags[1] == 1'b1) begin 
-				if (bstate[135:132] == {WHITE,PAWN}) begin
+			if ((enp_flags[1] == 1'b1) && (sq_a5 == {BLACK, PAWN})) begin 
+				if (sq_b5 == {WHITE,PAWN}) begin
 					genp_wr1_c[132:114] = {ENP_HEAD, 6'o14, 6'o05}; // en passant, b5 to a6
+					wren1_c = 1'b1;
 				end
 			end 
-			else if (enp_flags[2] == 1'b1) begin // b5 case (a5 and b5 case can't coexist)
-				if (bstate[131:128] == {WHITE,PAWN}) begin
+			else if ((enp_flags[2] == 1'b1) && (sq_b5 == {BLACK, PAWN})) begin // b5 case (a5 and b5 case can't coexist)
+				if (sq_a5 == {WHITE,PAWN}) begin
 					genp_wr1_c[151:133] = {ENP_HEAD, 6'o04, 6'o15}; // en passant, a5 to b6
+					wren1_c = 1'b1;
 				end
-				if (bstate[139:136] == {WHITE,PAWN}) begin
+				if (sq_c5 == {WHITE,PAWN}) begin
 					genp_wr1_c[132:114] = {ENP_HEAD, 6'o24, 6'o15}; // en passant, c5 to b6
+					wren1_c = 1'b1;
 				end
 			end
 			
 			// c5/d5 case
-			if (enp_flags[3] == 1'b1) begin
-				if (bstate[135:132] == {WHITE,PAWN}) begin
+			if ((enp_flags[3] == 1'b1) && (sq_c5 == {BLACK, PAWN})) begin
+				if (sq_b5 == {WHITE,PAWN}) begin
 					genp_wr1_c[113:95] = {ENP_HEAD, 6'o14, 6'o25}; // en passant, b5 to c6
+					wren1_c = 1'b1;
 				end
-				if (bstate[143:140] == {WHITE,PAWN}) begin
+				if (sq_d5 == {WHITE,PAWN}) begin
 					genp_wr1_c[94:76] = {ENP_HEAD, 6'o34, 6'o25}; // en passant, d5 to c6
+					wren1_c = 1'b1;
 				end
 			end 
-			else if (enp_flags[4] == 1'b1) begin
-				if (bstate[139:136] == {WHITE,PAWN}) begin
+			else if ((enp_flags[4] == 1'b1) && (sq_d5 == {BLACK, PAWN})) begin
+				if (sq_c5 == {WHITE,PAWN}) begin
 					genp_wr1_c[113:95] = {ENP_HEAD, 6'o24, 6'o35}; // en passant, c5 to d6
+					wren1_c = 1'b1;
 				end
-				if (bstate[147:144] == {WHITE,PAWN}) begin
+				if (sq_e5 == {WHITE,PAWN}) begin
 					genp_wr1_c[94:76] = {ENP_HEAD, 6'o44, 6'o35}; // en passant, e5 to d6
+					wren1_c = 1'b1;
 				end
 			end
 			
 			// e5/f5 case
-			if (enp_flags[5] == 1'b1) begin
-				if (bstate[143:140] == {WHITE,PAWN}) begin
+			if ((enp_flags[5] == 1'b1) && (sq_e5 == {BLACK, PAWN})) begin
+				if (sq_d5 == {WHITE,PAWN}) begin
 					genp_wr1_c[75:57] = {ENP_HEAD, 6'o34, 6'o45}; // en passant, d5 to e6
+					wren1_c = 1'b1;
 				end
-				if (bstate[151:148] == {WHITE,PAWN}) begin
+				if (sq_f5 == {WHITE,PAWN}) begin
 					genp_wr1_c[56:38] = {ENP_HEAD, 6'o54, 6'o45}; // en passant, f5 to e6
+					wren1_c = 1'b1;
 				end
 			end 
-			else if (enp_flags[6] == 1'b1) begin
-				if (bstate[147:144] == {WHITE,PAWN}) begin
+			else if ((enp_flags[6]) && (sq_f5 == {BLACK, PAWN})) begin
+				if (sq_e5 == {WHITE,PAWN}) begin
 					genp_wr1_c[75:57] = {ENP_HEAD, 6'o44, 6'o55}; // en passant, e5 to f6
+					wren1_c = 1'b1;
 				end
-				if (bstate[155:152] == {WHITE,PAWN}) begin
+				if (sq_g5 == {WHITE,PAWN}) begin
 					genp_wr1_c[56:38] = {ENP_HEAD, 6'o64, 6'o55}; // en passant, g5 to f6
+					wren1_c = 1'b1;
 				end
 			end
 			
 			// g5/h5 case
-			if (enp_flags[5] == 1'b1) begin
-				if (bstate[151:148] == {WHITE,PAWN}) begin
+			if ((enp_flags[7] == 1'b1) && (sq_g5 == {BLACK, PAWN})) begin
+				if (sq_f5 == {WHITE,PAWN}) begin
 					genp_wr1_c[37:19] = {ENP_HEAD, 6'o54, 6'o65}; // en passant, f5 to g6
+					wren1_c = 1'b1;
 				end
-				if (bstate[159:156] == {WHITE,PAWN}) begin
+				if (sq_h5 == {WHITE,PAWN}) begin
 					genp_wr1_c[18:0] = {ENP_HEAD, 6'o74, 6'o65}; // en passant, h5 to g6
+					wren1_c = 1'b1;
 				end
 			end 
-			else if (enp_flags[6] == 1'b1) begin
-				if (bstate[155:152] == {WHITE,PAWN}) begin
+			else if ((enp_flags[8] == 1'b1) && (sq_h5 == {BLACK, PAWN})) begin
+				if (sq_g5 == {WHITE,PAWN}) begin
 					genp_wr1_c[37:19] = {ENP_HEAD, 6'o64, 6'o75}; // en passant, g5 to h6
+					wren1_c = 1'b1;
 				end
 			end
 		end
