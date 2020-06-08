@@ -78,7 +78,7 @@ def genBoard(num):
         ROW1 = 8 * [WHITE, EMPTY]
        
     if num == '7':
-        # Position 7: En passant 1, enp_flags = 8'h55, moves = 4/11
+        # Position 7: En passant 1, enp_flags = 8'haa, moves = 4/11
         ROW8 = 8 * [BLACK, EMPTY]
         ROW7 = 8 * [BLACK, EMPTY]
         ROW6 = 8 * [BLACK, EMPTY]
@@ -89,7 +89,7 @@ def genBoard(num):
         ROW1 = 8 * [WHITE, EMPTY]
     
     if num == '8':
-        # Position 8: En passant 2, enp_flags = 8'haa, moves = 4/11
+        # Position 8: En passant 2, enp_flags = 8'h55, moves = 4/11
         ROW8 = 8 * [BLACK, EMPTY]
         ROW7 = 8 * [BLACK, EMPTY]
         ROW6 = 8 * [BLACK, EMPTY]

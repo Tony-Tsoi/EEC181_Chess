@@ -79,7 +79,7 @@ wire hd_c = (odo_c != PVOID);
 wire hru_c = (oruo_c != PVOID);
 wire hr_c = (oro_c != PVOID);
 wire hrd_c = (ordo_c != PVOID);
-wire capb = (cpiece[3] == BLACK); // propagated piece can capture current square piece
+wire capb = ((cpiece[3] == BLACK) && (cpiece[2:0] != EMPTY)); // propagated piece can capture current square piece
 
 // === Assignment statements ===
 assign done = (state == DONE);
@@ -173,32 +173,6 @@ always @(*) begin
 			if ((hold == 1'b0) && (wren == 1'b0))
 				state_c = GKNI;
 			
-			if (cpiece[2:0] == EMPTY) begin
-				// if current place is empty, can move up
-				if (iui[2:0] != EMPTY) begin
-					mvu = {7'b0010000, iui[8:3], xpos, ypos};
-					
-					if (ypos == ROW4)
-						mvu = {7'b0011000, iui[8:3], xpos, ypos};
-					
-					if ((iui[5:3] == ROW2) && (ypos == ROW3)) begin
-						// if started from ROW2
-						// pawn can move one more step forward
-						ouo_c = iui;
-					end
-				end 
-			end else begin
-				if (cpiece[3] == BLACK) begin
-					// if current place isn't empty and is of opposite, pawn capture
-					if (irui[2:0] == PAWN) begin
-						mvru = {7'b0010001, irui[8:3], xpos, ypos};
-					end
-					if (ilui[2:0] == PAWN) begin
-						mvlu = {7'b0010001, ilui[8:3], xpos, ypos};
-					end
-				end
-			end
-			
 			// RU and LU is available for non pawn to move in
 			if (irui[2:0] != EMPTY) begin
 				if ((cpiece[2:0] == EMPTY) && (irui[2:0] != PAWN)) begin
@@ -229,11 +203,18 @@ always @(*) begin
 			// U is available for pawn if empty
 			if (iui[2:0] != EMPTY) begin
 				if (cpiece[2:0] == EMPTY) begin
-					mvu = {2'b00, (iui[2:0] == PAWN), 3'o0, capb, iui[8:3], xpos, ypos};
+					mvu = {2'b00, (iui[2:0] == PAWN), ((iui[2:0] == PAWN)&&(ypos == ROW4)), 
+						2'b00, capb, iui[8:3], xpos, ypos};
 					
 					if ((iui[2:0] == BISHOP) || (iui[2:0] == QUEEN) || (iui[2:0] == ROOK))
 						// if bishop, queen or rook, propagate left right
 						ouo_c = iui;
+					
+					if ((iui[5:3] == ROW2) && (ypos == ROW3)) begin
+						// if started from ROW2
+						// pawn can move one more step forward
+						ouo_c = iui;
+					end
 				end
 				if ((capb) && (cpiece[2:0] != EMPTY) && (iui[2:0] != PAWN)) begin
 					mvu = {6'o00, capb, iui[8:3], xpos, ypos};
