@@ -102,9 +102,9 @@ def genBoard(num):
     if num == '9':
         # Position 9: No en passants, enp_flags = 8'hff, moves = 8/8
         ROW8 = 8 * [BLACK, EMPTY]
-        ROW7 = 8 * [BLACK, EMPTY]
+        ROW7 = 8 * [WHITE, PAWN]
         ROW6 = 8 * [BLACK, EMPTY]
-        ROW5 = 8 * [WHITE, PAWN]
+        ROW5 = 8 * [BLACK, EMPTY]
         ROW4 = 8 * [WHITE, EMPTY]
         ROW3 = 8 * [WHITE, EMPTY] 
         ROW2 = 8 * [WHITE, EMPTY]

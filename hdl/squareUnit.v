@@ -28,6 +28,7 @@ parameter NOTUSED = 3'o7;
 parameter ROW2 = 3'o1;
 parameter ROW3 = 3'o2; // value for ypos to be at row 3 (for pawn advance two blocks forward
 parameter ROW4 = 3'o3;
+parameter ROW8 = 3'o7;
 
 parameter IMOV = {1'b1, 6'b000000, 6'o00, 6'o00}; // invalid move
 
@@ -63,7 +64,6 @@ reg [8:0] orrdo_c, orruo_c, orddo_c, ordo_c, oro_c, oruo_c, oruuo_c, odo_c,
 reg [18:0] mvrrd, mvrru, mvrdd, mvruu, mvldd, mvluu, mvlld, mvllu;
 reg [18:0] mvrd, mvr, mvru, mvd, mvu, mvld, mvl, mvlu;
 
-
 // === Wire declarations ===
 wire [8:0] PVOID = {xpos, ypos, EMPTY}; // denotes an empty space at self
 wire [151:0] wr1 = {mvrd, mvr, mvru, mvd, mvu, mvld, mvl, mvlu};
@@ -80,6 +80,8 @@ wire hru_c = (oruo_c != PVOID);
 wire hr_c = (oro_c != PVOID);
 wire hrd_c = (ordo_c != PVOID);
 wire capb = ((cpiece[3] == BLACK) && (cpiece[2:0] != EMPTY)); // propagated piece can capture current square piece
+wire pwpm = ((iui[2:0] == PAWN) && (ypos == ROW8)); // pawn promo bit
+wire pwm2 = ((iui[2:0] == PAWN)&&(ypos == ROW4)); // pawn mov2 bit
 
 // === Assignment statements ===
 assign done = (state == DONE);
@@ -203,8 +205,7 @@ always @(*) begin
 			// U is available for pawn if empty
 			if (iui[2:0] != EMPTY) begin
 				if (cpiece[2:0] == EMPTY) begin
-					mvu = {2'b00, (iui[2:0] == PAWN), ((iui[2:0] == PAWN)&&(ypos == ROW4)), 
-						2'b00, capb, iui[8:3], xpos, ypos};
+					mvu = {1'b0, pwpm, (iui[2:0] == PAWN), pwm2, 2'b00, capb, iui[8:3], xpos, ypos};
 					
 					if ((iui[2:0] == BISHOP) || (iui[2:0] == QUEEN) || (iui[2:0] == ROOK))
 						// if bishop, queen or rook, propagate left right
