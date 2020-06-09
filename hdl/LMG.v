@@ -119,7 +119,7 @@ wire cas_r = &{(sq_e1 == {WHITE,KING}), (sq_f1[2:0] == EMPTY), (sq_g1[2:0] == EM
 	(sq_h1 == {WHITE,ROOK}), rcas_flag};
 wire cas_wren = ((cas_l | cas_r) & (state == GSPM));
 
-assign gcas_wr1[151:133] = (cas_r) ? {CAS_HEAD, 6'o40, 6'o10} : IMOV;
+assign gcas_wr1[151:133] = (cas_r) ? {CAS_HEAD, 6'o40, 6'o20} : IMOV;
 assign gcas_wr1[132:114] = (cas_l) ? {CAS_HEAD, 6'o40, 6'o60} : IMOV;
 assign gcas_wr1[113:0] = {6{IMOV}};
 
