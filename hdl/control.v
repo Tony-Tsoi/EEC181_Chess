@@ -66,7 +66,7 @@ reg [ADDR_WIDTH-1:0] wr_addr_p1;
 // Entry 0 = 0x0 in RAM, 1 = 0x1, etc.
 // 512 bits for control/interface data.
 // I always update control or interface_data[0] at the same time so they are consistent.
-// control bits at 0x0: {other[23:0], enpassantCol[2:0], leftside castle, rightside castle, reset, done, start}
+// control bits at 0x0: {other[28:0], reset, done, start}
 reg [DATA_WIDTH-1:0] interface_data [0:15];
 reg [DATA_WIDTH-1:0] interface_data_p1 [0:15];
 reg [DATA_WIDTH-1:0] control; // control = interface_data[0]
@@ -117,8 +117,6 @@ reg preDone_c;
 
 wire fifoEmpty;
 
-reg [7:0] ep; // enpassant column
-
 
 //===================================
 //		Module Instantiations
@@ -164,9 +162,9 @@ LMG LMG_inst1(
 	.fifoOut(lmgFifoOut),
 	.rden(lmgReadEnable),
 	.fifoEmpty(fifoEmpty),
-	.lcas_flag(control[4]), // control[4]
-	.rcas_flag(control[3]), // control[3]
-	.enp_flags(ep) // ep
+	.lcas_flag(1'b0), // change these flags to generate in HW
+	.rcas_flag(1'b0),
+	.enp_flags(8'd0)
 );
 
 
@@ -229,8 +227,6 @@ begin
 	boardState[63:32] = interface_data_p1[3];
 	boardState[31:0] = interface_data_p1[2];
 
-	ep = 8'b0000_0000;
-	ep[control[7:5]] = 1'b1;
 
 //========================== READ/WRITE ==========================================	
 	// NOTE: There are 512 wasted bits in the RAM because these addresses are being used
