@@ -73,11 +73,13 @@ initial begin
 		end
     end
 	
-	slave_address = 15'd6;
+	slave_address = 15'd2;
 	slave_read = 1'b0;
 	slave_write = 1'b1;						
 	//slave_writedata = 32'h1111_1111;	// Line of pawns in row 1
-	slave_writedata = 32'h0000_1900;	
+	//slave_writedata = 32'h0000_1900;	
+	//slave_writedata = 32'h4236_5324;	// Default row 0
+	slave_writedata = 32'h4006_0004;
 	
 	repeat(1) begin
 		clk = 1'b1;
@@ -106,7 +108,8 @@ initial begin
 	slave_address = 15'd0;
 	slave_read = 1'b0;
 	slave_write = 1'b1;
-	slave_writedata = 32'h0000_0000 | 9'b0_010_00_000; // enpassant capture at column 2
+	//slave_writedata = 32'h0000_0000 | 9'b0_010_00_000; // enpassant capture at column 2
+	slave_writedata = 32'h0000_0000 | 9'b0_000_11_000;
 	
 	repeat(1) begin
 		clk = 1'b1;
@@ -118,7 +121,8 @@ initial begin
 	slave_address = 15'd0;
 	slave_read = 1'b0;
 	slave_write = 1'b1;
-	slave_writedata = 32'h0000_0000 | 9'b0_010_00_001;  // Start = 1
+	//slave_writedata = 32'h0000_0000 | 9'b0_010_00_001;  // enpassant capture at column 2, Start = 1
+	slave_writedata = 32'h0000_0000 | 9'b0_000_11_001;  // Start = 1
 	
 	repeat(1) begin
 		clk = 1'b1;
