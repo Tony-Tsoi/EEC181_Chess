@@ -87,8 +87,8 @@ wire pwpm = ((iui[2:0] == PAWN) && (ypos == ROW8)); // pawn promo bit
 wire pwm2 = ((iui[2:0] == PAWN)&&(ypos == ROW4)); // pawn mov2 bit
 
 // FIFO Module Declaration
-Square_FIFO F1F0 (.clock(clk), .data({fillwr,wrdata}), .q(fifoOut), .wrreq(wren), .rdreq(rden), .empty(fifoEmpty), .sclr(reset),
-	.usedw(), .full());
+Square_FIFO F1F0 (.clock(clk), .data({fillwr,wrdata}), .q(fifoOut), .wrreq(wren), .rdreq(rden), .empty(fifoEmpty), 
+	.sclr((state == RSET)), .usedw(), .full());
 
 // output logic
 always @(*) begin

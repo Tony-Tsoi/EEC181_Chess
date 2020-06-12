@@ -123,8 +123,8 @@ wire [159:0] wr1 = (sq_move_ptr == 3'd7)? fifoOut_sq8 :
 	(sq_move_ptr == 3'd3)? fifoOut_sq4 :
 	(sq_move_ptr == 3'd2)? fifoOut_sq3 :
 	(sq_move_ptr == 3'd1)? fifoOut_sq2 : fifoOut_sq1;
-Column_FIFO F1F0 (.clock(clk), .data(wr1), .q(fifoOut), .wrreq(wren1), .rdreq(rden), .empty(fifoEmpty), .sclr(reset),
-	.usedw(), .full());
+Column_FIFO F1F0 (.clock(clk), .data(wr1), .q(fifoOut), .wrreq(wren1), .rdreq(rden), .empty(fifoEmpty), 
+	.sclr((state == RSET)), .usedw(), .full());
 	
 // up down wiring
 assign ciui[71:9] = couo[62:0];
@@ -136,10 +136,15 @@ wire [7:0] sq_need_move = done_sqs & (~sq_moved_flags);
 // next state logic
 always @(*) begin
 	state_c = state;
-	sq_rden_c = 8'h00;
+	sq_rden_c = sq_rden;
 	sq_moved_flags_c = sq_moved_flags;
 	
 	case (state)
+		RSET: begin
+			state_c = WAIT;
+			sq_rden_c = 8'h00;
+			sq_moved_flags_c = 8'h00;
+		end
 		WAIT: begin
 			// if a done signal is up and is not grabbed to FIFO
 			if (|{sq_need_move[7:4]}) begin
@@ -265,7 +270,7 @@ end
 
 // FF for next state
 always @(posedge clk) begin
-	state <= reset ? WAIT : state_c;
+	state <= reset ? RSET : state_c;
 	sq_rden <= sq_rden_c;
 	sq_move_ptr <= sq_move_ptr_c;
 	sq_moved_flags <= sq_moved_flags_c;

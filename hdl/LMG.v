@@ -144,8 +144,8 @@ wire [159:0] wr1 = (state == GSPM) ? {fillwr,gcas_wr1} :
 	(col_move_ptr == 3'd2)? fifoOut_colf :
 	(col_move_ptr == 3'd1)? fifoOut_colg : fifoOut_colh;
 
-LMG_FIFO F1F0 (.clock(clk), .data(wr1), .q(fifoOut), .wrreq((wren1 | cas_wren)), .rdreq(rden_r), .empty(fifoEmpty), .sclr(reset_r),
-	.usedw(), .full() );
+LMG_FIFO F1F0 (.clock(clk), .data(wr1), .q(fifoOut), .wrreq((wren1 | cas_wren)), .rdreq(rden_r), .empty(fifoEmpty), 
+	.sclr((state == RSET)), .usedw(), .full() );
 
 // next state logic
 always @(*) begin
