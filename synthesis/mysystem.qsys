@@ -17,6 +17,27 @@
          type = "String";
       }
    }
+   element Control_0
+   {
+      datum _sortIndex
+      {
+         value = "13";
+         type = "int";
+      }
+      datum sopceditor_expanded
+      {
+         value = "1";
+         type = "boolean";
+      }
+   }
+   element Control_0.slave
+   {
+      datum baseAddress
+      {
+         value = "0";
+         type = "String";
+      }
+   }
    element HEX3_HEX0
    {
       datum _sortIndex
@@ -37,7 +58,7 @@
    {
       datum baseAddress
       {
-         value = "131104";
+         value = "32800";
          type = "String";
       }
    }
@@ -53,7 +74,7 @@
    {
       datum baseAddress
       {
-         value = "131120";
+         value = "32816";
          type = "String";
       }
    }
@@ -66,22 +87,6 @@
       }
    }
    element Test_LogicOnly_0.slave
-   {
-      datum baseAddress
-      {
-         value = "0";
-         type = "String";
-      }
-   }
-   element Test_Module_0
-   {
-      datum _sortIndex
-      {
-         value = "13";
-         type = "int";
-      }
-   }
-   element Test_Module_0.slave
    {
       datum baseAddress
       {
@@ -170,7 +175,39 @@
    {
       datum baseAddress
       {
-         value = "131088";
+         value = "32784";
+         type = "String";
+      }
+   }
+   element mysystem
+   {
+      datum _originalDeviceFamily
+      {
+         value = "Cyclone V";
+         type = "String";
+      }
+   }
+   element mysystem
+   {
+      datum _originalDeviceFamily
+      {
+         value = "Cyclone V";
+         type = "String";
+      }
+   }
+   element mysystem
+   {
+      datum _originalDeviceFamily
+      {
+         value = "Cyclone V";
+         type = "String";
+      }
+   }
+   element mysystem
+   {
+      datum _originalDeviceFamily
+      {
+         value = "Cyclone V";
          type = "String";
       }
    }
@@ -418,7 +455,7 @@
    {
       datum baseAddress
       {
-         value = "131072";
+         value = "32768";
          type = "String";
       }
    }
@@ -488,6 +525,10 @@
    internal="switches.external_connection"
    type="conduit"
    dir="end" />
+ <module name="Control_0" kind="Control" version="1.0" enabled="1">
+  <parameter name="ADDR_WIDTH" value="13" />
+  <parameter name="DATA_WIDTH" value="32" />
+ </module>
  <module name="HEX3_HEX0" kind="altera_avalon_pio" version="15.0" enabled="1">
   <parameter name="bitClearingEdgeCapReg" value="false" />
   <parameter name="bitModifyingOutReg" value="false" />
@@ -521,10 +562,6 @@
    kind="Test_LogicOnly"
    version="1.0"
    enabled="0" />
- <module name="Test_Module_0" kind="Test_Module" version="1.0" enabled="1">
-  <parameter name="ADDR_WIDTH" value="15" />
-  <parameter name="DATA_WIDTH" value="32" />
- </module>
  <module name="alt_vip_itc_0" kind="alt_vip_itc" version="14.0" enabled="1">
   <parameter name="ACCEPT_COLOURS_IN_SEQ" value="0" />
   <parameter name="ANC_LINE" value="0" />
@@ -1583,7 +1620,7 @@
    start="hps_0.h2f_axi_master"
    end="HEX5_HEX4.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x00020030" />
+  <parameter name="baseAddress" value="0x8030" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -1592,7 +1629,7 @@
    start="hps_0.h2f_axi_master"
    end="HEX3_HEX0.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x00020020" />
+  <parameter name="baseAddress" value="0x8020" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -1601,7 +1638,7 @@
    start="hps_0.h2f_axi_master"
    end="leds.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x00020010" />
+  <parameter name="baseAddress" value="0x8010" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -1610,7 +1647,7 @@
    start="hps_0.h2f_axi_master"
    end="switches.s1">
   <parameter name="arbitrationPriority" value="1" />
-  <parameter name="baseAddress" value="0x00020000" />
+  <parameter name="baseAddress" value="0x8000" />
   <parameter name="defaultConnection" value="false" />
  </connection>
  <connection
@@ -1626,7 +1663,7 @@
    kind="avalon"
    version="15.0"
    start="hps_0.h2f_axi_master"
-   end="Test_Module_0.slave">
+   end="Control_0.slave">
   <parameter name="arbitrationPriority" value="1" />
   <parameter name="baseAddress" value="0x0000" />
   <parameter name="defaultConnection" value="false" />
@@ -1674,11 +1711,7 @@
    version="15.0"
    start="clk_0.clk"
    end="Test_LogicOnly_0.clock" />
- <connection
-   kind="clock"
-   version="15.0"
-   start="clk_0.clk"
-   end="Test_Module_0.clock" />
+ <connection kind="clock" version="15.0" start="clk_0.clk" end="Control_0.clock" />
  <connection
    kind="clock"
    version="15.0"
@@ -1770,7 +1803,7 @@
    kind="reset"
    version="15.0"
    start="clk_0.clk_reset"
-   end="Test_Module_0.reset" />
+   end="Control_0.reset" />
  <connection
    kind="reset"
    version="15.0"
