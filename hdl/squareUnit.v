@@ -49,8 +49,9 @@ input [8:0] irrdi, irrui, irddi, irdi, iri, irui, iruui, idi, iui,
 	ilddi, ildi, ili, ilui, iluui, illdi, illui;
 
 // === Output declarations ===
-output done, fifoEmpty;
+output fifoEmpty;
 output [159:0] fifoOut; // output of FIFO
+output reg done;
 output reg hlu, hl, hld, hu, hd, hru, hr, hrd; // output hold signal
 output reg [8:0] orrdo, orruo, orddo, ordo, oro, oruo, oruuo, odo, ouo, 
 	olddo, oldo, olo, oluo, oluuo, olldo, olluo;
@@ -63,6 +64,8 @@ reg [8:0] orrdo_c, orruo_c, orddo_c, ordo_c, oro_c, oruo_c, oruuo_c, odo_c,
 // Moves Output
 reg [18:0] mvrrd, mvrru, mvrdd, mvruu, mvldd, mvluu, mvlld, mvllu;
 reg [18:0] mvrd, mvr, mvru, mvd, mvu, mvld, mvl, mvlu;
+
+reg done_c;
 
 // === Wire declarations ===
 wire [8:0] PVOID = {xpos, ypos, EMPTY}; // denotes an empty space at self
@@ -82,9 +85,6 @@ wire hrd_c = (ordo_c != PVOID);
 wire capb = ((cpiece[3] == BLACK) && (cpiece[2:0] != EMPTY)); // propagated piece can capture current square piece
 wire pwpm = ((iui[2:0] == PAWN) && (ypos == ROW8)); // pawn promo bit
 wire pwm2 = ((iui[2:0] == PAWN)&&(ypos == ROW4)); // pawn mov2 bit
-
-// === Assignment statements ===
-assign done = (state == DONE);
 
 // FIFO Module Declaration
 Square_FIFO F1F0 (.clock(clk), .data({fillwr,wrdata}), .q(fifoOut), .wrreq(wren), .rdreq(rden), .empty(fifoEmpty), .sclr(reset),
@@ -112,6 +112,9 @@ always @(*) begin
 	mvrd = IMOV; 	mvr = IMOV; 	mvru = IMOV; 	mvd = IMOV;
 	mvu = IMOV;		mvld = IMOV; 	mvl = IMOV; 	mvlu = IMOV;
 	
+	// done signal
+	done_c = done;
+	
 	case (state)
 		RSET: begin
 			state_c = GENC;
@@ -120,6 +123,8 @@ always @(*) begin
 			oluuo_c = PVOID; olddo_c = PVOID;
 			oruuo_c = PVOID; orddo_c = PVOID;
 			orruo_c = PVOID; orrdo_c = PVOID;
+			
+			done_c = 1'b0;
 		end
 		GENC: begin
 			// generate output current piece if it's ours (white)
@@ -290,6 +295,7 @@ always @(*) begin
 		end
 		GKNI: begin // store knight moves
 			state_c = DONE;
+			done_c = 1'b1;
 			
 			// KNIGHT case
 			if ((cpiece[2:0] == EMPTY) || (capb)) begin
@@ -354,6 +360,7 @@ always @(posedge clk) begin
 	oluuo <= oluuo_c;
 	olldo <= olldo_c;
 	olluo <= olluo_c;
+	done <= done_c;
 end
 
 endmodule

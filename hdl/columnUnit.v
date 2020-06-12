@@ -130,6 +130,9 @@ Column_FIFO F1F0 (.clock(clk), .data(wr1), .q(fifoOut), .wrreq(wren1), .rdreq(rd
 assign ciui[71:9] = couo[62:0];
 assign cidi[62:0] = codo[71:9];
 
+// sq need move flag
+wire [7:0] sq_need_move = done_sqs & (~sq_moved_flags);
+
 // next state logic
 always @(*) begin
 	state_c = state;
@@ -139,124 +142,119 @@ always @(*) begin
 	case (state)
 		WAIT: begin
 			// if a done signal is up and is not grabbed to FIFO
-			if (done_sqs[7] == 1'b1) begin
-				if (sq_moved_flags[7] == 1'b0) begin
-					state_c = GETM;
-					sq_move_ptr_c = 3'd7;
-					sq_rden_c = 8'h80;
+			if (|{sq_need_move[7:4]}) begin
+				if (sq_need_move[7]) begin
+					if (sqEmpty[7] == 1'b1) begin
+						sq_moved_flags_c[7] = 1'b1;
+						wren1_c = 1'b0;
+					end
+					else begin
+						// else poll the square and get moves
+						state_c = GETM;
+						sq_move_ptr_c = 3'd7;
+						sq_rden_c = 8'h80;
+					end
 				end
 				
-				// if it's done but it's also empty, just skip polling it
-				if (sqEmpty[7] == 1'b1) begin
-					sq_moved_flags_c[7] = 1'b1;
-					wren1_c = 1'b0;
+				if (sq_need_move[6]) begin
+					if (sqEmpty[6] == 1'b1) begin
+						sq_moved_flags_c[6] = 1'b1;
+						wren1_c = 1'b0;
+					end
+					else begin
+						state_c = GETM;
+						sq_move_ptr_c = 3'd6;
+						sq_rden_c = 8'h40;
+					end
+				end
+				
+				if (sq_need_move[5]) begin
+					if (sqEmpty[5] == 1'b1) begin
+						sq_moved_flags_c[5] = 1'b1;
+						wren1_c = 1'b0;
+					end
+					else begin
+						state_c = GETM;
+						sq_move_ptr_c = 3'd5;
+						sq_rden_c = 8'h20;
+					end
+				end
+				
+				if (sq_need_move[4]) begin
+					if (sqEmpty[4] == 1'b1) begin
+						sq_moved_flags_c[4] = 1'b1;
+						wren1_c = 1'b0;
+					end
+					else begin
+						state_c = GETM;
+						sq_move_ptr_c = 3'd4;
+						sq_rden_c = 8'h10;
+					end
 				end
 			end
-			
-			if (done_sqs[6] == 1'b1) begin
-				if (sq_moved_flags[6] == 1'b0) begin
-					state_c = GETM;
-					sq_move_ptr_c = 3'd6;
-					sq_rden_c = 8'h40;
+			else if (|{sq_need_move[3:0]}) begin // if first 4 aren't done yet
+				if (sq_need_move[3]) begin
+					if (sqEmpty[3] == 1'b1) begin
+						sq_moved_flags_c[3] = 1'b1;
+						wren1_c = 1'b0;
+					end
+					else begin
+						state_c = GETM;
+						sq_move_ptr_c = 3'd3;
+						sq_rden_c = 8'h08;
+					end
 				end
 				
-				if (sqEmpty[6] == 1'b1) begin
-					sq_moved_flags_c[6] = 1'b1;
-					wren1_c = 1'b0;
-				end
-			end
-			
-			if (done_sqs[5] == 1'b1) begin
-				if (sq_moved_flags[5] == 1'b0) begin
-					state_c = GETM;
-					sq_move_ptr_c = 3'd5;
-					sq_rden_c = 8'h20;
-				end
-				
-				if (sqEmpty[5] == 1'b1) begin
-					sq_moved_flags_c[5] = 1'b1;
-					wren1_c = 1'b0;
-				end
-			end
-			
-			if (done_sqs[4] == 1'b1) begin
-				if (sq_moved_flags[4] == 1'b0) begin
-					state_c = GETM;
-					sq_move_ptr_c = 3'd4;
-					sq_rden_c = 8'h10;
+				if (sq_need_move[2]) begin
+					if (sqEmpty[2] == 1'b1) begin
+						sq_moved_flags_c[2] = 1'b1;
+						wren1_c = 1'b0;
+					end
+					else begin
+						state_c = GETM;
+						sq_move_ptr_c = 3'd2;
+						sq_rden_c = 8'h04;
+					end
 				end
 				
-				if (sqEmpty[4] == 1'b1) begin
-					sq_moved_flags_c[4] = 1'b1;
-					wren1_c = 1'b0;
-				end
-			end
-			
-			if (done_sqs[3] == 1'b1) begin
-				if (sq_moved_flags[3] == 1'b0) begin
-					state_c = GETM;
-					sq_move_ptr_c = 3'd3;
-					sq_rden_c = 8'h08;
-				end
-				
-				if (sqEmpty[3] == 1'b1) begin
-					sq_moved_flags_c[3] = 1'b1;
-					wren1_c = 1'b0;
-				end
-			end
-			
-			if (done_sqs[2] == 1'b1) begin
-				if (~sq_moved_flags[2] == 1'b1) begin
-					state_c = GETM;
-					sq_move_ptr_c = 3'd2;
-					sq_rden_c = 8'h04;
+				if (sq_need_move[1]) begin
+					if (sqEmpty[1] == 1'b1) begin
+						sq_moved_flags_c[1] = 1'b1;
+						wren1_c = 1'b0;
+					end
+					else begin
+						state_c = GETM;
+						sq_move_ptr_c = 3'd1;
+						sq_rden_c = 8'h02;
+					end
 				end
 				
-				if (sqEmpty[2] == 1'b1) begin
-					sq_moved_flags_c[2] = 1'b1;
-					wren1_c = 1'b0;
-				end
-			end
-			
-			if (done_sqs[1] == 1'b1) begin
-				if (~sq_moved_flags[1] == 1'b1) begin
-					state_c = GETM;
-					sq_move_ptr_c = 3'd1;
-					sq_rden_c = 8'h02;
-				end
-				
-				if (sqEmpty[1] == 1'b1) begin
-					sq_moved_flags_c[1] = 1'b1;
-					wren1_c = 1'b0;
-				end
-			end
-			
-			if (done_sqs[0] == 1'b1) begin
-				if (~sq_moved_flags[0] == 1'b1) begin
-					state_c = GETM;
-					sq_move_ptr_c = 3'd0;
-					sq_rden_c = 8'h01;
-				end
-				
-				if (sqEmpty[0] == 1'b1) begin
-					sq_moved_flags_c[0] = 1'b1;
-					wren1_c = 1'b0;
+				if (sq_need_move[0]) begin
+					if (sqEmpty[0] == 1'b1) begin
+						sq_moved_flags_c[0] = 1'b1;
+						wren1_c = 1'b0;
+					end
+					else begin
+						state_c = GETM;
+						sq_move_ptr_c = 3'd0;
+						sq_rden_c = 8'h01;
+					end
 				end
 			end
 			
 			if (&{sq_moved_flags}) // if all squares grabbed move
 				state_c = DONE;
 		end
+
 		GETM: begin
 			// get move from specified square until exhausted
 			sq_rden_c = sq_rden;
-			wren1_c = 1'b1;
+			wren1_c = ~c_sq_empty;
 			
 			// if all moves from square fifo gone
 			if (c_sq_empty == 1'b1) begin
 				state_c = WAIT;
 				sq_moved_flags_c[sq_move_ptr] = 1'b1;
-				wren1_c = 1'b0;
 			end
 		end
 	endcase
