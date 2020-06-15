@@ -1,0 +1,77 @@
+module eval_tb;
+
+// Parameters
+parameter NUM_TESTS = 1; // number of tests
+parameter NCIO = 1; // number of cycles from input to output
+
+// IO for DUT
+reg [255:0] boardIn;
+reg start;
+reg clk;
+wire signed [13:0] score;
+
+// DUT Declaration
+BoardEvaluation DUT (.boardIn(boardIn), .start(start), .clk(clk), .score(score));
+
+// IO for Reference
+reg [NUM_TESTS-1:0] refMem [269:0]; // 256 bits for boardIn, 14 bits for score, per test case
+reg [269:0] testRef; // one test case in format of {256b in, 14b out}
+reg [13:0] score_g; // reference for score
+integer testNum; // for the for-loop, indicates the test number
+
+// clock period: #100
+reg clk_rst;
+always begin
+   if (clk_rst == 1'b1)
+      clk = #1 1'b0;
+   else
+      #50 clk = ~clk;
+end
+
+// initial block for testing
+initial begin
+	// For Cadence tool
+	$recordfile("eval_tb");
+	$recordvars(eval_tb);
+	
+	// initialize clock
+	$display("Initializing");
+	clk_rst = 1'b1;
+	#200; // wait for two cycles
+	clk_rst = 1'b0;
+	
+	// initialize input regs
+	boardIn = 256'd0; start = 1'b0; testNum = 32'd0;
+
+	// read file to memory
+	$readmemb("eval_test.txt", refMem);
+	
+	repeat (NUM_TESTS) begin
+		@(posedge clk) #10;
+		
+		// set inputs
+		testRef = refMem[testNum];
+		score_g = testRef[13:0];
+		boardIn = testRef[269:14];
+		start = 1'b1; #20;
+		
+		repeat (NCIO) @(posedge clk); #10 // wait for output
+		
+		$write("Test case %d: ", testNum);
+		$write("score = %d, score_g = %d ", score, score_g);
+		if (score == score_g)
+			$write("ok\n");
+		else
+			$write("Error!\n");
+		
+		testNum = testNum + 32'd1; // increment testNum
+	end
+	
+	$display("All tests ended.");
+	
+	// end simulation
+	$finish; // For Cadence
+	// $stop; // For ModelSim
+end
+	
+endmodule

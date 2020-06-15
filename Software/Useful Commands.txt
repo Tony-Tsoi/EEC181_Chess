@@ -1,0 +1,8 @@
+This runs the default TSCP in xboard and connects to freechess.org.
+
+/home/ubuntu/Desktop/EEC181/xboard-4.9.1/xboard -zp -ics -icshost freechess.org -fcp /home/ubuntu/Desktop/EEC181/RAW_TSCP/tscp181c/tscp
+
+
+This runs the OUR TSCP modified code in xboard and connects to freechess.org.
+
+/home/ubuntu/Desktop/EEC181/xboard-4.9.1/xboard -zp -ics -icshost freechess.org -fcp /home/ubuntu/Desktop/EEC181/TSCP/tscp181c/tscp
