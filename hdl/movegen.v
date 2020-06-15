@@ -1,4 +1,4 @@
-module LMG (clk, reset, bstate, done, fifoOut, rden, fifoEmpty,
+module movegen (clk, reset, bstate, done, fifoOut, rden, fifoEmpty,
 	lcas_flag, rcas_flag, enp_flags);
 
 // 19 bit output per move from fifoOut has the following format:

@@ -14,7 +14,7 @@ slave_byteenable
 
 // should contain a block RAM for the move list/tree
 // 1. wait for Avalon bus to feed in current board state
-// 2. feeds move(s) into LMG, waits, get moves from LMG fifo and write into block RAM
+// 2. feeds move(s) into movegen, waits, get moves from LMG fifo and write into block RAM
 // 3. for multiple depth: repeat step 2 and write into do/undo stack, until certain depth reached
 // 4. wait for SW to retrieve move list/tree from block RAM
 
@@ -155,7 +155,7 @@ lmg_dummy lmg_dummy_inst1(
 
 
 
-LMG LMG_inst1(
+movegen LMG_inst1(
 	.clk(clk),
 	.reset(lmgReset),
 	.bstate(boardState),

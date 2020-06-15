@@ -1,4 +1,4 @@
-module lab4
+module top
 (
 	input CLOCK_50,
 	
