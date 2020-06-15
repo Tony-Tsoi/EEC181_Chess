@@ -24,6 +24,7 @@ parameter COLE = 3'o4; parameter COLF = 3'o5; parameter COLG = 3'o6; parameter C
 reg clk;
 reg reset;
 reg hold;
+reg rden;
 reg [2:0] xpos, ypos;
 reg [3:0] cpiece;
 reg [8:0] irrdi, irrui, irddi, irdi, iri, irui, iruui, idi, iui, 
@@ -31,7 +32,7 @@ reg [8:0] irrdi, irrui, irddi, irdi, iri, irui, iruui, idi, iui,
 wire [8:0] orrdo, orruo, orddo, ordo, oro, oruo, oruuo, odo, ouo, 
 	olddo, oldo, olo, oluo, oluuo, olldo, olluo;
 wire hlu, hl, hld, hu, hd, hru, hr, hrd, done;
-
+wire [159:0] fifoOut;
 wire [8:0] PVOID = {xpos, ypos, EMPTY}; // denotes an empty space at self
 	
 //module
@@ -91,11 +92,12 @@ initial begin
 	clk = 1'b0;
 	reset = 1'b0;
 	hold = 1'b0;
+	rden = 1'b0;
 	xpos = COLE;
 	ypos = ROW5;
-	cpiece = {WHITE,ROOK}; //set the piece
+	cpiece = {WHITE,EMPTY}; //set the piece
 	
-	irrdi = PVOID;
+	irrdi = PVOID; //set the inputs for the test case
 	irrui = PVOID;
 	irddi = PVOID;
 	irdi = PVOID;
@@ -103,7 +105,7 @@ initial begin
 	irui = PVOID;
 	iruui = PVOID;
 	idi = PVOID;
-	iui = PVOID; 
+	iui = 9'b100101001; 
 	ilddi = PVOID;
 	ildi = PVOID;
 	ili = PVOID;
@@ -112,17 +114,19 @@ initial begin
 	illdi = PVOID;
 	illui = PVOID;
 	
-	#20;
+	#200;
 	reset = 1'b1;
 	
-	#20;
+	#200;
 	reset = 1'b0;
 	
-	#60;
+	#1000;
+	rden = 1'b1; //read moves from the square fifo
+	#200;
 end
 
 always begin
-	#10;
+	#100;
 	clk = ~clk;
 end
 
